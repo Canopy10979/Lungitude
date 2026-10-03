@@ -1,0 +1,247 @@
+{
+    "sources": {
+        "new_cases": "American Cancer Society, Cancer Facts & Figures 2026, estimated new cases and deaths in Washington, 2026",
+        "rates": "NCI State Cancer Profiles, age-adjusted incidence per 100,000, 2019-2023 (Washington vs US)",
+        "bmi": "CDC, cancers associated with overweight and obesity (13 types)",
+        "smoking": "CDC, cancers caused by tobacco use",
+        "screening": "USPSTF final recommendations: breast 2024, colorectal 2021, cervical 2018, prostate 2018, lung 2021"
+    },
+    "wa_all_sites": {
+        "new_2026": 48590,
+        "deaths_2026": 14160,
+        "rate_wa": 441.2,
+        "rate_us": 453.4
+    },
+    "groups": {
+        "lung": {
+            "label": "Lung cancer",
+            "question": "Do you often experience a persistent cough, coughing up blood, chest pain, and shortness of breath?",
+            "specialist": "a lung doctor (pulmonologist)",
+            "place_query": "pulmonology lung cancer screening",
+            "cancers": [
+                {
+                    "name": "Lung and bronchus",
+                    "new_2026": 5020,
+                    "deaths_2026": 2570,
+                    "rate_wa": 46.7,
+                    "rate_us": 51.8,
+                    "scp": "lung"
+                }
+            ],
+            "bmi_linked": false,
+            "smoking_linked": true,
+            "urgent_sign": "coughing up blood"
+        },
+        "breast": {
+            "label": "Breast cancer",
+            "question": "Do you often experience symptoms of hard lumps, skin dimpling, swelling, and nipple discharge?",
+            "specialist": "a primary care doctor, who can order a mammogram or ultrasound",
+            "place_query": "breast imaging mammogram",
+            "cancers": [
+                {
+                    "name": "Breast (female)",
+                    "new_2026": 7710,
+                    "deaths_2026": 960,
+                    "rate_wa": 139.9,
+                    "rate_us": 133.0,
+                    "scp": "breast"
+                }
+            ],
+            "bmi_linked": true,
+            "bmi_note": "after menopause",
+            "smoking_linked": false
+        },
+        "colorectal": {
+            "label": "Colorectal cancer",
+            "question": "Do you often experience changes in bowel habits, blood in the stool, and ongoing abdominal discomfort?",
+            "specialist": "a digestive doctor (gastroenterologist)",
+            "place_query": "gastroenterology colonoscopy",
+            "cancers": [
+                {
+                    "name": "Colon and rectum",
+                    "new_2026": 3300,
+                    "deaths_2026": 1160,
+                    "rate_wa": 34.3,
+                    "rate_us": 36.9,
+                    "scp": "colorectal"
+                }
+            ],
+            "bmi_linked": true,
+            "smoking_linked": true,
+            "urgent_sign": "blood in the stool"
+        },
+        "urinary": {
+            "label": "Prostate, bladder or kidney cancer",
+            "question": "Do you often experience trouble urinating, weak urine flow, or blood in the urine?",
+            "specialist": "a urinary tract doctor (urologist)",
+            "place_query": "urology",
+            "cancers": [
+                {
+                    "name": "Prostate",
+                    "new_2026": 6980,
+                    "deaths_2026": 980,
+                    "rate_wa": 106.9,
+                    "rate_us": 119.9,
+                    "scp": "prostate"
+                },
+                {
+                    "name": "Urinary bladder",
+                    "new_2026": 1980,
+                    "deaths_2026": null,
+                    "rate_wa": 19.8,
+                    "rate_us": 18.7,
+                    "scp": "bladder"
+                },
+                {
+                    "name": "Kidney and renal pelvis",
+                    "new_2026": 1550,
+                    "deaths_2026": null,
+                    "rate_wa": 15.7,
+                    "rate_us": 17.9,
+                    "scp": "kidney"
+                }
+            ],
+            "bmi_linked": true,
+            "bmi_note": "kidney",
+            "smoking_linked": true,
+            "urgent_sign": "blood in the urine"
+        },
+        "skin": {
+            "label": "Skin cancer (melanoma)",
+            "question": "Do you often experience asymmetrical moles, irregular borders, changing colors, or sores that do not heal?",
+            "specialist": "a skin doctor (dermatologist)",
+            "place_query": "dermatology skin cancer check",
+            "cancers": [
+                {
+                    "name": "Melanoma of the skin",
+                    "new_2026": 2860,
+                    "deaths_2026": null,
+                    "rate_wa": 26.7,
+                    "rate_us": 23.8,
+                    "scp": "melanoma"
+                }
+            ],
+            "bmi_linked": false,
+            "smoking_linked": false
+        },
+        "blood": {
+            "label": "Blood cancer (leukemia or lymphoma)",
+            "question": "Do you often experience easy bruising or bleeding, swollen lymph nodes, and frequent infections?",
+            "specialist": "a blood doctor (hematologist), after a blood test from your primary care doctor",
+            "place_query": "hematology oncology",
+            "cancers": [
+                {
+                    "name": "Leukemia",
+                    "new_2026": 1550,
+                    "deaths_2026": 540,
+                    "rate_wa": 14.7,
+                    "rate_us": 14.5,
+                    "scp": "leukemia"
+                },
+                {
+                    "name": "Non-Hodgkin lymphoma",
+                    "new_2026": 1900,
+                    "deaths_2026": 510,
+                    "rate_wa": 18.7,
+                    "rate_us": 18.5,
+                    "scp": "nhl"
+                }
+            ],
+            "bmi_linked": true,
+            "bmi_note": "multiple myeloma",
+            "smoking_linked": true,
+            "smoking_note": "acute myeloid leukemia",
+            "hint": "Blood cancers (leukemia and lymphoma)"
+        },
+        "liver_pancreas": {
+            "label": "Pancreatic or liver cancer",
+            "question": "Do you often experience yellowing of the skin and eyes (jaundice), upper abdominal pain, and pale stools?",
+            "specialist": "a primary care doctor today (yellow skin or eyes needs a check soon), then a liver or digestive specialist",
+            "place_query": "gastroenterology hepatology",
+            "cancers": [
+                {
+                    "name": "Pancreas",
+                    "new_2026": 1220,
+                    "deaths_2026": 1220,
+                    "rate_wa": 13.6,
+                    "rate_us": 13.9,
+                    "scp": "pancreas"
+                },
+                {
+                    "name": "Liver and bile duct",
+                    "new_2026": null,
+                    "deaths_2026": 730,
+                    "rate_wa": 8.5,
+                    "rate_us": 8.7,
+                    "scp": "liver"
+                }
+            ],
+            "bmi_linked": true,
+            "smoking_linked": true,
+            "urgent_sign": "yellow skin or eyes"
+        }
+    },
+    "screenings": [
+        {
+            "key": "colorectal",
+            "name": "Colorectal cancer screening",
+            "who": "Everyone",
+            "from": 45,
+            "to": 75,
+            "how": "A stool test (FIT) every year, or a colonoscopy every 10 years",
+            "grade": "USPSTF 2021"
+        },
+        {
+            "key": "breast",
+            "name": "Mammogram",
+            "who": "Women",
+            "from": 40,
+            "to": 74,
+            "how": "Every 2 years",
+            "grade": "USPSTF 2024"
+        },
+        {
+            "key": "cervical",
+            "name": "Cervical cancer screening",
+            "who": "Women with a cervix",
+            "from": 21,
+            "to": 65,
+            "how": "A Pap test every 3 years (age 21-29); from age 30, an HPV test every 5 years is an option",
+            "grade": "USPSTF 2018"
+        },
+        {
+            "key": "prostate",
+            "name": "Prostate (PSA) test",
+            "who": "Men",
+            "from": 55,
+            "to": 69,
+            "how": "Talk with a doctor and decide together",
+            "grade": "USPSTF 2018"
+        },
+        {
+            "key": "lung",
+            "name": "Low-dose CT lung scan",
+            "who": "People who smoked a lot (20 pack-years or more)",
+            "from": 50,
+            "to": 80,
+            "how": "Every year. Use the Lungitude lung check to see if you qualify",
+            "grade": "USPSTF 2021"
+        }
+    ],
+    "free_screening": {
+        "name": "Washington Breast, Cervical, and Colon Health Program",
+        "ages": "21 to 64",
+        "who": "People with no insurance or with insurance that does not cover screening, with income up to about 250-300% of the federal poverty level",
+        "contact": "Washington Healthplanfinder 1-855-923-4633, or the program office in your county",
+        "url": "https://doh.wa.gov/bcchp"
+    },
+    "order": [
+        "lung",
+        "breast",
+        "colorectal",
+        "urinary",
+        "skin",
+        "blood",
+        "liver_pancreas"
+    ]
+}

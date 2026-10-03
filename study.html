@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Lungitude Study</title>
+    <link rel="stylesheet" href="css/app.css">
+    <style>
+        .tiles {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 12px;
+            margin: 20px 0;
+        }
+
+        .tile {
+            padding: 16px;
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+        }
+
+        .tile b {
+            display: block;
+            font: 600 34px/1.1 var(--serif);
+        }
+
+        .tile span {
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .hist {
+            position: relative;
+        }
+
+        .hist svg {
+            width: 100%;
+            height: auto;
+            overflow: visible;
+        }
+
+        .hist .axis {
+            font: 11px var(--sans);
+            fill: var(--muted);
+        }
+
+        .hist rect.bar:hover {
+            fill: #0a4440;
+        }
+
+        .tip {
+            position: absolute;
+            pointer-events: none;
+            padding: 6px 10px;
+            border-radius: 8px;
+            background: var(--ink);
+            color: #fff;
+            font-size: 13px;
+            white-space: nowrap;
+            transform: translate(-50%, -110%);
+        }
+
+        table.data {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        table.data td,
+        table.data th {
+            padding: 6px 8px;
+            border-bottom: 1px solid var(--line);
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+<header class="topbar">
+    <a class="brand" href="index.html">Lungitude</a>
+</header>
+<main>
+    <p class="eyebrow">Accuracy study</p>
+    <h1>Can a phone measure a finger the same way twice?</h1>
+    <p class="lede" id="summary">Loading…</p>
+
+    <div class="tiles" id="tiles"></div>
+
+    <div class="card">
+        <h3>Finger depth ratio, one bar per 0.05</h3>
+        <p class="note">Each person counts once (the median of their 3 trials). Above 1.0 is a clubbing sign.</p>
+        <div class="hist" id="hist"></div>
+        <details>
+            <summary>Show as a table</summary>
+            <table class="data" id="hist-table"></table>
+        </details>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+        <h3>Who took part</h3>
+        <table class="data" id="ages"></table>
+    </div>
+
+    <p class="fineprint">
+        Only numbers are stored: age range, smoking status, finger ratios, exhale time, window test answer, heart rate and blood oxygen.
+        No names, photos, audio, locations or exact ages.
+    </p>
+</main>
+
+<script>
+(function () {
+    function el(id) {
+        return document.getElementById(id);
+    }
+
+    function tile(value, label) {
+        return '<div class="tile"><b>' + value + "</b><span>" + label + "</span></div>";
+    }
+
+    function fmt(v, digits) {
+        if (v === null || v === undefined) {
+            return "–";
+        }
+        return Number(v).toFixed(digits);
+    }
+
+    function histogram(bins) {
+        const W = 640;
+        const H = 220;
+        const padL = 30;
+        const padB = 28;
+        const plotW = W - padL;
+        const plotH = H - padB;
+        let max = 1;
+        bins.forEach(function (b) {
+            max = Math.max(max, b.count);
+        });
+        const bw = plotW / bins.length;
+        let svg = '<svg viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="Histogram of finger depth ratios">';
+
+        [0, Math.ceil(max / 2), max].forEach(function (t) {
+            const y = plotH - (t / max) * (plotH - 10);
+            svg += '<line x1="' + padL + '" x2="' + W + '" y1="' + y + '" y2="' + y + '" stroke="#dcd8cf" stroke-width="1"/>';
+            svg += '<text class="axis" x="' + (padL - 6) + '" y="' + (y + 4) + '" text-anchor="end">' + t + "</text>";
+        });
+
+        bins.forEach(function (b, i) {
+            const h = (b.count / max) * (plotH - 10);
+            const x = padL + i * bw + 1;
+            const w = bw - 2;
+            const y = plotH - h;
+            if (b.count > 0) {
+                const r = Math.min(4, w / 2, h);
+                svg += '<path class="bar" d="M' + x + "," + plotH + " V" + (y + r) +
+                    " Q" + x + "," + y + " " + (x + r) + "," + y +
+                    " H" + (x + w - r) + " Q" + (x + w) + "," + y + " " + (x + w) + "," + (y + r) +
+                    " V" + plotH + ' Z" fill="#0e5c57"/>';
+            }
+            svg += '<rect class="hit" x="' + (padL + i * bw) + '" y="0" width="' + bw + '" height="' + plotH +
+                '" fill="transparent" data-i="' + i + '"/>';
+            if (i % 2 === 0) {
+                svg += '<text class="axis" x="' + (padL + i * bw) + '" y="' + (H - 8) + '" text-anchor="middle">' +
+                    b.from.toFixed(2) + "</text>";
+            }
+        });
+
+        const x1 = padL + ((1.0 - bins[0].from) / 0.05) * bw;
+        svg += '<line x1="' + x1 + '" x2="' + x1 + '" y1="0" y2="' + plotH + '" stroke="#1a1d21" stroke-width="2" stroke-dasharray="5 4"/>';
+        svg += '<text class="axis" x="' + (x1 + 6) + '" y="12" style="fill:#1a1d21">clubbing sign above 1.0</text>';
+        svg += "</svg>";
+
+        el("hist").innerHTML = svg + '<div class="tip" id="tip" hidden></div>';
+        const tip = el("tip");
+        el("hist").querySelectorAll("rect.hit").forEach(function (r) {
+            r.addEventListener("mousemove", function (e) {
+                const b = bins[Number(r.dataset.i)];
+                const box = el("hist").getBoundingClientRect();
+                tip.hidden = false;
+                tip.textContent = b.from.toFixed(2) + "–" + b.to.toFixed(2) + ": " + b.count +
+                    (b.count === 1 ? " person" : " people");
+                tip.style.left = (e.clientX - box.left) + "px";
+                tip.style.top = (e.clientY - box.top) + "px";
+            });
+            r.addEventListener("mouseleave", function () {
+                tip.hidden = true;
+            });
+        });
+
+        el("hist-table").innerHTML = "<tr><th>Ratio</th><th>People</th></tr>" + bins.map(function (b) {
+            return "<tr><td>" + b.from.toFixed(2) + "–" + b.to.toFixed(2) + "</td><td>" + b.count + "</td></tr>";
+        }).join("");
+    }
+
+    fetch("api/stats.php")
+        .then(function (res) {
+            return res.json();
+        })
+        .then(function (s) {
+            const r = s.repeatability;
+            const pct = r.people_with_3_trials > 0 ? Math.round(100 * r.within_limit / r.people_with_3_trials) : null;
+            el("summary").textContent = s.people === 0
+                ? "No one has shared numbers yet. Results appear here after people tick the consent box."
+                : s.people + (s.people === 1 ? " person" : " people") + " shared their numbers. For " + (pct === null ? "–" : pct) +
+                  "% of them, 3 finger measurements agreed within " + r.limit + ".";
+            el("tiles").innerHTML =
+                tile(s.people, s.people === 1 ? "person" : "people") +
+                tile(pct === null ? "–" : pct + "%", "3 trials agreed within " + r.limit) +
+                tile(fmt(r.median_spread, 3), "median spread of 3 trials") +
+                tile(s.pdr.above_1, "ratios above 1.0") +
+                tile(s.fet_median === null ? "–" : fmt(s.fet_median, 1) + " s", "median exhale time");
+            histogram(s.pdr.histogram);
+            const ages = Object.keys(s.age_bands);
+            el("ages").innerHTML = "<tr><th>Age range</th><th>People</th></tr>" + (ages.length ? ages.map(function (k) {
+                return "<tr><td>" + k + "</td><td>" + s.age_bands[k] + "</td></tr>";
+            }).join("") : '<tr><td colspan="2">No data yet</td></tr>');
+        })
+        .catch(function () {
+            el("summary").textContent = "Could not load the study data.";
+        });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+FAKE TEST DATA - not real numbers
+Incidence Rates for Washington by County
+"Colon & Rectum (All Stages^), 2017-2021"
+All Races (includes Hispanic), Both Sexes, All Ages
+Sorted by Name
+
+County,FIPS,"Age-Adjusted Incidence Rate(Ê) - cases per 100,000",Lower 95% Confidence Interval,Upper 95% Confidence Interval,CI*Rank(È),Lower CI (CI*Rank),Upper CI (CI*Rank),Average Annual Count,Recent Trend,"Recent 5-Year Trend (Ë) in Incidence Rates",Lower 95% Confidence Interval,Upper 95% Confidence Interval
+"US (SEER+NPCR)(1)",00000,36.5,36.4,36.6,N/A,N/A,N/A,"142,880",falling,-1.2,-1.6,-0.8
+"Washington(6)",53000,34.1,33.6,34.6,30,27,33,"3,166",falling,-1.8,-2.5,-1.1
+"Garfield County(6)",53023,*,*,*,*,*,*,3 or fewer,*,*,*,*
+"King County(6)",53033,30.9 #,30.0,31.8,35,33,37,"824",falling,-2.0,-3.0,-0.9
+
+Created by statecancerprofiles.cancer.gov on 10/03/2026.

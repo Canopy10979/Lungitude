@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Lungitude Lung Check</title>
+    <meta name="description" content="A 3-minute lung cancer risk check with your phone's microphone and camera, then a walk to the nearest screening.">
+    <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<header class="topbar">
+    <a class="brand" href="#" data-goto="intro">
+        <svg viewBox="0 0 32 32" width="26" height="26" aria-hidden="true">
+            <path d="M6 20c4 0 4-8 10-8s6 8 10 8" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+            <circle cx="26" cy="20" r="2.6" fill="currentColor"/>
+        </svg>
+        Lungitude
+    </a>
+    <ol class="progress" aria-label="Progress">
+        <li data-step="about">You</li>
+        <li data-step="smoking">Smoking</li>
+        <li data-step="history">Health</li>
+        <li data-step="breath">Breath</li>
+        <li data-step="hands">Hands</li>
+        <li data-step="place">Place</li>
+    </ol>
+</header>
+
+<main>
+    <!-- 0. Intro -->
+    <section class="step" id="step-intro" data-active>
+        <p class="eyebrow">Lung cancer screening, made walkable</p>
+        <h1>Three minutes with your phone.<br>One walk to a screening that can find lung cancer early.</h1>
+        <p class="lede">
+            Caught early, 65% of people with lung cancer live 5 years or more. Caught late, 10% do.
+            A low-dose CT scan finds it early, but in Washington only 15.8% of the people who qualify get one.
+        </p>
+        <ul class="intro-list">
+            <li><b>Your answers</b> go into PLCOm2012, a published risk model used by doctors.</li>
+            <li><b>Your microphone</b> times one hard exhale. A long exhale can be a sign of blocked airways.</li>
+            <li><b>Your camera</b> checks your finger shape for clubbing, a sign linked to lung disease.</li>
+            <li><b>Your location</b> finds places you can walk to, and gives you a note for your doctor.</li>
+        </ul>
+        <div class="actions">
+            <button class="btn primary" data-goto="about">Start the check</button>
+            <button class="btn ghost" id="load-demo">Load demo person</button>
+        </div>
+        <p class="fineprint">
+            Lungitude is a screening guide, not a diagnosis. Audio and photos stay on your device.
+            Only numbers (like "7.2 seconds") go to the server.
+        </p>
+    </section>
+
+    <!-- 1. About -->
+    <section class="step" id="step-about">
+        <p class="eyebrow">Step 1 of 6</p>
+        <h2>About you</h2>
+        <div class="grid">
+            <label>Age
+                <input type="number" name="age" min="18" max="100" inputmode="numeric" required>
+            </label>
+            <label>Height
+                <span class="pair">
+                    <input type="number" name="height_ft" min="4" max="7" inputmode="numeric" placeholder="ft">
+                    <input type="number" name="height_inch" min="0" max="11" inputmode="numeric" placeholder="in">
+                </span>
+            </label>
+            <label>Weight (lb)
+                <input type="number" name="weight_lb" min="60" max="600" inputmode="numeric">
+            </label>
+            <label>Highest school level
+                <select name="education">
+                    <option value="1">Did not finish high school</option>
+                    <option value="2">High school graduate</option>
+                    <option value="3">Training after high school</option>
+                    <option value="4" selected>Some college</option>
+                    <option value="5">College graduate</option>
+                    <option value="6">Graduate degree</option>
+                </select>
+            </label>
+            <label class="span2">Background (optional, the model uses it)
+                <select name="race">
+                    <option value="unknown">Prefer not to say</option>
+                    <option value="white">White</option>
+                    <option value="black">Black</option>
+                    <option value="hispanic">Hispanic</option>
+                    <option value="asian">Asian</option>
+                    <option value="aian">American Indian or Alaska Native</option>
+                    <option value="nhpi">Native Hawaiian or Pacific Islander</option>
+                </select>
+            </label>
+        </div>
+        <p class="live" id="bmi-readout"></p>
+        <div class="actions">
+            <button class="btn ghost" data-goto="intro">Back</button>
+            <button class="btn primary" data-next="smoking">Next</button>
+        </div>
+    </section>
+
+    <!-- 2. Smoking -->
+    <section class="step" id="step-smoking">
+        <p class="eyebrow">Step 2 of 6</p>
+        <h2>Smoking history</h2>
+        <fieldset class="chips" id="status-chips">
+            <legend>Have you smoked cigarettes?</legend>
+            <label><input type="radio" name="smoking_status" value="never"> Never</label>
+            <label><input type="radio" name="smoking_status" value="former"> I quit</label>
+            <label><input type="radio" name="smoking_status" value="current"> I still smoke</label>
+        </fieldset>
+        <div class="grid" id="smoking-detail">
+            <label>Cigarettes per day, on average
+                <input type="number" name="cigs_per_day" min="0" max="100" inputmode="numeric">
+                <small>1 pack = 20 cigarettes</small>
+            </label>
+            <label>Years you smoked
+                <input type="number" name="years_smoked" min="0" max="80" inputmode="numeric">
+            </label>
+            <label id="quit-field">Years since you quit
+                <input type="number" name="years_quit" min="0" max="80" inputmode="numeric">
+            </label>
+        </div>
+        <p class="live" id="pack-readout"></p>
+        <div class="actions">
+            <button class="btn ghost" data-goto="about">Back</button>
+            <button class="btn primary" data-next="history">Next</button>
+        </div>
+    </section>
+
+    <!-- 3. History and symptoms -->
+    <section class="step" id="step-history">
+        <p class="eyebrow">Step 3 of 6</p>
+        <h2>Health history</h2>
+        <div class="checks">
+            <label><input type="checkbox" name="copd"> A doctor told me I have COPD, emphysema or chronic bronchitis</label>
+            <label><input type="checkbox" name="personal_cancer"> I have had cancer before</label>
+            <label><input type="checkbox" name="family_lung_cancer"> A parent, brother or sister had lung cancer</label>
+        </div>
+        <h3>Do you have any of these now?</h3>
+        <div class="checks warn">
+            <label><input type="checkbox" name="cough_blood"> Coughing up blood</label>
+            <label><input type="checkbox" name="weight_loss"> Weight loss I cannot explain</label>
+            <label><input type="checkbox" name="hoarse"> A hoarse voice for more than 3 weeks</label>
+            <label><input type="checkbox" name="long_cough"> A cough for more than 8 weeks</label>
+        </div>
+        <div class="actions">
+            <button class="btn ghost" data-goto="smoking">Back</button>
+            <button class="btn primary" data-next="breath">Next</button>
+        </div>
+    </section>
+
+    <!-- 4. Breath -->
+    <section class="step" id="step-breath">
+        <p class="eyebrow">Step 4 of 6 · Microphone</p>
+        <h2>One hard exhale</h2>
+        <ol class="howto">
+            <li>Sit up. Hold the phone 20 cm (8 in) from your mouth.</li>
+            <li>Breathe in as deeply as you can.</li>
+            <li>When the ring turns green, blow out <b>as hard and as long as you can</b>, mouth wide open.</li>
+        </ol>
+        <div class="breath-stage">
+            <canvas id="breath-wave" width="640" height="160" aria-hidden="true"></canvas>
+            <div class="breath-ring" id="breath-ring"><span id="breath-count">Ready</span></div>
+        </div>
+        <p class="live" id="breath-result"></p>
+        <details class="experimental" id="lung-ai" hidden>
+            <summary>AI lung-sound check (experimental)</summary>
+            <p>
+                Press the bottom of your phone (the microphone) flat on your chest, just below the collarbone.
+                Breathe slowly and deeply through your open mouth for 15 seconds.
+                The AI listens for crackles and wheezes. It does not detect cancer.
+            </p>
+            <button class="btn small" id="lung-ai-start">Record 15 seconds</button>
+            <p class="live" id="lung-ai-result"></p>
+            <p class="note" id="lung-ai-score"></p>
+        </details>
+        <div class="actions">
+            <button class="btn ghost" data-goto="history">Back</button>
+            <button class="btn" id="breath-start">Start recording</button>
+            <button class="btn primary" data-next="hands">Next</button>
+        </div>
+        <p class="fineprint">Doctors call this the forced expiratory time. The audio does not leave your device.</p>
+    </section>
+
+    <!-- 5. Hands -->
+    <section class="step" id="step-hands">
+        <p class="eyebrow">Step 5 of 6 · Camera</p>
+        <h2>Finger and pulse check</h2>
+        <div class="two-col">
+            <div>
+                <h3>A. Side photo of your index finger</h3>
+                <p>Put your finger flat on a table. Take the photo from the side, at table height. Measure 3 times. A new photo for each time is best.</p>
+                <input type="file" accept="image/*" capture="environment" id="finger-file" class="file">
+                <div class="tapper" id="finger-tapper" hidden>
+                    <canvas id="finger-canvas"></canvas>
+                    <p class="tap-hint" id="tap-hint"></p>
+                    <button class="btn small ghost" id="tap-reset">Start over</button>
+                </div>
+                <p class="live" id="pdr-result"></p>
+            </div>
+            <div>
+                <h3>B. The window test</h3>
+                <div class="schamroth" aria-hidden="true">
+                    <svg viewBox="0 0 220 120" width="220" height="120">
+                        <path d="M10 30 h70 q16 0 16 20 q0 20 -16 20 h-70" class="finger"/>
+                        <path d="M210 30 h-70 q-16 0 -16 20 q0 20 16 20 h70" class="finger"/>
+                        <polygon points="110,34 122,50 110,66 98,50" class="window"/>
+                        <text x="110" y="100" text-anchor="middle">diamond gap = normal</text>
+                    </svg>
+                </div>
+                <p>Press the backs of your two ring fingers together, nail to nail. Look for a small diamond-shaped gap of light.</p>
+                <fieldset class="chips">
+                    <label><input type="radio" name="schamroth" value="open"> I see a gap</label>
+                    <label><input type="radio" name="schamroth" value="closed"> No gap</label>
+                    <label><input type="radio" name="schamroth" value="skip" checked> Skip</label>
+                </fieldset>
+
+                <details class="experimental">
+                    <summary>C. Nail-bed color (experimental)</summary>
+                    <p>
+                        Pale nail beds can be a sign of low hemoglobin. This is the signal that
+                        AnemoDx, the WA-01 2025 winner, used. Here it is one small input, not a result.
+                        Take a photo of your nails next to white paper. Tap a nail bed, then tap the paper.
+                    </p>
+                    <input type="file" accept="image/*" capture="environment" id="nail-file" class="file">
+                    <canvas id="nail-canvas" hidden></canvas>
+                    <p class="live" id="nail-result"></p>
+                </details>
+            </div>
+        </div>
+        <div class="pulse-box">
+            <h3>D. Pulse (camera and flash)</h3>
+            <p>
+                Cover the <b>back camera and the flash</b> with the tip of your index finger. Press lightly.
+                Keep still for 25 seconds. The camera sees each heartbeat as a small change in red light.
+            </p>
+            <p class="note">
+                Use your fingertip, not your wrist or arm. The camera must see light pass through the skin,
+                and the fingertip is thin enough for that.
+            </p>
+            <canvas id="pulse-wave" width="640" height="90" aria-hidden="true"></canvas>
+            <button class="btn small" id="pulse-start">Measure pulse</button>
+            <p class="live" id="pulse-result"></p>
+            <label class="spo2">Blood oxygen from a clip-on pulse oximeter (optional)
+                <span class="pair"><input type="number" name="spo2" min="50" max="100" inputmode="numeric" placeholder="for example 97"><span class="unit">%</span></span>
+                <small>A phone camera cannot measure blood oxygen reliably. A clip-on oximeter from a pharmacy can.
+                Oximeters can read too high on darker skin, so a low reading is always worth a check.</small>
+            </label>
+        </div>
+        <div class="actions">
+            <button class="btn ghost" data-goto="breath">Back</button>
+            <button class="btn primary" data-next="place">Next</button>
+        </div>
+    </section>
+
+    <!-- 6. Place -->
+    <section class="step" id="step-place">
+        <p class="eyebrow">Step 6 of 6</p>
+        <h2>Where are you?</h2>
+        <p>We use your location only to find your county and the places you can walk to.</p>
+        <div class="actions stack">
+            <button class="btn primary" id="use-location">Use my location</button>
+            <button class="btn ghost" id="use-demo-location">Use demo location (Kirkland, WA-01)</button>
+        </div>
+        <p class="live" id="place-status"></p>
+    </section>
+
+    <!-- 7. Results -->
+    <section class="step" id="step-results">
+        <div id="results"></div>
+    </section>
+</main>
+
+<!-- Printable doctor note -->
+<article id="doctor-note" aria-hidden="true"></article>
+
+<script src="js/app.js"></script>
+<script src="js/breath.js"></script>
+<script src="js/hands.js"></script>
+<script src="js/lungsound.js"></script>
+<script src="js/pulse.js"></script>
+<script src="js/results.js"></script>
+</body>
+</html>

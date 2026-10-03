@@ -1,0 +1,33 @@
+[
+    {
+        "name": "EvergreenHealth Pulmonary Care Center (lung cancer screening)",
+        "kind": "ct",
+        "address": "EvergreenHealth Medical Center, Kirkland",
+        "phone": "(425) 899-6972",
+        "website": "https://www.evergreenhealth.com/health-services/lung-care/lung-cancer-screening",
+        "verified": true,
+        "lat": 47.7159,
+        "lon": -122.1793
+    },
+    {
+        "name": "Sample Family Medicine",
+        "kind": "primary",
+        "address": "Sample data",
+        "dn": -650,
+        "de": 420
+    },
+    {
+        "name": "Sample Community Health Clinic",
+        "kind": "primary",
+        "address": "Sample data, sliding-scale fees",
+        "dn": 900,
+        "de": -800
+    },
+    {
+        "name": "Sample Imaging Center",
+        "kind": "ct",
+        "address": "Sample data",
+        "dn": -1900,
+        "de": -1500
+    }
+]

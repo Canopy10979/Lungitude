@@ -1,0 +1,12 @@
+{
+    "sample": true,
+    "fips": "53033",
+    "county": "King County",
+    "state": "WA",
+    "district": "WA-01",
+    "smoking": null,
+    "copd": null,
+    "national": null,
+    "state_screening": { "rate": 15.8, "rank": 37, "of": 51, "us_rate": 18.2, "source": "American Lung Association, State of Lung Cancer 2025" },
+    "source": "Demo location: Kirkland, WA (WA-01). Run tools/fetch_places.php to add county smoking and COPD rates."
+}
