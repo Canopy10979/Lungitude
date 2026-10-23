@@ -17,7 +17,8 @@ from sklearn.model_selection import GroupShuffleSplit
 from torch import nn
 from torch.utils.data import DataLoader, Dataset
 from torchvision.models import (EfficientNet_B0_Weights, efficientnet_b0,
-                                MobileNet_V3_Small_Weights, mobilenet_v3_small)
+                                MobileNet_V3_Small_Weights, mobilenet_v3_small,
+                                ViT_B_16_Weights, vit_b_16)
 
 CLASSES = ['akiec', 'bcc', 'bkl', 'df', 'mel', 'nv', 'vasc']
 PAD_CLASSES = ['ACK', 'BCC', 'MEL', 'NEV', 'SCC', 'SEK']
@@ -72,12 +73,17 @@ def build_model(pretrained=False, architecture='efficientnet_b0', classes=None):
     elif architecture == 'efficientnet_b0':
         model = efficientnet_b0(weights=EfficientNet_B0_Weights.DEFAULT if pretrained else None)
         model.classifier[-1] = nn.Linear(model.classifier[-1].in_features, len(classes))
+    elif architecture == 'vit_b_16':
+        model = vit_b_16(weights=ViT_B_16_Weights.IMAGENET1K_V1 if pretrained else None)
+        model.heads.head = nn.Linear(model.heads.head.in_features, len(classes))
     else:
         raise ValueError('Unsupported architecture')
     return model
 
 
 def weights_for(architecture):
+    if architecture == 'vit_b_16':
+        return ViT_B_16_Weights.IMAGENET1K_V1
     return MobileNet_V3_Small_Weights.DEFAULT if architecture == 'mobilenet_v3_small' else EfficientNet_B0_Weights.DEFAULT
 
 
@@ -98,7 +104,7 @@ def main():
     global CLASSES
     parser = argparse.ArgumentParser()
     parser.add_argument('--dataset', choices=['ham10000', 'pad_ufes20'], default='ham10000')
-    parser.add_argument('--architecture', choices=['efficientnet_b0', 'mobilenet_v3_small'], default='efficientnet_b0')
+    parser.add_argument('--architecture', choices=['efficientnet_b0', 'mobilenet_v3_small', 'vit_b_16'], default='efficientnet_b0')
     parser.add_argument('--metadata', required=True)
     parser.add_argument('--images', required=True, help='Directory containing both extracted image parts; searches recursively')
     parser.add_argument('--epochs', type=int, default=10)
@@ -146,15 +152,18 @@ def main():
                for i, part in enumerate([train, validation, test])]
     model = build_model(pretrained=True, architecture=args.architecture).to(device)
     # Transfer-learning baseline: train the replacement classifier first.
-    for parameter in model.features.parameters():
+    for parameter in model.parameters():
         parameter.requires_grad = False
+    head = model.heads if args.architecture == 'vit_b_16' else model.classifier
+    for parameter in head.parameters():
+        parameter.requires_grad = True
     counts = np.bincount([CLASSES.index(x) for x in train.dx], minlength=len(CLASSES))
     weights = torch.tensor(len(train) / (len(CLASSES) * counts), dtype=torch.float32, device=device)
     criterion = nn.CrossEntropyLoss(weight=weights)
-    optimizer = torch.optim.AdamW(model.classifier.parameters(), lr=1e-3, weight_decay=1e-4)
+    optimizer = torch.optim.AdamW(head.parameters(), lr=1e-3, weight_decay=1e-4)
     best = -1.0
     for epoch in range(args.epochs):
-        model.train(); model.features.eval()  # Preserve pretrained BatchNorm statistics.
+        model.eval(); head.train()  # Preserve frozen backbone statistics.
         total = 0.0
         for x, y in loaders[0]:
             x, y = x.to(device), y.to(device)

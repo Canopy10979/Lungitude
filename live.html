@@ -1,0 +1,30 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Lungitude · Signal research</title>
+<style>body{font:18px system-ui;max-width:760px;margin:40px auto;padding:20px;background:#f1f8f7;color:#123d38}video{width:100%;border-radius:16px}button{padding:14px;margin:12px}#view{position:relative}#roi{position:absolute;border:3px solid #ffd166;left:40%;top:25%;width:20%;height:12%;pointer-events:none}</style>
+<h1>Camera pulse research</h1><p>Align your forehead with the yellow box and hold still for 30 seconds. This uses a fixed region, not automatic face tracking. Lighting and movement can produce false pulse estimates. No diagnosis, HRV, oxygen or cancer assessment.</p>
+<p>Video stays on your device. Only timestamps and average RGB values go to the local signal service; they are not saved.</p>
+<label><input id="consent" type="checkbox"> I agree to local experimental signal processing.</label><br><button id="start">Start 30-second measurement</button><button id="stop" disabled>Stop and discard</button>
+<div id="view"><video id="video" muted playsinline></video><div id="roi"></div></div><p id="status" role="status">Ready.</p><a href="index.html">Back to Lungitude</a>
+<script>
+const start=document.querySelector('#start'),stop=document.querySelector('#stop'),video=document.querySelector('video'),status=document.querySelector('#status');
+let stream,timer,socket,samples=[],begin;
+function cleanup(){clearInterval(timer);stream?.getTracks().forEach(t=>t.stop());video.srcObject=null;start.disabled=false;stop.disabled=true;}
+stop.onclick=()=>{cleanup();socket?.close();samples=[];status.textContent='Stopped; samples discarded.';};
+start.onclick=async()=>{
+ if(!document.querySelector('#consent').checked){status.textContent='Consent is required.';return;}
+ start.disabled=true;stop.disabled=false;samples=[];
+ try{
+ stream=await navigator.mediaDevices.getUserMedia({video:{width:640,height:480},audio:false});video.srcObject=stream;await video.play();
+ const canvas=document.createElement('canvas');canvas.width=32;canvas.height=24;const ctx=canvas.getContext('2d',{willReadFrequently:true});begin=performance.now();
+ timer=setInterval(()=>{const elapsed=(performance.now()-begin)/1000;
+ ctx.drawImage(video,video.videoWidth*.4,video.videoHeight*.25,video.videoWidth*.2,video.videoHeight*.12,0,0,32,24);
+ const pixels=ctx.getImageData(0,0,32,24).data;let r=0,g=0,b=0;for(let i=0;i<pixels.length;i+=4){r+=pixels[i];g+=pixels[i+1];b+=pixels[i+2];}
+ samples.push([elapsed,r/768,g/768,b/768]);status.textContent=`Collecting ${Math.min(30,Math.floor(elapsed))}/30 seconds`;
+ if(elapsed>=30){cleanup();start.disabled=true;stop.disabled=false;status.textContent='Processing…';socket=new WebSocket(`ws://${location.hostname}:8002/ws/pulse`);
+ socket.onopen=()=>{socket.send(JSON.stringify({consent:true,samples}));samples=[];};
+ socket.onmessage=e=>{cleanup();const data=JSON.parse(e.data);status.textContent=data.bpm?`Experimental estimate: ${data.bpm} bpm. ${data.notice}`:(data.reason||data.error||'Unable to estimate.');};
+ socket.onerror=()=>{cleanup();samples=[];status.textContent='Service unavailable. Start the local signal backend on port 8002.';};
+ }
+ },50);
+ }catch(e){cleanup();status.textContent='Camera unavailable or permission declined.';}
+};window.addEventListener('pagehide',()=>{cleanup();socket?.close();samples=[];});
+</script></html>

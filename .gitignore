@@ -21,3 +21,8 @@ uploads/
 *.mp4
 *.zip
 .DS_Store
+
+*.joblib
+ml/tabular/output*/
+backend/__pycache__/
+data/raw/

@@ -1,0 +1,19 @@
+# Local signal service only; run the PHP UI separately on localhost:8000.
+services:
+  signal:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    ports:
+      - "127.0.0.1:8002:8002"
+    environment:
+      LUNGITUDE_ORIGINS: http://localhost:8000,http://127.0.0.1:8000
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 512m
+    cpus: 1
+    pids_limit: 64

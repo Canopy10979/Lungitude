@@ -1,0 +1,110 @@
+{
+  "dataset": "cervical",
+  "target": "recorded biopsy positivity (not future cancer incidence)",
+  "source_sha256": "d86f38fbb1f4c40c22c240127875d7a83a2f96238f7ed5a388e2277cfb79a742",
+  "seed": 42,
+  "split_policy": "identical predictor rows grouped across all folds",
+  "selected_model": "gradient_boosting",
+  "development_cv": {
+    "logistic": {
+      "mean_average_precision": 0.12562520178783246,
+      "std": 0.018065229089754685
+    },
+    "svm": {
+      "mean_average_precision": 0.13206828697989725,
+      "std": 0.057884279851745324
+    },
+    "random_forest": {
+      "mean_average_precision": 0.14263007346259166,
+      "std": 0.04745067065059378
+    },
+    "gradient_boosting": {
+      "mean_average_precision": 0.20699734835284328,
+      "std": 0.1049884915453584
+    }
+  },
+  "rows": 858,
+  "development_rows": 686,
+  "test_rows": 172,
+  "test_positive_count": 11,
+  "test_average_precision": 0.1476247713568756,
+  "test_roc_auc": 0.7425183512140034,
+  "test_report": {
+    "0": {
+      "precision": 0.935672514619883,
+      "recall": 0.9937888198757764,
+      "f1-score": 0.963855421686747,
+      "support": 161.0
+    },
+    "1": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1-score": 0.0,
+      "support": 11.0
+    },
+    "accuracy": 0.9302325581395349,
+    "macro avg": {
+      "precision": 0.4678362573099415,
+      "recall": 0.4968944099378882,
+      "f1-score": 0.4819277108433735,
+      "support": 172.0
+    },
+    "weighted avg": {
+      "precision": 0.8758329933360532,
+      "recall": 0.9302325581395349,
+      "f1-score": 0.9022135051835248,
+      "support": 172.0
+    }
+  },
+  "confusion_matrix": [
+    [
+      160,
+      1
+    ],
+    [
+      11,
+      0
+    ]
+  ],
+  "features": [
+    "Age",
+    "Number of sexual partners",
+    "First sexual intercourse",
+    "Num of pregnancies",
+    "Smokes",
+    "Smokes (years)",
+    "Smokes (packs/year)",
+    "Hormonal Contraceptives",
+    "Hormonal Contraceptives (years)",
+    "IUD",
+    "IUD (years)",
+    "STDs",
+    "STDs (number)",
+    "STDs:condylomatosis",
+    "STDs:cervical condylomatosis",
+    "STDs:vaginal condylomatosis",
+    "STDs:vulvo-perineal condylomatosis",
+    "STDs:syphilis",
+    "STDs:pelvic inflammatory disease",
+    "STDs:genital herpes",
+    "STDs:molluscum contagiosum",
+    "STDs:AIDS",
+    "STDs:HIV",
+    "STDs:Hepatitis B",
+    "STDs:HPV",
+    "STDs: Number of diagnosis",
+    "STDs: Time since first diagnosis",
+    "STDs: Time since last diagnosis"
+  ],
+  "research_only": true,
+  "limitations": [
+    "Internal holdout only; no clinical validation.",
+    "No calibration or individual cancer probability claim.",
+    "Cervical source lacks patient identifiers; repeated-patient leakage cannot be excluded."
+  ],
+  "versions": {
+    "python": "3.12.14",
+    "sklearn": "1.8.0",
+    "pandas": "2.2.3"
+  }
+}

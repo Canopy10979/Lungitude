@@ -1,0 +1,12 @@
+.git
+.env*
+api/secrets.php
+data
+upload
+uploads
+captures
+.venv
+**/__pycache__
+**/*.pt
+**/*.joblib
+**/*.zip

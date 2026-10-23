@@ -309,3 +309,7 @@ Patterns that these winners share: a real personal reason, a check with no needl
 - ICBHI 2017: Rocha et al., Physiological Measurement 2019.
 - EvergreenHealth lung cancer screening: (425) 899-6972. A referral is needed.
 - Congressional App Challenge past winners: congressionalappchallenge.us (25-WA01, 19-WA08, 25-WA08).
+
+## Model evidence and signal research upgrade
+
+Open [Model evidence](evidence.html) to inspect the new tabular evaluations, contact-PPG benchmark and Washington lung cancer context. [Pulse research](live.html) is a local, consent-based camera experiment; it is not a validated patient monitor. See [UPGRADE.md](UPGRADE.md) for exact training/run commands, measured limitations and the staged production plan.

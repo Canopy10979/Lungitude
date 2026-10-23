@@ -11,6 +11,7 @@ Image.MAX_IMAGE_PIXELS = 6_000_000
 app=FastAPI(title='Lungitude research imaging',docs_url=None,redoc_url=None)
 ROOT=Path(__file__).resolve().parent
 MODELS={'mobilenet_v3_small': ROOT/'output_mobile/model.pt','efficientnet_b0':ROOT/'output_efficient/model.pt'}
+MODELS['vit_b_16'] = ROOT/'output_vit/model.pt'
 loaded={}
 
 async def decode(file):
