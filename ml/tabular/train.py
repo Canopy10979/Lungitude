@@ -6,6 +6,7 @@ import platform
 import zipfile
 from pathlib import Path
 import joblib
+from schema import BREAST_FEATURES
 import numpy as np
 import pandas as pd
 import sklearn
@@ -27,9 +28,12 @@ def load(path, dataset):
         if not {'id', 'diagnosis'}.issubset(source):
             raise ValueError('Expected Wisconsin id and diagnosis columns')
         source = source.drop(columns=[c for c in source if c.startswith('Unnamed:') and source[c].isna().all()])
+        source = source.rename(columns=lambda c: c.replace(' ', '_'))
+        if not set(BREAST_FEATURES).issubset(source):
+            raise ValueError('CSV does not match the 30 Wisconsin measurement names')
         if len(source.columns) != 32:
             raise ValueError('Expected id, diagnosis and exactly 30 measurements')
-        df = source[['id', 'diagnosis'] + [c for c in source if c not in {'id','diagnosis'}]].copy()
+        df = source[['id', 'diagnosis'] + BREAST_FEATURES].copy()
         df.columns = range(32)
     else:
         with zipfile.ZipFile(path) as archive:
@@ -40,7 +44,7 @@ def load(path, dataset):
         if df[0].duplicated().any():
             raise ValueError('Duplicate patient identifiers')
         X = df.iloc[:, 2:].copy()
-        X.columns = [f'cell_measurement_{i+1}' for i in range(X.shape[1])]
+        X.columns = BREAST_FEATURES
         y = df[1].map({'B': 0, 'M': 1})
         target = 'malignant sampled breast mass (not questionnaire risk)'
     else:

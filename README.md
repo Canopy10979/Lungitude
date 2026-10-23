@@ -1,3 +1,9 @@
+# Lungitude — skin-photo and breast-cell research
+
+Current interface: [skin camera](index.html) and [breast measurement research](breast.html). See [TRAIN_AND_RUN.md](TRAIN_AND_RUN.md) for Windows setup and model training. The two model tasks use different inputs and never combine their predictions.
+
+---
+
 # Lungitude — skin-lesion capture and research
 
 Lungitude now focuses only on skin spots and iPhone-friendly capture. Start with [SKIN_ONLY.md](SKIN_ONLY.md) for the current mission, run commands, skin training datasets and limitations. Earlier multi-cancer and pulse material below is historical and is not the current app scope.

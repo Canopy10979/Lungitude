@@ -1,3 +1,5 @@
+> Superseded scope: see TRAIN_AND_RUN.md. The app now includes separate skin-photo and breast-cell research paths. Earlier skin-only notes below are historical.
+
 # Lungitude — skin-only mission
 
 Help people worried about a skin spot capture clear close-ups on an iPhone, understand the limits of image research, and prepare for a dermatologist visit. The prototype does not confirm or rule out cancer.
