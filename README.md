@@ -1,3 +1,9 @@
+# Lungitude — skin-lesion capture and research
+
+Lungitude now focuses only on skin spots and iPhone-friendly capture. Start with [SKIN_ONLY.md](SKIN_ONLY.md) for the current mission, run commands, skin training datasets and limitations. Earlier multi-cancer and pulse material below is historical and is not the current app scope.
+
+---
+
 # Start the updated website locally
 
 Extract the ZIP to a permanent folder such as `C:\Users\rishi\Projects\Lungitude`. Do not run it inside the ZIP preview or a temporary extraction directory.

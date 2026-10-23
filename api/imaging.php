@@ -18,7 +18,7 @@ if ($action!=='status') {
  $opts[CURLOPT_POST]=true;$opts[CURLOPT_POSTFIELDS]=$fields;
 }
 curl_setopt_array($ch,$opts);$body=curl_exec($ch);$code=curl_getinfo($ch,CURLINFO_HTTP_CODE);curl_close($ch);
-if($body===false || $code===0) {bw_json(['error'=>'Imaging service is offline. Survey and care search remain available.'],503);exit;}
+if($body===false || $code===0) {bw_json(['error'=>'Skin analysis service is offline. Local capture remains available.'],503);exit;}
 $out=json_decode($body,true);
 if(!is_array($out)){bw_json(['error'=>'Invalid imaging service response'],502);exit;}
 if($code>=400){bw_json(['error'=>$out['detail']??'Image analysis failed'],$code);exit;}

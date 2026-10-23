@@ -1,0 +1,21 @@
+{
+  "uploads": {
+    "Cancer_Data.csv": {
+      "sha256": "1425d9affa78ba8e53afc81d0ef8a19069ee10c4b21fe89b3cf514071b12ee33"
+    },
+    "breast+cancer+wisconsin+diagnostic.zip": {
+      "sha256": "bc154869ef13f753f9e2b5a17e248cfe1ba4b6721db7c4da9f4880e40b05d3af"
+    },
+    "cervical+cancer+risk+factors(1).zip": {
+      "sha256": "d86f38fbb1f4c40c22c240127875d7a83a2f96238f7ed5a388e2277cfb79a742"
+    }
+  },
+  "breast_csv_rows": 569,
+  "breast_zip_rows": 569,
+  "same_breast_records": true,
+  "independent_breast_rows": 569,
+  "cervical_rows": 858,
+  "labeled_skin_images": 0,
+  "skin_training_possible": false,
+  "decision": "Train tabular research baselines separately; do not combine duplicate breast records or connect these models to skin-image scoring."
+}

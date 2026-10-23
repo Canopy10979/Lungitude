@@ -37,7 +37,8 @@ async def features(image:UploadFile=File(...),mask:UploadFile=File(...),consent:
     except ValueError as e:raise HTTPException(422,str(e))
 
 @app.post('/infer')
-async def infer(image:UploadFile=File(...),architecture:str=Form(...),research:str=Form('')):
+async def infer(image:UploadFile=File(...),architecture:str=Form(...),research:str=Form(''),consent:str=Form('')):
+    if consent!='yes':raise HTTPException(422,'Explicit selected-image upload consent required')
     if research!='yes':raise HTTPException(422,'Research acknowledgement required')
     if architecture not in MODELS:raise HTTPException(422,'Unsupported architecture')
     if not MODELS[architecture].is_file():raise HTTPException(503,'Trained checkpoint unavailable. Train this model first.')

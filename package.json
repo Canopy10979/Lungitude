@@ -1,0 +1,6 @@
+{
+  "name": "lungitude-skin-research",
+  "private": true,
+  "scripts": {"test:browser": "node tests/skin-browser.cjs"},
+  "devDependencies": {"playwright": "1.62.1"}
+}

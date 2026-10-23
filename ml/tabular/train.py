@@ -20,10 +20,22 @@ from sklearn.metrics import classification_report, confusion_matrix, average_pre
 
 
 def load(path, dataset):
-    with zipfile.ZipFile(path) as archive:
-        member = 'wdbc.data' if dataset == 'breast' else 'risk_factors_cervical_cancer.csv'
-        with archive.open(member) as stream:
-            df = pd.read_csv(stream, header=None if dataset == 'breast' else 0, na_values='?')
+    if Path(path).suffix.lower() == '.csv':
+        if dataset != 'breast':
+            raise ValueError('CSV adapter currently supports Wisconsin breast diagnostic records only')
+        source = pd.read_csv(path)
+        if not {'id', 'diagnosis'}.issubset(source):
+            raise ValueError('Expected Wisconsin id and diagnosis columns')
+        source = source.drop(columns=[c for c in source if c.startswith('Unnamed:') and source[c].isna().all()])
+        if len(source.columns) != 32:
+            raise ValueError('Expected id, diagnosis and exactly 30 measurements')
+        df = source[['id', 'diagnosis'] + [c for c in source if c not in {'id','diagnosis'}]].copy()
+        df.columns = range(32)
+    else:
+        with zipfile.ZipFile(path) as archive:
+            member = 'wdbc.data' if dataset == 'breast' else 'risk_factors_cervical_cancer.csv'
+            with archive.open(member) as stream:
+                df = pd.read_csv(stream, header=None if dataset == 'breast' else 0, na_values='?')
     if dataset == 'breast':
         if df[0].duplicated().any():
             raise ValueError('Duplicate patient identifiers')
@@ -45,7 +57,7 @@ def load(path, dataset):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--dataset', choices=['breast', 'cervical'], required=True)
-    parser.add_argument('--zip', type=Path, required=True)
+    parser.add_argument('--input', '--zip', dest='zip', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
     X, y, target = load(args.zip, args.dataset)

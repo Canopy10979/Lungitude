@@ -26,3 +26,5 @@ uploads/
 ml/tabular/output*/
 backend/__pycache__/
 data/raw/
+
+node_modules/
