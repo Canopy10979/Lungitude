@@ -70,7 +70,7 @@
             eyebrow: "Your result",
             title: "You do not meet screening guidelines today.",
             body: "Your 6-year risk is " + pct(r.risk) +
-                ". The screening level is 1.51%. Check again each year, or if your health changes."
+                ". This research estimate is not a screening order. Discuss eligibility with a clinician."
         };
     }
 
@@ -88,7 +88,7 @@
             '<div class="mark" style="left:' + meterPos(p) + '%"></div>' +
             "</div>" +
             '<p class="note">About ' + Math.max(1, Math.round(p * 10)) +
-            " in 1,000 people like you get lung cancer in the next 6 years.</p>" +
+            " in 1,000 in the model reference population over six years. This is an unvalidated implementation and may not apply to you, especially outside ages 55–74.</p>" +
             "</div>";
     }
 
@@ -107,7 +107,7 @@
         }
         if (r.medicare.eligible) {
             medicare =
-                '<p class="note">Medicare and most private plans cover this scan at no cost to you.</p>';
+                '<p class="note">Coverage depends on your plan and the full eligibility criteria. Confirm with the clinician and insurer.</p>';
         }
         return '<div class="card">' +
             "<h3>Screening guideline check</h3>" +
@@ -116,7 +116,7 @@
             li(u.pack_years, r.pack_years + " pack-years (must be 20 or more)") +
             li(u.quit_window, quitText) +
             "</ul>" +
-            "<p><b>" + (u.eligible ? "You qualify." : "You do not qualify yet.") + "</b></p>" +
+            "<p><b>" + (u.eligible ? "These entered criteria match; confirm eligibility with a clinician." : "You do not qualify yet.") + "</b></p>" +
             medicare +
             "</div>";
     }
@@ -226,7 +226,7 @@
             vitals +=
                 '<p class="note">Pulse and oxygen show how your lungs and heart work today. They do not show cancer.</p>';
         }
-        return '<div class="card"><h3>Breath (microphone)</h3>' + breath + "</div>" +
+        return '<div class="card"><h3>Experimental observations</h3><p>Numeric flags below are unvalidated research heuristics. They do not establish disease or clinical normality; confirm measurements with a clinician.</p><h3>Breath (microphone)</h3>' + breath + "</div>" +
             '<div class="card"><h3>Pulse and oxygen</h3>' + vitals + "</div>" +
             '<div class="card"><h3>Fingers (camera)</h3>' + hands + "</div>";
     }
@@ -244,7 +244,7 @@
                 " get screened. That ranks " + esc(s.rank) + " of " + esc(s.of) + ". The US rate is " + esc(s.us_rate) +
                 "%.</p>";
         }
-        if (region.smoking !== null && region.smoking !== undefined) {
+        if (region.verified === true && region.year && region.smoking !== null && region.smoking !== undefined) {
             html += "<p>" + esc(region.county) + ": " + esc(region.smoking) + "% of adults smoke";
             if (region.national) {
                 html += " (US " + esc(region.national.smoking) + "%)";
@@ -293,6 +293,11 @@
 
     function walkCard(nearby, origin, input, tier, flags) {
         const places = nearby.places.slice(0, 6);
+        if (nearby.sample) {
+            return '<div class="card wide"><h3>Sample care-search results</h3><p>Fictional examples, not real clinics or phone numbers. Do not use these to seek care.</p><ul>' + places.map(function (place) {
+                return '<li>' + esc(place.name) + ' — sample location</li>';
+            }).join('') + '</ul></div>';
+        }
         if (!places.length) {
             return '<div class="card wide"><h3>Places near you</h3><p>No places found. Call 1-800-4-CANCER (National Cancer Institute) for help.</p></div>';
         }
@@ -367,7 +372,7 @@
                 "former" ? ", quit " + i.years_quit + " years ago" : "")) +
             row("USPSTF 2021 eligible", r.uspstf.eligible ? "Yes" : "No") +
             row("PLCOm2012 6-year risk", r.risk === null ? "Not applicable" : pct(r.risk) +
-                " (screening cutoff 1.51%)") +
+                " (research reference 1.51%)") +
             row("Symptoms reported", r.red_flags.length ? r.red_flags.join(", ") : "None") +
             row("Forced expiratory time (phone mic)", r.breath.fet === null ? "Not done" : r.breath.fet +
                 " s") +
@@ -382,9 +387,6 @@
             row("Schamroth window", r.hands.schamroth_closed ? "Absent (patient report)" :
                 "Present or not done") +
             "</table>" +
-            "<h2>Codes that may help</h2>" +
-            "<p>CPT 71271: low-dose CT for lung cancer screening. HCPCS G0296: counseling visit for lung cancer screening (Medicare). ICD-10 " +
-            smokingCode + ".</p>" +
             "<p>Phone measurements are not validated clinical tests. Please confirm with standard exams.</p>";
     }
 

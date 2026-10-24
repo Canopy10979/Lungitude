@@ -28,7 +28,7 @@
     };
     let data = null;
     let counties = {};
-    let network = null;
+
     let busy = false;
     let screens = [];
     let index = 0;
@@ -97,6 +97,7 @@
                 return card(
                     '<p class="q-eyebrow">Lungitude</p>' +
                     '<h1 class="q-title">Hello, how are you doing today?</h1>' +
+                    '<button class="btn ghost" id="load-demo-person">Load demo person</button>' +
                     '<div class="choices">' + ["Good", "Okay", "Not great"].map(function(m) {
                         return '<button class="choice" data-mood="' + m + '">' + m +
                             "</button>";
@@ -107,6 +108,11 @@
                 );
             },
             bind: function() {
+                root.querySelector("#load-demo-person").addEventListener("click", function () {
+                    Object.assign(state, {name: "Demo person", age: 63, bmi: null, answers: {lung: true}, loc: DEMO, demo: true, countyFips: null});
+                    go(screens.length - 1);
+                    finish();
+                });
                 root.querySelectorAll("[data-mood]").forEach(function(b) {
                     b.addEventListener("click", function() {
                         state.mood = b.dataset.mood;
@@ -516,7 +522,7 @@
         }
         const st = c.stats;
         const items = [];
-        if (st) {
+        if (st && st.verified === true && st.year) {
             if (st.smoking !== null && st.smoking !== undefined) {
                 items.push(st.smoking + "% of adults smoke");
             }
@@ -533,7 +539,7 @@
         if (items.length) {
             html += "<ul>" + items.map(function(t) {
                 return "<li>" + esc(t) + "</li>";
-            }).join("") + '</ul><p class="note">' + esc(st.source || "CDC PLACES") + "</p>";
+            }).join("") + '</ul><p class="note">' + esc(st.source || "CDC PLACES") + " · " + esc(st.year) + "</p>";
         } else {
             html +=
                 '<p class="note">Local prevention statistics are unavailable. This does not mean the county has no cancer cases.</p>';
@@ -568,7 +574,7 @@
             html += "<li><b>" + esc(p.name) + "</b>" + (p.verified ?
                     ' <span class="tag">Listed location</span>' : "") +
                 '<br><span class="note">' + esc(p.address || "") + (p.address ? " · " : "") +
-                Number(p.miles).toFixed(2) + " miles away · " + time + "</span>" +
+                Number(p.miles).toFixed(2) + " miles away · " + esc(time) + "</span>" +
                 ' · <a href="' + dir + '" target="_blank" rel="noopener">Directions</a></li>';
         });
         html += "</ol><h3>Phone #s:</h3><ol class=\"phones\">";
@@ -667,7 +673,7 @@
         if (r.free_screening) {
             const f = r.free_screening;
             html += '<div class="g-card free"><h3>Screening assistance in Washington</h3><p>The <b>' +
-                esc(f.name) + "</b> lists screening assistance for people aged " +
+                esc(f.name) + "</b> offers screening assistance. " +
                 esc(f.ages) + ". " + esc(f.who) + '.</p><p>Contact: ' + esc(f.contact) + ' · <a href="' +
                 esc(f.url) + '" target="_blank" rel="noopener">More information</a></p></div>';
         }
@@ -765,12 +771,11 @@
 
     window.LungitudeSurvey = state;
 
-    Promise.all([getJson("data/wa_cancers.json"), getJson("data/wa_counties.json"), getJson(
-            "data/screening_network.json")])
+    Promise.all([getJson("data/wa_cancers.json"), getJson("data/wa_counties.json")])
         .then(function(values) {
             const d = values[0];
             counties = values[1];
-            network = values[2];
+
             data = d;
             screens = [greeting(), welcome(), nameScreen(), ageScreen(), bmiScreen()];
             d.order.forEach(function(key, i) {

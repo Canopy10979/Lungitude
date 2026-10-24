@@ -145,9 +145,7 @@ if (basename($_SERVER['SCRIPT_FILENAME'] ?? '') === 'survey.php') {
     $county = null;
     $lat = bw_range($raw['lat'] ?? null, -90, 90);
     $lon = bw_range($raw['lon'] ?? null, -180, 180);
-    if (($raw['demo'] ?? false) === true || FORCE_DEMO) {
-        $county = BW_DEMO_COUNTY;
-    } elseif (isset($raw['county_fips'])) {
+    if (isset($raw['county_fips'])) {
         $counties = json_decode(file_get_contents(__DIR__ . '/../data/wa_counties.json'), true);
         $fips = (string)$raw['county_fips'];
         if (!isset($counties[$fips])) {
@@ -155,10 +153,12 @@ if (basename($_SERVER['SCRIPT_FILENAME'] ?? '') === 'survey.php') {
             exit;
         }
         $county = ['fips' => $fips, 'county' => $counties[$fips], 'state_fips' => '53'];
+    } elseif (($raw['demo'] ?? false) === true || FORCE_DEMO) {
+        $county = BW_DEMO_COUNTY;
     } elseif ($lat !== null && $lon !== null) {
         $county = bw_county_lookup($lat, $lon);
     }
-    $stats = $county === null ? null : bw_county_stats($county['fips']);
+    $stats = $county === null || FORCE_DEMO || ($raw['demo'] ?? false) === true ? null : bw_county_stats($county['fips']);
     $rates = $county === null ? null : bw_county_rates($county['fips']);
     $ratesFile = __DIR__ . '/../data/wa_county_rates.json';
     $years = is_readable($ratesFile) ? (json_decode(file_get_contents($ratesFile), true)['years'] ?? []) : [];

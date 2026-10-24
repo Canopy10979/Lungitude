@@ -2,7 +2,7 @@
 
 /*
  * Small key-value cache and rate limiter in SQLite (data/cache.sqlite).
- * Used to avoid paying Google twice for the same search, and to stop
+ * Used for county lookups and statistics, and to stop
  * one visitor from running up the bill. Needs the pdo_sqlite extension.
  */
 const BW_CACHE_FILE = __DIR__ . '/../data/cache.sqlite';
@@ -58,7 +58,8 @@ function bw_cache_set(string $key, $value, int $ttlSeconds): void
 
 /*
  * Returns true if this visitor may make one more paid call in this hour.
- * The IP address is hashed with a secret, so the database never holds it.
+ * The IP address is hashed into a pseudonymous bucket; it is not anonymized.
+ * The salt uses the Google key when set, otherwise a fixed fallback.
  */
 function bw_rate_ok(string $what, int $maxPerHour): bool
 {

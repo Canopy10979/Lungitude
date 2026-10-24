@@ -32,7 +32,7 @@ php -S localhost:8000 router.php
 
 Open http://localhost:8000. Do not open HTML as a local file. Use the router so private code, datasets and databases are not served as static downloads. PHP’s development server is for local demos.
 
-**Demo:** set `FORCE_DEMO` to `true` in `api/config.php` or start with `FORCE_DEMO=1` in the server environment. Choose **Load demo person** in the survey or lung check. The survey demo displays a sample person and location. With no Google key or failed provider access, care search returns clearly labeled fictional examples. No network or Python is needed for the core demo. External lookups remain unavailable offline; use a manual county or demo location.
+**Demo:** set `define('FORCE_DEMO', true);` in place of the environment-based definition in `api/config.php` or start with `FORCE_DEMO=1` in the server environment. Choose **Load demo person** in the survey or lung check. The survey demo displays a sample person and location. With no Google key or failed provider access, care search returns clearly labeled fictional examples. No network or Python is needed for the core demo. External lookups remain unavailable offline; use a manual county or demo location.
 
 **Optional Google key:** copy `api/secrets.example.php` to `api/secrets.php` and set `GOOGLE_KEY`, or set the `GOOGLE_PLACES_KEY` environment variable without creating that file. Never commit the key. Enable Places API (New), and Geocoding API if using ZIP lookup, with billing and appropriate server-key restrictions. Listings are general healthcare places; they are not confirmed screening providers. Call to confirm services, insurance and availability. No key is needed for sample mode.
 
@@ -63,7 +63,7 @@ Screening information is explicitly based on USPSTF final recommendations: lung 
 
 The survey sends age, optional BMI, symptom answers and your selected county or shared coordinates to this PHP server. Your name stays in page memory. The lung check sends health history and numeric observations to the risk endpoint. These endpoints calculate results without writing survey or risk answers to a database.
 
-If you share coordinates, the server may send them to the US Census Geocoder and FCC for county lookup, and to Google Places for nearby healthcare. A ZIP lookup sends the ZIP code to Google Geocoding. County identifiers may be sent to CDC PLACES. Opening external maps or websites shares your request with that provider. Server and hosting logs may record IP addresses and request URLs.
+If you share coordinates, the server may send them to the US Census Geocoder and FCC for county lookup, and to Google Places for nearby healthcare. A ZIP lookup sends the ZIP code to Google Geocoding. County identifiers may be sent to CDC PLACES when live county statistics are explicitly enabled. Opening external maps or websites shares your request with that provider. Server and hosting logs may record IP addresses and request URLs.
 
 data/cache.sqlite stores rounded coordinate-to-county lookups for up to 30 days, county statistics for up to 7 days, and IP-derived rate-limit buckets with expiry timestamps. Expired records can remain on disk until cleanup; no Google Places responses are cached by the app. The service worker caches only public interface files, never API responses or Google data.
 
@@ -86,11 +86,11 @@ Run from the repository root:
 ```sh
 php tests/test_risk.php
 php tests/test_survey.php
-find . -type f -name '*.php' -not -path './.git/*' -exec php -l {} \\;
-find . -type f -name '*.js' -not -path './.git/*' -exec node --check {} \\;
+find . -type f -name '*.php' -not -path './.git/*' -exec php -l {} \;
+find . -type f -name '*.js' -not -path './.git/*' -exec node --check {} \;
 ```
 
-Expected counts and browser verification are recorded after the final demo checks in `docs/validation.md`. Tests check application behavior and calculations, not medical accuracy.
+`test_risk.php`: **14 checks passed**. `test_survey.php`: **70 checks passed**. All **20 PHP files** and **14 JavaScript files** pass syntax checks. Additional verification and browser limitations are recorded in `docs/validation.md`. Tests check application behavior and calculations, not medical accuracy.
 
 ## Credits and licenses
 

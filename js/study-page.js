@@ -1,12 +1,18 @@
 /* study page behavior. */
 
 (function() {
+    function esc(value) {
+        return String(value ?? "").replace(/[&<>"']/g, function (character) {
+            return {"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[character];
+        });
+    }
+
     function el(id) {
         return document.getElementById(id);
     }
 
     function tile(value, label) {
-        return '<div class="tile"><b>' + value + "</b><span>" + label + "</span></div>";
+        return '<div class="tile"><b>' + esc(value) + "</b><span>" + esc(label) + "</span></div>";
     }
 
     function fmt(v, digits) {
@@ -88,8 +94,8 @@
         });
 
         el("hist-table").innerHTML = "<tr><th>Ratio</th><th>People</th></tr>" + bins.map(function(b) {
-            return "<tr><td>" + b.from.toFixed(2) + "–" + b.to.toFixed(2) + "</td><td>" + b
-                .count + "</td></tr>";
+            return "<tr><td>" + b.from.toFixed(2) + "–" + b.to.toFixed(2) + "</td><td>" + esc(b
+                .count) + "</td></tr>";
         }).join("");
     }
 
@@ -116,7 +122,7 @@
             const ages = Object.keys(s.age_bands);
             el("ages").innerHTML = "<tr><th>Age range</th><th>People</th></tr>" + (ages.length ? ages
                 .map(function(k) {
-                    return "<tr><td>" + k + "</td><td>" + s.age_bands[k] + "</td></tr>";
+                    return "<tr><td>" + esc(k) + "</td><td>" + esc(s.age_bands[k]) + "</td></tr>";
                 }).join("") : '<tr><td colspan="2">No data yet</td></tr>');
         })
         .catch(function() {

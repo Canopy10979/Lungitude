@@ -551,5 +551,56 @@
             "year": 2026
         }
     ],
-    "verification_date": "2026-10-24"
+    "verification_date": "2026-10-24",
+    "research_thresholds": {
+        "status": "unverified as clinical cutoffs; experimental engineering heuristics only",
+        "year": 2026,
+        "values": {
+            "pdr_ratio": 1.0,
+            "pdr_repeat_spread": 0.05,
+            "fet_seconds": 6,
+            "hr_low": 50,
+            "hr_high": 100,
+            "spo2_low": 92,
+            "spo2_reference": 95,
+            "pdr_min": 0.6,
+            "pdr_max": 1.6,
+            "fet_seconds_high": 9,
+            "hoarse_weeks": 3,
+            "cough_weeks": 8,
+            "nail_red_share": 0.37
+        },
+        "source": "api/lib.php; no clinical validation supplied",
+        "presentation": "Research observations must be confirmed by a clinician"
+    },
+    "risk_model": {
+        "year": 2013,
+        "source": "https://doi.org/10.1056/NEJMoa1211776",
+        "reference_age_range": [
+            55,
+            74
+        ],
+        "comparison_threshold_percent": 1.51,
+        "threshold_year": 2014,
+        "threshold_source": "https://doi.org/10.1371/journal.pmed.1001761",
+        "status": "published model; local implementation not clinically validated"
+    },
+    "bmi_reference": {
+        "year": 2024,
+        "source": "https://www.cdc.gov/bmi/adult-calculator/bmi-categories.html",
+        "underweight_below": 18.5,
+        "overweight_from": 25,
+        "obesity_from": 30,
+        "adult_age_from": 20,
+        "status": "BMI screening categories, not cancer predictions"
+    },
+    "medicare_reference": {
+        "year": 2022,
+        "source": "https://www.cms.gov/medicare-coverage-database/view/ncd.aspx?ncdid=364",
+        "age_range": [
+            50,
+            77
+        ],
+        "status": "Selected criteria only; coverage requires complete CMS conditions"
+    }
 }

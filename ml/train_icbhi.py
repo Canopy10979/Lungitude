@@ -157,6 +157,8 @@ def main():
     else:
         print("Using the official ICBHI split")
     tr, te = split
+    if set(groups[tr]) & set(groups[te]):
+        raise ValueError("Patient overlap between training and test sets; refusing export")
 
     mean = X[tr].mean(axis=0)
     std = X[tr].std(axis=0) + 1e-6

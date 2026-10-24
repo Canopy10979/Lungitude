@@ -63,4 +63,25 @@ $noCounty = bw_survey_county($col, null, null, null, []);
 check('Survey: no location, no county', $noCounty['county'] === null);
 @unlink($tmp);
 
+/* Boundary and no-network county paths required by the main demo. */
+foreach ([0, 120] as $age) {
+    $result = bw_survey(['age' => $age, 'answers' => []], $data);
+    check('Age boundary ' . $age . ': accepted with no BMI', $result['age'] === $age && $result['bmi'] === null);
+}
+$missingBmi = bw_survey(['age' => 52, 'answers' => ['lung' => true]], $data);
+check('Missing BMI: warning-sign result still available', $missingBmi['bmi'] === null && count($missingBmi['matched']) === 1);
+foreach ([0, 1, 2, 3, 7] as $count) {
+    $answers = array_fill_keys(array_slice($data['order'], 0, $count), true);
+    $result = bw_survey(['age' => 52, 'answers' => $answers], $data);
+    check('Answer count ' . $count . ': correct routing', count($result['matched']) === $count && $result['many'] === ($count >= 3));
+}
+$counties = json_decode(file_get_contents(__DIR__ . '/../data/wa_counties.json'), true);
+check('Exactly 39 Washington county choices', count($counties) === 39);
+foreach ($counties as $fips => $name) {
+    $result = bw_survey_county($none, ['fips' => (string)$fips, 'county' => $name], null, null, []);
+    check('Manual county ' . $fips . ': no location or statistics required', $result['county']['in_wa'] && $result['county']['name'] === $name && $result['county']['stats'] === null);
+}
+check('Pancreas ACS 2026 estimate corrected', $data['groups']['liver_pancreas']['cancers'][0]['new_2026'] === 1560);
+check('Unverified incidence comparisons suppressed', $data['wa_all_sites']['rate_wa'] === null && $data['groups']['lung']['cancers'][0]['rate_us'] === null);
+
 exit($fail > 0 ? 1 : 0);

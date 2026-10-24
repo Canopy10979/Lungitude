@@ -1,9 +1,9 @@
 <?php
 
 /* Lungitude imaging: PHP endpoint or shared server helper. */
-require __DIR__.'/lib.php';
+require __DIR__ . '/lib.php';
 $action = $_GET['action'] ?? 'status';
-if (!in_array($action, ['status','features','infer','compare'], true)) {
+if (!in_array($action, ['status', 'features', 'infer', 'compare'], true)) {
     bw_json(['error' => 'Unsupported imaging action'], 422);
     exit;
 }
@@ -11,15 +11,15 @@ if (!extension_loaded('curl')) {
     bw_json(['error' => 'Imaging connection unavailable'], 503);
     exit;
 }
-$ch = curl_init('http://127.0.0.1:8010/'.$action);
-$opts = [CURLOPT_RETURNTRANSFER => true,CURLOPT_CONNECTTIMEOUT => 2,CURLOPT_TIMEOUT => 30];
+$ch = curl_init('http://127.0.0.1:8010/' . $action);
+$opts = [CURLOPT_RETURNTRANSFER => true, CURLOPT_CONNECTTIMEOUT => 2, CURLOPT_TIMEOUT => 30];
 if ($action !== 'status') {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         bw_json(['error' => 'POST required'], 405);
         exit;
     }
     $fields = [];
-    foreach ($action === 'compare' ? ['previous','current','mask_before','mask_after'] : ['image','mask'] as $name) {
+    foreach ($action === 'compare' ? ['previous', 'current', 'mask_before', 'mask_after'] : ['image', 'mask'] as $name) {
         if ($name === 'mask' && $action !== 'features') {
             continue;
         }
@@ -28,9 +28,9 @@ if ($action !== 'status') {
             bw_json(['error' => 'Provide an image up to 8 MB'], 422);
             exit;
         }
-        $fields[$name] = new CURLFile($f['tmp_name'], mime_content_type($f['tmp_name']), $name.'.png');
+        $fields[$name] = new CURLFile($f['tmp_name'], mime_content_type($f['tmp_name']), $name . '.png');
     }
-    foreach (['consent','research','architecture','date_before','date_after','scale_before','scale_after'] as $name) {
+    foreach (['consent', 'research', 'architecture', 'date_before', 'date_after', 'scale_before', 'scale_after'] as $name) {
         $fields[$name] = (string)($_POST[$name] ?? '');
     }
     $opts[CURLOPT_POST] = true;

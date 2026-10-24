@@ -1,108 +1,191 @@
 <!DOCTYPE html>
-
 <html lang="en">
-<head>
-<meta charset="utf-8"/>
-<meta content="width=device-width,initial-scale=1" name="viewport"/>
-<title>Lungitude · Recording research</title>
-<link href="css/app.css" rel="stylesheet"/>
-<link href="css/website.css" rel="stylesheet"/>
-<link href="css/record-page.css" rel="stylesheet"/>
-</head>
-<body>
-<header class="topbar">
-<a class="brand" href="index.html">Lungitude</a>
-<span>Recording research</span>
-</header>
-<main>
-<p class="q-eyebrow">SKIN LESION CAPTURE</p>
-<h1>A steady view. A clearer recording.</h1>
-<p>Position up to three boxes over the areas you want to view closely. Use even lighting and keep the camera steady. This page checks capture conditions; it does not detect cancer or verify that a lesion is present.</p>
-<section class="panel">
-<label>
-<input id="consent" type="checkbox"/> I consent to record myself, or have permission from the person being recorded, for a local research capture.</label>
-<p>Camera frames stay in this browser. No audio is recorded and nothing is uploaded. A downloaded clip remains on your device until you delete it.</p>
-</section>
-<div class="preview">
-<video aria-label="Camera preview. Arrow keys move the selected region." autoplay="" id="camera" muted="" playsinline="" tabindex="0">
-</video>
-<div class="region-layer" hidden="" id="region-layer">
-<div class="roi record-static-0" data-region="0">
-<span>Region 1</span>
-</div>
-<div class="roi record-static-1" data-region="1">
-<span>Region 2</span>
-</div>
-<div class="roi record-static-2" data-region="2">
-<span>Region 3</span>
-</div>
-</div>
-<div class="camera-badge" hidden="" id="camera-badge">LIVE PREVIEW</div>
-</div>
-<div class="zoom-controls">
-<label>Selected region <select id="region-select">
-<option value="0">Region 1 · cyan</option>
-<option value="1">Region 2 · yellow</option>
-<option value="2">Region 3 · pink</option>
-</select>
-</label>
-<label>Box size <input aria-label="Selected region size" id="region-size" max="45" min="10" type="range" value="25"/>
-</label>
-<button class="btn ghost" id="reset-regions">Reset regions</button>
-</div>
-<p class="note">Click or tap the camera preview to position the selected box. Use arrow keys on the preview to move it. These are manually selected, fixed regions, not automatic person tracking or cancer detections.</p>
-<div class="zoom-grid" hidden="" id="zoom-grid">
-<figure class="zoom-card">
-<canvas aria-label="Live close-up of selected region one" height="240" id="zoom-0" width="240">
-</canvas>
-<figcaption>Region 1 · live close-up</figcaption>
-</figure>
-<figure class="zoom-card">
-<canvas aria-label="Live close-up of selected region two" height="240" id="zoom-1" width="240">
-</canvas>
-<figcaption>Region 2 · live close-up</figcaption>
-</figure>
-<figure class="zoom-card">
-<canvas aria-label="Live close-up of selected region three" height="240" id="zoom-2" width="240">
-</canvas>
-<figcaption>Region 3 · live close-up</figcaption>
-</figure>
-</div>
-<div class="recording-actions">
-<button class="btn" disabled="" id="finish-recording">Stop recording</button>
-<span id="record-clock" role="timer">00:00 / 00:10</span>
-</div>
-<p class="status" id="status" role="status">Camera is off.</p>
-<div class="metrics">
-<span id="light">Lighting: —</span>
-<span id="motion">Motion: —</span>
-<span id="samples">Frames checked: 0</span>
-</div>
-<div class="controls">
-<label>Camera <select id="facing">
-<option value="environment">Rear camera</option>
-<option value="user">Front camera</option>
-</select>
-</label>
-<button class="btn" disabled="" id="snapshot">Take photo</button>
-<a class="btn" hidden="" id="photo-download">Download photo</a>
-<button class="btn primary" id="start">Enable camera</button>
-<button class="btn" disabled="" id="record">Record 10 seconds</button>
-<button class="btn ghost" disabled="" id="stop">Stop camera</button>
-<a class="btn" hidden="" id="download">Download recording</a>
-</div>
-<section class="panel" hidden="" id="capture-preview">
-<h2>Your capture</h2>
-<img alt="Your captured photo" class="record-static-3" hidden="" id="photo-preview"/>
-<video controls="" hidden="" id="clip-preview" playsinline="">
-</video>
-<p>
-<a class="btn" href="lab.html">Open skin imaging lab</a> to outline a captured photo for descriptive measurements.</p>
-</section>
-<p class="note">Zoom panels magnify the selected pixels; they do not add image detail. Overlays and zoom panels appear live during recording; the downloaded clip contains the original camera video. Lighting and motion thresholds are experimental heuristics, not validated quality or disease measures. Different skin tones, backgrounds and cameras affect them.</p>
-<p class="note">CNN status: no trained model connected. The live boxes work without a model. Train and evaluate the image model separately before running the offline video experiment.</p>
-</main>
-<script src="js/record.js">
-</script>
-</body>
+    <head>
+        <meta charset="utf-8"/>
+        <meta content="width=device-width,initial-scale=1" name="viewport"/>
+        <title>
+            Lungitude · Recording research
+        </title>
+        <link href="css/app.css" rel="stylesheet"/>
+        <link href="css/website.css" rel="stylesheet"/>
+        <link href="css/record-page.css" rel="stylesheet"/>
+    </head>
+    <body>
+        <header class="topbar">
+            <a class="brand" href="index.html">
+                Lungitude
+            </a>
+            <span>
+                Recording research
+            </span>
+        </header>
+        <main>
+            <p class="q-eyebrow">
+                SKIN LESION CAPTURE
+            </p>
+            <h1>
+                A steady view. A clearer recording.
+            </h1>
+            <p>
+                Position up to three boxes over the areas you want to view closely. Use even lighting and keep the camera steady. This page checks capture conditions; it does not detect cancer or verify that a lesion is present.
+            </p>
+            <section class="panel">
+                <label>
+                    <input id="consent" type="checkbox"/>
+                    I consent to record myself, or have permission from the person being recorded, for a local research capture.
+                </label>
+                <p>
+                    Camera frames stay in this browser. No audio is recorded and nothing is uploaded. A downloaded clip remains on your device until you delete it.
+                </p>
+            </section>
+            <div class="preview">
+                <video aria-label="Camera preview. Arrow keys move the selected region." autoplay="" id="camera" muted="" playsinline="" tabindex="0">
+                </video>
+                <div class="region-layer" hidden="" id="region-layer">
+                    <div class="roi record-static-0" data-region="0">
+                        <span>
+                            Region 1
+                        </span>
+                    </div>
+                    <div class="roi record-static-1" data-region="1">
+                        <span>
+                            Region 2
+                        </span>
+                    </div>
+                    <div class="roi record-static-2" data-region="2">
+                        <span>
+                            Region 3
+                        </span>
+                    </div>
+                </div>
+                <div class="camera-badge" hidden="" id="camera-badge">
+                    LIVE PREVIEW
+                </div>
+            </div>
+            <div class="zoom-controls">
+                <label>
+                    Selected region
+                    <select id="region-select">
+                        <option value="0">
+                            Region 1 · cyan
+                        </option>
+                        <option value="1">
+                            Region 2 · yellow
+                        </option>
+                        <option value="2">
+                            Region 3 · pink
+                        </option>
+                    </select>
+                </label>
+                <label>
+                    Box size
+                    <input aria-label="Selected region size" id="region-size" max="45" min="10" type="range" value="25"/>
+                </label>
+                <button class="btn ghost" id="reset-regions">
+                    Reset regions
+                </button>
+            </div>
+            <p class="note">
+                Click or tap the camera preview to position the selected box. Use arrow keys on the preview to move it. These are manually selected, fixed regions, not automatic person tracking or cancer detections.
+            </p>
+            <div class="zoom-grid" hidden="" id="zoom-grid">
+                <figure class="zoom-card">
+                    <canvas aria-label="Live close-up of selected region one" height="240" id="zoom-0" width="240">
+                    </canvas>
+                    <figcaption>
+                        Region 1 · live close-up
+                    </figcaption>
+                </figure>
+                <figure class="zoom-card">
+                    <canvas aria-label="Live close-up of selected region two" height="240" id="zoom-1" width="240">
+                    </canvas>
+                    <figcaption>
+                        Region 2 · live close-up
+                    </figcaption>
+                </figure>
+                <figure class="zoom-card">
+                    <canvas aria-label="Live close-up of selected region three" height="240" id="zoom-2" width="240">
+                    </canvas>
+                    <figcaption>
+                        Region 3 · live close-up
+                    </figcaption>
+                </figure>
+            </div>
+            <div class="recording-actions">
+                <button class="btn" disabled="" id="finish-recording">
+                    Stop recording
+                </button>
+                <span id="record-clock" role="timer">
+                    00:00 / 00:10
+                </span>
+            </div>
+            <p class="status" id="status" role="status">
+                Camera is off.
+            </p>
+            <div class="metrics">
+                <span id="light">
+                    Lighting: —
+                </span>
+                <span id="motion">
+                    Motion: —
+                </span>
+                <span id="samples">
+                    Frames checked: 0
+                </span>
+            </div>
+            <div class="controls">
+                <label>
+                    Camera
+                    <select id="facing">
+                        <option value="environment">
+                            Rear camera
+                        </option>
+                        <option value="user">
+                            Front camera
+                        </option>
+                    </select>
+                </label>
+                <button class="btn" disabled="" id="snapshot">
+                    Take photo
+                </button>
+                <a class="btn" hidden="" id="photo-download">
+                    Download photo
+                </a>
+                <button class="btn primary" id="start">
+                    Enable camera
+                </button>
+                <button class="btn" disabled="" id="record">
+                    Record 10 seconds
+                </button>
+                <button class="btn ghost" disabled="" id="stop">
+                    Stop camera
+                </button>
+                <a class="btn" hidden="" id="download">
+                    Download recording
+                </a>
+            </div>
+            <section class="panel" hidden="" id="capture-preview">
+                <h2>
+                    Your capture
+                </h2>
+                <img alt="Your captured photo" class="record-static-3" hidden="" id="photo-preview"/>
+                <video controls="" hidden="" id="clip-preview" playsinline="">
+                </video>
+                <p>
+                    <a class="btn" href="lab.html">
+                        Open skin imaging lab
+                    </a>
+                    to outline a captured photo for descriptive measurements.
+                </p>
+            </section>
+            <p class="note">
+                Zoom panels magnify the selected pixels; they do not add image detail. Overlays and zoom panels appear live during recording; the downloaded clip contains the original camera video. Lighting and motion thresholds are experimental heuristics, not validated quality or disease measures. Different skin tones, backgrounds and cameras affect them.
+            </p>
+            <p class="note">
+                CNN status: no trained model connected. The live boxes work without a model. Train and evaluate the image model separately before running the offline video experiment.
+            </p>
+        </main>
+        <script src="js/record.js">
+        </script>
+    </body>
 </html>

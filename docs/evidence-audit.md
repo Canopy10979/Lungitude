@@ -12,3 +12,8 @@ Original numerical values are preserved in `data/wa_cancers.json` under `unverif
 - Removed trained-AI assertions and student coaching by replacing the README; no trained lung-sound or skin model is supplied.
 - Removed blanket privacy promises; shared results disclosure describes server processing, external providers, cache and study storage.
 - PLCOm2012 and 1.51% are research context, not a diagnosis or an independent order to screen. No local clinical validation claimed.
+
+- Optional county prevention percentages are suppressed unless a verified year is attached; current imports lack that provenance. Live CDC lookup is opt-in (`ALLOW_LIVE_COUNTY_STATS=1`), keeping manual county results usable without network.
+- Removed definite clinic claims (“Can do the scan” / “Can order the scan”) and blanket no-cost insurance statements: the directory does not verify service availability or coverage.
+- Removed billing-code suggestions from the doctor note to keep it focused on patient-reported observations.
+- Experimental PDR, pulse, exhale-time and color thresholds are catalogued as unverified clinical cutoffs in `data/wa_cancers.json`; they are engineering heuristics, not accuracy claims.

@@ -215,30 +215,28 @@ function bw_place_query(string $type): string
 
 function bw_demo_places(float $lat, float $lon, string $type): array
 {
-    $rows = json_decode(file_get_contents(__DIR__ . '/../data/demo_places.json'), true);
-    if ($type !== 'lung') {
-        $names = [
-            'primary' => 'Primary Care',
-            'breast' => 'Breast Imaging Center',
-            'colorectal' => 'Digestive Health Clinic',
-            'urinary' => 'Urology Clinic',
-            'skin' => 'Dermatology Clinic',
-            'blood' => 'Hematology and Oncology',
-            'liver_pancreas' => 'Liver and Digestive Clinic',
+    $names = [
+        'primary' => 'Primary Care',
+        'lung' => 'Lung Care',
+        'breast' => 'Breast Imaging Center',
+        'colorectal' => 'Digestive Health Clinic',
+        'urinary' => 'Urology Clinic',
+        'skin' => 'Dermatology Clinic',
+        'blood' => 'Hematology and Oncology',
+        'liver_pancreas' => 'Liver and Digestive Clinic',
+    ];
+    $label = $names[$type] ?? 'Clinic';
+    $offsets = [[450, 300], [-700, 520], [980, -640], [-1500, -1100], [2300, 1700]];
+    $rows = [];
+    foreach ($offsets as $i => $o) {
+        $rows[] = [
+            'name' => 'Sample ' . $label . ' ' . chr(65 + $i),
+            'kind' => 'ct',
+            'address' => 'Sample data',
+            'phone' => '(555) 010-01' . str_pad((string)($i + 10), 2, '0', STR_PAD_LEFT),
+            'dn' => $o[0],
+            'de' => $o[1],
         ];
-        $label = $names[$type] ?? 'Clinic';
-        $offsets = [[450, 300], [-700, 520], [980, -640], [-1500, -1100], [2300, 1700]];
-        $rows = [];
-        foreach ($offsets as $i => $o) {
-            $rows[] = [
-                'name' => 'Sample ' . $label . ' ' . chr(65 + $i),
-                'kind' => 'ct',
-                'address' => 'Sample data',
-                'phone' => '(555) 010-01' . str_pad((string)($i + 10), 2, '0', STR_PAD_LEFT),
-                'dn' => $o[0],
-                'de' => $o[1],
-            ];
-        }
     }
     $places = [];
     foreach ($rows as $r) {
@@ -308,4 +306,4 @@ foreach ($places as &$pl) {
 unset($pl);
 bw_json(['sample' => $sample, 'source' => $sample ? 'sample' : 'google', 'origin' => ['lat' => $lat, 'lon' => $lon],
     'radius_miles' => 10, 'radius_meters' => SEARCH_RADIUS_METERS, 'distance_basis' => 'straight_line',
-    'type' => 'healthcare', 'places' => $places]);
+    'walk_limit_min' => WALK_MIN_LIMIT, 'type' => 'healthcare', 'places' => $places]);

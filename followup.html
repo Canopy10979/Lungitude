@@ -3,30 +3,48 @@
     <head>
         <meta charset="utf-8"/>
         <meta content="width=device-width,initial-scale=1" name="viewport"/>
-        <title>Lungitude · Dated follow-up</title>
+        <title>
+            Lungitude · Dated follow-up
+        </title>
         <link href="css/app.css" rel="stylesheet"/>
         <link href="css/website.css" rel="stylesheet"/>
         <link href="css/followup-page.css" rel="stylesheet"/>
     </head>
     <body>
         <header class="topbar">
-            <a class="brand" href="index.html">Lungitude</a>
-            <a href="lab.html">Back to imaging</a>
+            <a class="brand" href="index.html">
+                Lungitude
+            </a>
+            <a href="lab.html">
+                Back to imaging
+            </a>
         </header>
         <main>
-            <p class="eyebrow">TEMPORAL EVOLUTION · RESEARCH ONLY</p>
-            <h1>Compare separate, dated visits.</h1>
-            <p>Use photos of the same lesion taken on different dates, with a ruler in each image. Outline the lesion in both images. This compares measurements; it does not establish cancer or true biological growth.</p>
+            <p class="eyebrow">
+                TEMPORAL EVOLUTION · RESEARCH ONLY
+            </p>
+            <h1>
+                Compare separate, dated visits.
+            </h1>
+            <p>
+                Use photos of the same lesion taken on different dates, with a ruler in each image. Outline the lesion in both images. This compares measurements; it does not establish cancer or true biological growth.
+            </p>
             <label>
-                <input id="consent" type="checkbox"/> I have permission and consent to send these images to the imaging backend.</label>
-                <div class="panels" id="panels">
-                </div>
-                <button class="btn primary" disabled="" id="compare">Compare measurements</button>
-                <div id="output" role="status">
-                </div>
-                <p class="note">The app attempts ORB feature matching and RANSAC registration. If alignment fails, it reports that explicitly. Even a successful fit can align background features and needs visual checking. Uploaded images are not intentionally retained.</p>
-            </main>
-            <script src="js/followup.js">
-            </script>
-        </body>
-    </html>
+                <input id="consent" type="checkbox"/>
+                I have permission and consent to send these images to the imaging backend.
+            </label>
+            <div class="panels" id="panels">
+            </div>
+            <button class="btn primary" disabled="" id="compare">
+                Compare measurements
+            </button>
+            <div id="output" role="status">
+            </div>
+            <p class="note">
+                The app attempts ORB feature matching and RANSAC registration. If alignment fails, it reports that explicitly. Even a successful fit can align background features and needs visual checking. Uploaded images are not intentionally retained.
+            </p>
+        </main>
+        <script src="js/followup.js">
+        </script>
+    </body>
+</html>

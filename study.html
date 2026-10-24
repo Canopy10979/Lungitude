@@ -1,45 +1,62 @@
 <!DOCTYPE html>
-
 <html lang="en">
-<head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>Lungitude Study</title>
-<link href="css/app.css" rel="stylesheet"/>
-<link href="css/study-page.css" rel="stylesheet"/>
-</head>
-<body>
-<header class="topbar">
-<a class="brand" href="index.html">Lungitude</a>
-</header>
-<main>
-<p class="eyebrow">Accuracy study</p>
-<h1>Can a phone measure a finger the same way twice?</h1>
-<p class="lede" id="summary">Loading…</p>
-<div class="tiles" id="tiles">
-</div>
-<div class="card">
-<h3>Finger depth ratio, one bar per 0.05</h3>
-<p class="note">Each person counts once (the median of their 3 trials). Above 1.0 is a clubbing sign.</p>
-<div class="hist" id="hist">
-</div>
-<details>
-<summary>Show as a table</summary>
-<table class="data" id="hist-table">
-</table>
-</details>
-</div>
-<div class="card study-static-0">
-<h3>Who took part</h3>
-<table class="data" id="ages">
-</table>
-</div>
-<p class="fineprint">
+    <head>
+        <meta charset="utf-8"/>
+        <meta content="width=device-width, initial-scale=1" name="viewport"/>
+        <title>
+            Lungitude Study
+        </title>
+        <link href="css/app.css" rel="stylesheet"/>
+        <link href="css/study-page.css" rel="stylesheet"/>
+    </head>
+    <body>
+        <header class="topbar">
+            <a class="brand" href="index.html">
+                Lungitude
+            </a>
+        </header>
+        <main>
+            <p class="eyebrow">
+                Accuracy study
+            </p>
+            <h1>
+                Can a phone measure a finger the same way twice?
+            </h1>
+            <p class="lede" id="summary">
+                Loading…
+            </p>
+            <div class="tiles" id="tiles">
+            </div>
+            <div class="card">
+                <h3>
+                    Finger depth ratio, one bar per 0.05
+                </h3>
+                <p class="note">
+                    Each person counts once (the median of their 3 trials). Above 1.0 is a clubbing sign.
+                </p>
+                <div class="hist" id="hist">
+                </div>
+                <details>
+                    <summary>
+                        Show as a table
+                    </summary>
+                    <table class="data" id="hist-table">
+                    </table>
+                </details>
+            </div>
+            <div class="card study-static-0">
+                <h3>
+                    Who took part
+                </h3>
+                <table class="data" id="ages">
+                </table>
+            </div>
+            <p class="fineprint">
                 Only numbers are stored: age range, smoking status, finger ratios, exhale time, window test answer, heart rate and blood oxygen.
                 No names, photos, audio, locations or exact ages.
             </p>
-</main>
-<script src="js/study-page.js">
-</script>
-</body>
+        </main>
+        <script src="js/study-page.js">
+        </script>
+    </body>
 </html>

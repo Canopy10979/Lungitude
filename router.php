@@ -30,4 +30,35 @@ header(
     . "frame-ancestors 'none'; base-uri 'self'"
 );
 
-return false;
+/* Serve public static assets here so PHP's static handler cannot drop security headers. */
+$relativePath = $path === '/' ? '/index.html' : $path;
+$filename = realpath(__DIR__ . $relativePath);
+if ($filename !== false && str_starts_with($filename, __DIR__ . DIRECTORY_SEPARATOR) && is_file($filename)) {
+    $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+    if ($extension === 'php') {
+        return false;
+    }
+    $types = [
+        'html' => 'text/html; charset=utf-8',
+        'js' => 'text/javascript; charset=utf-8',
+        'css' => 'text/css; charset=utf-8',
+        'json' => 'application/json',
+        'webmanifest' => 'application/manifest+json',
+        'svg' => 'image/svg+xml',
+        'png' => 'image/png',
+        'jpg' => 'image/jpeg',
+        'jpeg' => 'image/jpeg',
+    ];
+    if (isset($types[$extension])) {
+        header('Content-Type: ' . $types[$extension]);
+        if ($extension === 'html') {
+            header('Cache-Control: no-cache');
+        }
+        readfile($filename);
+        return true;
+    }
+}
+http_response_code(404);
+header('Content-Type: text/plain; charset=utf-8');
+echo "Not found\n";
+return true;

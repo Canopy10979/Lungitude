@@ -390,6 +390,9 @@ function bw_json($data, int $status = 200): void
 
 function bw_http_get(string $url, int $timeout = 8): ?string
 {
+    if (!extension_loaded('curl')) {
+        return null;
+    }
     $ch = curl_init($url);
     curl_setopt_array($ch, [
         CURLOPT_RETURNTRANSFER => true,

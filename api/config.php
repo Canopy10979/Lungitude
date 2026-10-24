@@ -8,8 +8,8 @@
  */
 const ORS_KEY = '';
 
-/* Set to true to force sample data (use this if venue Wi-Fi fails). */
-const FORCE_DEMO = false;
+/* Set FORCE_DEMO=1 in the environment, or replace this definition with true for a demo. */
+define('FORCE_DEMO', filter_var(getenv('FORCE_DEMO') ?: 'false', FILTER_VALIDATE_BOOL));
 
 $bwSecrets = __DIR__ . '/secrets.php';
 if (is_readable($bwSecrets)) {
