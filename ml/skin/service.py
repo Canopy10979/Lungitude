@@ -1,5 +1,6 @@
 """Local research sidecar. Bind only to 127.0.0.1; PHP forwards approved requests."""
 import io
+import logging
 from threading import Lock
 from starlette.concurrency import run_in_threadpool
 import os
@@ -56,7 +57,11 @@ async def infer(image:UploadFile=File(...),architecture:str=Form(...),research:s
 def predict_still(img, architecture):
     # Keep model loading/inference off the async event loop; serialize CPU work.
     with inference_lock:
-        return _predict_still(img, architecture)
+        try:return _predict_still(img, architecture)
+        except HTTPException:raise
+        except Exception as error:
+            logging.getLogger(__name__).error("Skin model %s failed: %s",architecture,type(error).__name__)
+            raise HTTPException(503,"Skin model could not be loaded or evaluated")
 
 
 def _predict_still(img, architecture):

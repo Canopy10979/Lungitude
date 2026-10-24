@@ -27,6 +27,20 @@ class SkinServiceTests(unittest.TestCase):
     def test_unsupported_architecture(self):
         r=self.client.post('/infer',data={'architecture':'fake','consent':'yes','research':'yes'},files={'image':('test.png',self.png,'image/png')})
         self.assertEqual(r.status_code,422)
+    def test_corrupt_model_does_not_cancel_other_models(self):
+        from unittest.mock import AsyncMock
+        from fastapi import HTTPException
+        with tempfile.TemporaryDirectory() as d:
+            checkpoint=Path(d)/'model.pt';checkpoint.touch()
+            with patch.object(service,'MODELS',{'mobilenet_v3_small':checkpoint,'resnet18':checkpoint}),patch.object(service,'infer',new_callable=AsyncMock) as run:
+                run.side_effect=[HTTPException(503,'bad weights'),{'scores':{'BCC':.7,'NEV':.3}}]
+                r=self.client.post('/infer_all',data={'research':'yes','consent':'yes'},files={'image':('test.png',self.png,'image/png')})
+                self.assertEqual(r.status_code,200);self.assertFalse(r.json()['models']['mobilenet_v3_small']['available']);self.assertTrue(r.json()['models']['resnet18']['available'])
+    def test_model_runtime_failure_is_safe_service_error(self):
+        from fastapi import HTTPException
+        with patch.object(service,'_predict_still',side_effect=RuntimeError('private/checkpoint/path')):
+            with self.assertRaises(HTTPException) as error:service.predict_still(Image.new('RGB',(200,200)),'mobilenet_v3_small')
+            self.assertEqual(error.exception.status_code,503);self.assertNotIn('private',error.exception.detail)
     def test_live_requires_consent(self):
         r=self.client.post('/infer_live',data={'research':'yes'},files={'image':('test.png',self.png,'image/png')})
         self.assertEqual(r.status_code,422)

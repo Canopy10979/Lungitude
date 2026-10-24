@@ -105,3 +105,17 @@ See MODEL_TRAINING.md for split policies, saved evidence and staged Windows comm
 While recording, local lighting/motion/sharpness heuristics give capture guidance; they are not trained skin detectors. Experimental live AI preview is a separate unchecked opt-in and also requires image-analysis consent. It uploads at most two still frames, at least 2.5 seconds apart, with one request in flight. It uses the first installed compatible lightweight checkpoint in MobileNetV3, ResNet-18, EfficientNet-B0 order. A slow response may not arrive within an eight-second capture; no real-time latency guarantee is made. Stop, consent withdrawal and backgrounding clear the preview and ignore stale responses. Server-side computation already started may still finish after an HTTP abort.
 
 After recording, the selected still is evaluated by all installed compatible skin checkpoints. This is not a trained temporal video classifier; no labeled videos were supplied. No scores are invented if training is blocked. The full recording remains local. Test or train recordings from the same person must never cross evaluation partitions if a future temporal model is added.
+
+## Photo assessment diagnostic
+
+A captured photo does not imply a skin checkpoint exists. For an assessment failure, run from the same project folder while both servers are running:
+
+```powershell
+.\.venv\Scripts\python.exe tools/check_imaging.py --probe
+```
+
+The operator-only diagnostic checks Python /status, the actual PHP website status proxy, local PAD checkpoint schema/state-dict loading, and (only when a compatible local checkpoint exists) one synthetic still through the full website inference route. It prints no real images, session tokens or personal data. A synthetic inference verifies transport/wiring only; it does not validate medical accuracy. Share its PASS/FAIL/BLOCKED/NEXT lines.
+
+The imaging proxy now supports multipart image uploads through either PHP cURL or PHP HTTP streams (allow_url_fopen). It no longer requires the fileinfo extension to forward an image; Python decodes and validates the actual bytes. When cURL is missing and allow_url_fopen is disabled too, the proxy still cannot connect; enable one transport in the PHP installation. PHP upload_max_filesize/post_max_size must accommodate the selected JPEG; the application accepts up to 8 MB per file and may impose lower browser capture limits.
+
+A corrupt/incompatible model now fails independently rather than cancelling results from other working models. Errors remain generic in the visitor interface; operator details stay in terminal logs/diagnostics. Missing trained weights still require labeled skin data and a real training run; changing the error text cannot supply an assessment. The frontend now explicitly says no AI result was produced if no skin checkpoint is installed, rather than suggesting that simply retrying later will train one.
