@@ -12,8 +12,11 @@ class OAuthTests(unittest.TestCase):
  def begin(self):return self.client.get('/account/oauth/config').json()
  def complete(self,c,**fields):return self.client.post('/account/oauth',data={'provider':'google','credential':'test-token','state':c['state'],**fields})
  def test_health(self):self.assertEqual(self.client.get('/account/health').json()['ready'],True)
- def test_provider_absent_hidden(self):
-  with patch.dict(os.environ,{'GOOGLE_WEB_CLIENT_ID':''}):self.assertFalse(self.begin()['providers']['google']['enabled'])
+ def test_blank_legacy_env_uses_project_client(self):
+  with patch.dict(os.environ,{'GOOGLE_WEB_CLIENT_ID':'','LUNGITUDE_GOOGLE_SIGNIN':'1'}):
+   config=self.begin();self.assertTrue(config['providers']['google']['enabled']);self.assertEqual(config['providers']['google']['client_id'],accounts.DEFAULT_GOOGLE_WEB_CLIENT_ID);self.assertIn('state',config)
+ def test_provider_explicitly_disabled_hidden(self):
+  with patch.dict(os.environ,{'GOOGLE_WEB_CLIENT_ID':'','LUNGITUDE_GOOGLE_SIGNIN':'0'}):self.assertFalse(self.begin()['providers']['google']['enabled'])
  def test_state_rejected_before_verification(self):
   c=self.begin()
   with patch.object(accounts,'verify_identity') as verify:

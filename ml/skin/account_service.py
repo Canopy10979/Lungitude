@@ -152,9 +152,12 @@ def health():
  with connect() as db:db.execute('SELECT 1')
  return {'ready':True,'password_signin':True,'providers_configured':{key:value['enabled'] for key,value in provider_config().items()}}
 
+# Public OAuth audience identifier, not a client secret. Environment can override it.
+DEFAULT_GOOGLE_WEB_CLIENT_ID='88220152196-ue6q7abumts1jhb9jkf43rqlkd4veegm.apps.googleusercontent.com'
 OAUTH_COOKIE='lungitude_oauth'
 def provider_config():
- google=os.getenv('GOOGLE_WEB_CLIENT_ID','').strip()
+ google=os.getenv('GOOGLE_WEB_CLIENT_ID','').strip() or DEFAULT_GOOGLE_WEB_CLIENT_ID
+ if os.getenv('LUNGITUDE_GOOGLE_SIGNIN','1')=='0':google=''
  apple=os.getenv('APPLE_SERVICES_ID','').strip();redirect=os.getenv('APPLE_REDIRECT_URI','').strip()
  from urllib.parse import urlparse
  parsed=urlparse(redirect)

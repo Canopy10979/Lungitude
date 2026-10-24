@@ -43,7 +43,7 @@ The server verifies Apple's signed ID token against Apple's keys, checks issuer/
 
 Existing email/password accounts are **not automatically linked by matching email**. This prevents silently attaching an external identity to another account. Use the original sign-in method for an existing account. Explicit authenticated provider-linking is not yet implemented. New provider accounts use verified email and provider-subject identity records. Password sign-in is rejected cleanly for provider-only accounts.
 
-An identity attempt expires after 10 minutes and is consumed once. Refresh the page before retrying an expired or failed provider attempt. Provider buttons are only displayed when configured; missing credentials never produce a simulated sign-in. Google/Apple setup requires the app owner's public client identifiers and provider-console domain registration; these were not supplied, so actual provider sign-in could not be activated or verified here.
+An identity attempt expires after 10 minutes and is consumed once. Refresh the page before retrying an expired or failed provider attempt. Provider buttons are only displayed when configured; missing credentials never produce a simulated sign-in. Google setup now has the app owner's public client identifier (see below); provider-console registration and actual Google authorization remain unverified here. Apple configuration has not been supplied.
 
 Source documentation:
 - https://developers.google.com/identity/gsi/web/guides/display-button
@@ -65,3 +65,13 @@ With both website and Python service running, execute this from the project fold
 ```
 
 This creates a temporary diagnostic account, checks the PHP proxy, registration, session cookies, logout and password login, then deletes the temporary account. It never changes existing accounts or prints passwords/tokens. Keep localhost consistent across browser and commands; localhost and 127.0.0.1 have different cookies. Secure cookies require HTTPS; use LUNGITUDE_SECURE_COOKIES=0 for HTTP localhost. Share only the PASS/FAIL lines. A successful diagnostic does not verify an existing account's credentials or actual Google/Apple authorization.
+
+## Project Google client configured
+
+The app owner supplied this public Web client ID, now used as the default OAuth audience:
+
+```text
+88220152196-ue6q7abumts1jhb9jkf43rqlkd4veegm.apps.googleusercontent.com
+```
+
+A nonempty GOOGLE_WEB_CLIENT_ID environment value overrides it. A blank or absent value uses the project default, so an older blank .env does not hide the button. Set LUNGITUDE_GOOGLE_SIGNIN=0 to disable Google explicitly. Apple still requires its own configuration. The Google Cloud Console must authorize the browser origin (http://localhost:8000 or http://127.0.0.1:8000 locally). The current popup/callback flow requires no redirect URI or Google client secret. Push/pull and restarting the service activate this configuration; an actual Google account authorization has not been tested here.
