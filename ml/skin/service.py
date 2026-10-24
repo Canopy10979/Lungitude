@@ -1,5 +1,7 @@
 """Local research sidecar. Bind only to 127.0.0.1; PHP forwards approved requests."""
 import io
+import hashlib
+import logging
 import logging
 from threading import Lock
 from starlette.concurrency import run_in_threadpool
@@ -7,7 +9,7 @@ import os
 from pathlib import Path
 import numpy as np
 from PIL import Image, UnidentifiedImageError
-from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+from fastapi import FastAPI, File, Form, HTTPException, UploadFile, Request
 from features import describe
 
 Image.MAX_IMAGE_PIXELS = 6_000_000
@@ -16,6 +18,8 @@ from breast_service import router as breast_router
 app.include_router(breast_router)
 from account_service import router as account_router
 app.include_router(account_router)
+from platform_service import router as platform_router, record_completed_scan
+app.include_router(platform_router)
 ROOT=Path(__file__).resolve().parent
 from registry import ARCHITECTURES
 MODELS={name:ROOT/spec['output']/'model.pt' for name,spec in ARCHITECTURES.items()}
@@ -88,7 +92,7 @@ async def compare_route(previous:UploadFile=File(...),current:UploadFile=File(..
     except ValueError as e:raise HTTPException(422,str(e))
 
 @app.post('/infer_all')
-async def infer_all(image:UploadFile=File(...),research:str=Form(''),consent:str=Form('')):
+async def infer_all(request:Request,image:UploadFile=File(...),research:str=Form(''),consent:str=Form('')):
     if consent!='yes' or research!='yes':raise HTTPException(422,'Image analysis consent required')
     results={}
     for architecture in MODELS:
@@ -102,7 +106,14 @@ async def infer_all(image:UploadFile=File(...),research:str=Form(''),consent:str
             if error.status_code in {413,422}:raise
             results[architecture]={'available':False,'probabilities':None}
     if not any(r['available'] for r in results.values()):raise HTTPException(503,'No skin assessment available')
-    return {'research_only':True,'models':results,'notice':'Uncalibrated image-category probability estimates. Not a validated personal probability of cancer. Models may share training data; agreement is not independent clinical evidence.'}
+    activity=None
+    try:
+        await image.seek(0)
+        raw=await image.read(8_000_001)
+        activity=record_completed_scan(request,hashlib.sha256(raw).hexdigest())
+    except Exception:
+        logging.getLogger(__name__).warning('Activity could not be recorded; analysis remains available')
+    return {'research_only':True,'models':results,'activity':activity,'notice':'Uncalibrated image-category probability estimates. Not a validated personal probability of cancer. Models may share training data; agreement is not independent clinical evidence.'}
 
 
 @app.post('/infer_live')

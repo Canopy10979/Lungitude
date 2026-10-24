@@ -17,10 +17,13 @@ if ($method==='POST') {
  }
  foreach(['measurements','consent','research','architecture','date_before','date_after','scale_before','scale_after'] as $name) $fields[$name]=(string)($_POST[$name]??'');
 }
+$cookieHeader='';
+if(isset($_COOKIE['lungitude_session'])&&preg_match('/^[A-Za-z0-9_-]{30,100}$/',$_COOKIE['lungitude_session']))$cookieHeader='lungitude_session='.$_COOKIE['lungitude_session'];
 $body=false;$code=0;
 if(extension_loaded('curl')){
  $ch=curl_init($url);
  $opts=[CURLOPT_RETURNTRANSFER=>true,CURLOPT_CONNECTTIMEOUT=>2,CURLOPT_TIMEOUT=>90];
+ if($cookieHeader)$opts[CURLOPT_COOKIE]=$cookieHeader;
  if($method==='POST'){
   foreach($uploads as $name=>$path)$fields[$name]=new CURLFile($path,'application/octet-stream',$name.'.png');
   $opts[CURLOPT_POST]=true;$opts[CURLOPT_POSTFIELDS]=$fields;
@@ -40,6 +43,7 @@ if(extension_loaded('curl')){
   $payload.="--$boundary--\r\n";
   $headers="Content-Type: multipart/form-data; boundary=$boundary\r\n";
  }
+ if($cookieHeader)$headers.='Cookie: '.$cookieHeader."\r\n";
  $context=stream_context_create(['http'=>['method'=>$method,'header'=>$headers,'content'=>$payload,'timeout'=>90,'ignore_errors'=>true,'follow_location'=>0]]);
  $body=@file_get_contents($url,false,$context);
  foreach($http_response_header??[] as $line)if(preg_match('#^HTTP/\S+ (\d{3})#',$line,$matches))$code=(int)$matches[1];

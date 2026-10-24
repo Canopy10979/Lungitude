@@ -223,6 +223,9 @@
 
     async function run() {
         window.dispatchEvent(new CustomEvent('lungitude-pulse-start',{detail:{mode:'finger'}}));
+        const continuous=$('pulse-continuous').checked;
+        $('pulse-continuous').disabled=true;
+        let lastResult=-Infinity;
         const attempt = ++generation;
         clearMonitor('Requesting camera permission…');lastLiveEstimate=-Infinity;
         btn.disabled = true;
@@ -237,11 +240,11 @@
             if(attempt !== generation)return;
             clearMonitor('Camera unavailable · no result');
             out.textContent = "The camera is blocked. Allow it, or skip this step.";
-            btn.disabled = false;
+            btn.disabled = false;$('pulse-continuous').disabled=false;
             return;
         }
         if (attempt !== generation) {stream.getTracks().forEach(t => t.stop());return;}
-        activeCancel = () => {stream.getTracks().forEach(t => t.stop());video.pause();video.srcObject=null;btn.disabled=false;};
+        activeCancel = () => {stream.getTracks().forEach(t => t.stop());video.pause();video.srcObject=null;btn.disabled=false;$('pulse-continuous').disabled=false;};
         const track = stream.getVideoTracks()[0];
         let torch = false;
         try {
@@ -267,7 +270,7 @@
                 t.stop();
             });
             video.pause();video.srcObject=null;activeCancel=null;
-            btn.disabled = false;
+            btn.disabled = false;$('pulse-continuous').disabled=false;
             btn.textContent = "Measure again";
             if (message) {
                 out.textContent = message;
@@ -290,10 +293,10 @@
                 out.textContent = torch
                     ? "Cover the camera and the flash fully with your fingertip."
                     : "Cover the camera with your fingertip, and hold the phone near a bright light.";
-                if (offFor > 1.5 && samples.length > 0) {
+                if ((continuous || offFor > 1.5) && samples.length > 0) {
                     samples.length = 0;
                 }
-                if (elapsed > SECONDS + 20) {
+                if ((!continuous && elapsed > SECONDS + 20) || offFor > 20) {
                     stop("We could not see a fingertip. Try again in a brighter place.");
                     return;
                 }
@@ -303,13 +306,14 @@
             offFor = 0;
             setText('pulse-contact-state', 'Fingertip-like image detected (heuristic)');
             samples.push({ t: now, v: rgb[0] });
+            if(continuous)while(samples.length>1&&now-samples[0].t>SECONDS+SETTLE+1)samples.shift();
             const have = samples.length ? now - samples[0].t : 0;
             out.textContent = have < SETTLE
                 ? "Hold still… the camera is adjusting."
-                : "Hold still… " + Math.max(0, Math.ceil(SECONDS - have)) + " s";
+                : continuous ? (have<SECONDS+SETTLE?"Live monitoring warm-up · "+Math.max(0,Math.ceil(SECONDS+SETTLE-have))+" s":"Live monitoring · rolling 25-second estimate") : "Hold still… " + Math.max(0, Math.ceil(SECONDS - have)) + " s";
 
             $('pulse-progress').value=Math.min(SECONDS,have);
-            setText('pulse-stage',have<SETTLE?'Settling · hold still':'Recording · light variation, not an ECG');
+            setText('pulse-stage',have<SETTLE?'Settling · hold still':continuous?'Live monitoring · rolling optical trace':'Recording · light variation, not an ECG');
             if(reducedMotion)$('finger-contact-glow').setAttribute('opacity','.25');
             if (samples.length > RATE * 2) {
                 const live = bandpass(resample(samples.slice(-RATE * 8)));
@@ -321,12 +325,14 @@
                 }
             }
 
-            if (have >= SECONDS) {
+            if (have >= SECONDS+(continuous?SETTLE:0) && (!continuous || now-lastResult>=1)) {
+                lastResult=now;
                 const usable = samples.filter(function (s) {
-                    return s.t - samples[0].t >= SETTLE;
+                    return continuous ? now-s.t<=SECONDS : s.t - samples[0].t >= SETTLE;
                 });
                 const res = BW.pulseAnalyse(resample(usable), RATE);
                 if (res === null || res.quality < 0.3) {
+                    if(continuous){BW.measures.pulse=null;$('pulse-summary').hidden=true;$('pulse-live-bpm').textContent='—';out.textContent='Live signal is not reliable enough for a pulse estimate. Adjust contact or stop and retry.';requestAnimationFrame(tick);return;}
                     stop("The pulse signal was not clear. Press more lightly, keep still, and try again.");
                     return;
                 }
@@ -341,6 +347,7 @@
                 $('pulse-live-bpm').textContent=String(Math.round(res.bpm));
                 $('pulse-final-bpm').textContent=Math.round(res.bpm)+' beats per minute · experimental';
                 $('pulse-final-quality').textContent=(res.quality>=.5?'More consistent':'Less consistent')+' periodicity · heuristic only';
+                if(continuous){out.textContent='Live experimental pulse estimate: '+Math.round(res.bpm)+' bpm · rolling 25-second window, not a diagnosis.';setText('pulse-stage','Live monitoring · stop when finished');requestAnimationFrame(tick);return;}
                 stop("Experimental pulse estimate: " + Math.round(res.bpm) + " beats per minute (signal " + quality +
                     "). Not clinically validated; this does not assess cancer, oxygen saturation or heart rhythm disorders.", true);
                 return;
@@ -350,10 +357,11 @@
         requestAnimationFrame(tick);
     }
 
-    function cancel(){clearMonitor('Stopped · no result');BW.measures.pulse=null;generation++;if(activeCancel){activeCancel();activeCancel=null;}btn.disabled=false;out.textContent='Measurement stopped. No result produced.';}
+    function cancel(){clearMonitor('Stopped · no result');BW.measures.pulse=null;generation++;if(activeCancel){activeCancel();activeCancel=null;}btn.disabled=false;$('pulse-continuous').disabled=false;out.textContent='Measurement stopped. No result produced.';}
     window.addEventListener('lungitude-pulse-start',e=>{if(e.detail?.mode!=='finger'&&(activeCancel||btn.disabled))cancel();});
     document.getElementById('pulse-stop').addEventListener('click',cancel);
     document.addEventListener('visibilitychange',()=>{if(document.hidden&&activeCancel)cancel();});
     window.addEventListener('pagehide',cancel);
+    document.getElementById('manual-camera-live').addEventListener('click',()=>{if(btn.disabled)return;$('pulse-continuous').checked=true;btn.scrollIntoView?.({behavior:reducedMotion?'auto':'smooth',block:'center'});btn.click();});
     btn.addEventListener("click", run);
 })();

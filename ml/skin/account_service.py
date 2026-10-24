@@ -143,6 +143,8 @@ def logout(request:Request,response:Response,csrf:str=Form(...)):
 def delete(request:Request,response:Response,csrf:str=Form(...)):
  user=session(request,csrf)
  with connect() as db:
+  for table in ['activity_scans','activity_profiles']:
+   if db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?",(table,)).fetchone():db.execute('DELETE FROM '+table+' WHERE user_id=?',(user['user_id'],))
   db.execute('DELETE FROM sessions WHERE user_id=?',(user['user_id'],));db.execute('DELETE FROM identities WHERE user_id=?',(user['user_id'],));db.execute('DELETE FROM users WHERE id=?',(user['user_id'],))
  response.delete_cookie(COOKIE,path='/');return {'deleted':True}
 
