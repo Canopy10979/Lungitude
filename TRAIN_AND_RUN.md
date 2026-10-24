@@ -60,3 +60,9 @@ Live iPhone capture requires HTTPS hosting with the same-origin API proxy. Your 
 ## Verified in the shared execution environment
 
 The breast training run was executed against the uploaded CSV, and endpoint tests exercise its saved model with a dataset record. This verifies model loading/schema/API wiring, not independent clinical performance. No training was run on the user's Windows machine. Skin training remains blocked on labeled images. Browser/real-iPhone testing remains outstanding.
+
+## Capture button fixes
+
+Photo capture waits for JPEG encoding to finish, replaces prior captures, and reports an error if no image can be saved. Recording finalization awaits pending frame encodes and selects the best-ranked retained frame. A visible explanation next to Analyze tells you which consent/capture prerequisite is missing. Once a selected frame and both consents exist, Analyze can recheck the backend and report an absent skin checkpoint or offline service without uploading the image. Refresh model status detects newly installed checkpoints and can select an available architecture.
+
+Verification: the real front-end script passes mocked DOM/media state tests for snapshot completion, recording completion, consent gating, unavailable models with no image upload, and revocation during encoding. Browser tests now also exercise Take a photo; actual iPhone hardware verification remains outstanding.
