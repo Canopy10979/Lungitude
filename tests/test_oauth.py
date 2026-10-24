@@ -29,6 +29,37 @@ class OAuthTests(unittest.TestCase):
   self.client.post('/account/register',data={'email':'person@example.org','password':'unique-password-123'})
   c=self.begin()
   with patch.object(accounts,'verify_identity',return_value={'sub':'provider-id','email':'person@example.org','email_verified':True}):self.assertEqual(self.complete(c).status_code,409)
+ def test_explicit_authenticated_link_preserves_existing_account(self):
+  registration=self.client.post('/account/register',data={'email':'person@example.org','password':'unique-password-123'}).json()
+  import json
+  with accounts.connect() as db:db.execute('UPDATE users SET profile=? WHERE email=?',(json.dumps({'age':45}),'person@example.org'))
+  c=self.begin()
+  claims={'sub':'provider-id','email':'person@example.org','email_verified':True}
+  with patch.object(accounts,'verify_identity',return_value=claims):
+   r=self.complete(c,link='yes',csrf=registration['csrf']);self.assertEqual(r.status_code,200);self.assertEqual(r.json()['profile'],{'age':45})
+   self.client.post('/account/logout',data={'csrf':r.json()['csrf']})
+   r=self.complete(self.begin());self.assertEqual(r.status_code,200);self.assertEqual(r.json()['profile'],{'age':45})
+  with accounts.connect() as db:self.assertEqual(db.execute('SELECT COUNT(*) FROM users').fetchone()[0],1)
+ def test_link_requires_session_and_csrf(self):
+  c=self.begin()
+  with patch.object(accounts,'verify_identity') as verify:
+   self.assertEqual(self.complete(c,link='yes',csrf='fake').status_code,401);verify.assert_not_called()
+  self.client.post('/account/register',data={'email':'person@example.org','password':'unique-password-123'})
+  with patch.object(accounts,'verify_identity') as verify:
+   self.assertEqual(self.complete(self.begin(),link='yes',csrf='fake').status_code,403);verify.assert_not_called()
+ def test_link_rejects_different_google_email(self):
+  registration=self.client.post('/account/register',data={'email':'person@example.org','password':'unique-password-123'}).json()
+  with patch.object(accounts,'verify_identity',return_value={'sub':'other-sub','email':'other@example.org','email_verified':True}):
+   self.assertEqual(self.complete(self.begin(),link='yes',csrf=registration['csrf']).status_code,409)
+  with accounts.connect() as db:self.assertEqual(db.execute('SELECT COUNT(*) FROM identities').fetchone()[0],0)
+ def test_link_cannot_reassign_another_users_identity(self):
+  registration=self.client.post('/account/register',data={'email':'person@example.org','password':'unique-password-123'}).json()
+  with accounts.connect() as db:
+   other=db.execute('INSERT INTO users(email,password) VALUES (?,NULL)',('other@example.org',)).lastrowid
+   db.execute('INSERT INTO identities VALUES (?,?,?)',('google','already-owned-sub',other))
+  with patch.object(accounts,'verify_identity',return_value={'sub':'already-owned-sub','email':'person@example.org','email_verified':True}):
+   self.assertEqual(self.complete(self.begin(),link='yes',csrf=registration['csrf']).status_code,409)
+  with accounts.connect() as db:self.assertEqual(db.execute('SELECT user_id FROM identities').fetchone()[0],other)
  def test_failed_signature_denies_login(self):
   c=self.begin()
   with patch.object(accounts,'verify_identity',side_effect=ValueError('invalid JWT')):self.assertEqual(self.complete(c).status_code,401)

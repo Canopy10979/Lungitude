@@ -11,7 +11,7 @@ $endpoint=['oauth_config'=>'oauth/config'][$action]??$action;
 $url='http://127.0.0.1:8010/account/'.$endpoint;
 $method=in_array($action,['me','health','oauth_config'],true)?'GET':'POST';
 $fields=[];
-foreach(['email','password','profile','csrf','provider','credential','state'] as $name)if(isset($_POST[$name]))$fields[$name]=(string)$_POST[$name];
+foreach(['email','password','profile','csrf','provider','credential','state','link'] as $name)if(isset($_POST[$name]))$fields[$name]=(string)$_POST[$name];
 $payload=http_build_query($fields);
 $cookies=[];
 foreach(['lungitude_session','lungitude_oauth'] as $cookie)if(isset($_COOKIE[$cookie])&&preg_match('/^[A-Za-z0-9_-]{30,100}$/',$_COOKIE[$cookie]))$cookies[]=$cookie.'='.$_COOKIE[$cookie];
@@ -33,5 +33,5 @@ if(extension_loaded('curl')){
 if($body===false||!$code){error_log('[Lungitude account] action='.$action.' transport_failed');account_error('This step is temporarily unavailable. Please try again shortly.',503);}
 $out=json_decode($body,true);
 if(!is_array($out))account_error('We could not complete this step. Please try again.',502);
-if($code>=400){$messages=[401=>($action==='login'?'That email and password do not match. New to Lungitude? Choose Create account.':($action==='oauth'?'We could not verify this sign-in. Please try again.':'Your session ended. Please sign in to continue.')),403=>'Please sign in again to continue.',409=>'Unable to create this account. Try signing in.',422=>'Please review the required fields and try again.',429=>'Too many attempts. Please wait before trying again.'];account_error($messages[$code]??'This step is temporarily unavailable. Please try again later.',$code);}
+if($code>=400){$messages=[401=>($action==='login'?'That email and password do not match. New to Lungitude? Choose Create account.':($action==='oauth'?'We could not verify this sign-in. Please try again.':'Your session ended. Please sign in to continue.')),403=>'Please sign in again to continue.',409=>($action==='oauth'?((($_POST['link']??'')==='yes')?'Choose the Google account with the same email as your Lungitude account.':'This email already has a Lungitude account. Sign in using your original method, then choose Link Google sign-in in your profile.'):'An account already uses this email. Choose Sign in and use your original Lungitude password.'),422=>'Please review the required fields and try again.',429=>'Too many attempts. Please wait before trying again.'];account_error($messages[$code]??'This step is temporarily unavailable. Please try again later.',$code);}
 echo json_encode($out);

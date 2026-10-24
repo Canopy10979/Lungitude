@@ -191,7 +191,8 @@ def verify_identity(provider,credential,audience,nonce):
  return claims
 
 @router.post('/oauth')
-def oauth(request:Request,response:Response,provider:str=Form(...),credential:str=Form(...),state:str=Form(...)):
+def oauth(request:Request,response:Response,provider:str=Form(...),credential:str=Form(...),state:str=Form(...),link:str=Form(''),csrf:str=Form('')):
+ owner=session(request,csrf) if link=='yes' else None
  config=provider_config().get(provider)
  if not config or not config['enabled']:raise HTTPException(503,'Sign-in could not be completed')
  if len(credential)>20000:raise HTTPException(422,'Invalid credential')
@@ -206,7 +207,17 @@ def oauth(request:Request,response:Response,provider:str=Form(...),credential:st
  except Exception:raise HTTPException(401,'Identity could not be verified')
  with connect() as db:
   row=db.execute('SELECT users.* FROM identities JOIN users ON users.id=identities.user_id WHERE provider=? AND subject=?',(provider,claims['sub'])).fetchone()
-  if row is None:
+  if owner is not None:
+   email=str(claims.get('email','')).lower().strip()
+   if claims.get('email_verified') not in (True,'true') or email!=owner['email']:
+    raise HTTPException(409,'Choose the verified provider account matching your signed-in email')
+   if row is not None and row['id']!=owner['user_id']:
+    raise HTTPException(409,'This identity belongs to another account')
+   if row is None:
+    try:db.execute('INSERT INTO identities VALUES (?,?,?)',(provider,claims['sub'],owner['user_id']))
+    except sqlite3.IntegrityError:raise HTTPException(409,'Identity link changed; restart sign-in')
+   uid=owner['user_id'];saved_profile=json.loads(owner['profile']) if owner['profile'] else None
+  elif row is None:
    email=str(claims.get('email','')).lower().strip()
    verified=claims.get('email_verified') in (True,'true')
    if not verified or not re.fullmatch(r'[^\s@]+@[^\s@]+\.[^\s@]+',email):raise HTTPException(401,'A verified email is required')

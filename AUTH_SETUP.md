@@ -41,7 +41,7 @@ The server verifies Apple's signed ID token against Apple's keys, checks issuer/
 
 ## Identity and lifecycle limits
 
-Existing email/password accounts are **not automatically linked by matching email**. This prevents silently attaching an external identity to another account. Use the original sign-in method for an existing account. Explicit authenticated provider-linking is not yet implemented. New provider accounts use verified email and provider-subject identity records. Password sign-in is rejected cleanly for provider-only accounts.
+Existing email/password accounts are **not automatically linked by matching email**. This prevents silently attaching an external identity to another account. Use the original sign-in method for an existing account. The profile now offers explicit Google linking: first sign in using the original method, choose Link Google sign-in, then verify the Google account with the same email. Linking requires the existing session and CSRF token, a fresh verified provider attempt, and a matching verified email; identities owned by another user are never reassigned. New provider accounts use verified email and provider-subject identity records. Password sign-in is rejected cleanly for provider-only accounts.
 
 An identity attempt expires after 10 minutes and is consumed once. Refresh the page before retrying an expired or failed provider attempt. Provider buttons are only displayed when configured; missing credentials never produce a simulated sign-in. Google setup now has the app owner's public client identifier (see below); provider-console registration and actual Google authorization remain unverified here. Apple configuration has not been supplied.
 
@@ -88,3 +88,7 @@ Invoke-RestMethod http://127.0.0.1:8010/account/health | ConvertTo-Json -Depth 4
 The proxy must return enabled=True and the project client ID. Do not share the whole OAuth config response: it contains a short-lived state and nonce. If Python reports readiness but the proxy/config fails, check that PHP and Python both serve this updated worktree. Restart the existing service after updates rather than launching a second process on the same port.
 
 The page now reveals Google's container before rendering its official button and offers Retry sign-in options if the SDK/config fails. Google and Apple SDK failures are isolated from one another. If config is enabled but the button still fails, allow https://accounts.google.com/gsi/client in browser/network blockers and check the Console for the exact error; do not paste tokens. Google Console authorized origins must match the website origin.
+
+## Existing-account conflict after Google sign-in
+
+The former generic “Unable to create this account. Try signing in.” message also covered Google conflicts with an existing password account. The proxy now explains the existing-account case. Use the Lungitude password (not the Google password) to sign in first. In the profile choose Link Google sign-in, then click Google's official button and choose the same email. Existing profile data is retained. After linking, sign out and refresh/retry Google sign-in to verify the next login. If the original password is unknown, this flow does not bypass it; password recovery is still not implemented. Do not delete the database or auto-link solely by email to resolve a conflict.
