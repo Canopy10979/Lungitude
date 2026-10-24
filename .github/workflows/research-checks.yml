@@ -24,6 +24,7 @@ jobs:
       - run: node tests/skin-state.cjs
       - run: node tests/account-state.cjs
       - run: node tests/account-providers.cjs
+      - run: node tests/care-state.cjs
       - run: npm run test:browser
 
   php-imaging:

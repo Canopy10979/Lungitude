@@ -2,20 +2,20 @@
 require __DIR__.'/lib.php';
 header('Cache-Control: no-store');
 $action = $_GET['action'] ?? 'status';
-if (!in_array($action,['status','features','infer','infer_all','infer_live','compare','breast_status','breast_infer'],true)) {bw_json(['error'=>'Unsupported imaging action'],422);exit;}
-$endpoint=['breast_status'=>'breast/status','breast_infer'=>'breast/infer'][$action]??$action;
+if (!in_array($action,['status','features','infer','infer_all','infer_live','compare','breast_status','breast_infer','care_search'],true)) {bw_json(['error'=>'Unsupported imaging action'],422);exit;}
+$endpoint=['breast_status'=>'breast/status','breast_infer'=>'breast/infer','care_search'=>'care/search'][$action]??$action;
 $url='http://127.0.0.1:8010/'.$endpoint;
 $method=in_array($action,['status','breast_status'],true)?'GET':'POST';
 $fields=[];$uploads=[];
 if ($method==='POST') {
  if ($_SERVER['REQUEST_METHOD']!=='POST') {bw_json(['error'=>'POST required'],405);exit;}
- foreach ($action==='breast_infer'?[]:($action==='compare'?['previous','current','mask_before','mask_after']:['image','mask']) as $name) {
+ foreach (in_array($action,['breast_infer','care_search'],true)?[]:($action==='compare'?['previous','current','mask_before','mask_after']:['image','mask']) as $name) {
   if ($name==='mask' && $action!=='features') continue;
   $f=$_FILES[$name]??null;
   if (!$f || $f['error']!==UPLOAD_ERR_OK || $f['size']>8000000 || !is_uploaded_file($f['tmp_name'])) {bw_json(['error'=>'Provide an image up to 8 MB'],422);exit;}
   $uploads[$name]=$f['tmp_name'];
  }
- foreach(['measurements','consent','research','architecture','date_before','date_after','scale_before','scale_after'] as $name) $fields[$name]=(string)($_POST[$name]??'');
+ foreach(['measurements','consent','research','architecture','date_before','date_after','scale_before','scale_after','latitude','longitude'] as $name) $fields[$name]=(string)($_POST[$name]??'');
 }
 $body=false;$code=0;
 if(extension_loaded('curl')){
