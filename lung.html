@@ -30,8 +30,8 @@
         <p class="eyebrow">Washington · Lung screening guide</p>
         <h1>Understand lung screening.<br>Discuss your next step with a clinician.</h1>
         <p class="lede">
-            Caught early, 65% of people with lung cancer live 5 years or more. Caught late, 10% do.
-            A low-dose CT scan finds it early, but in Washington only 15.8% of the people who qualify get one.
+            The American Lung Association’s 2025 Washington report lists 15.8% lung-screening uptake among eligible people (rank 37 of 51), compared with 18.2% nationally.
+            <a href="https://www.lung.org/media/press-releases/fy26-solc-washington">Source: ALA 2025</a>.
         </p>
         <ul class="intro-list">
             <li><b>Your answers</b> go into PLCOm2012, a published risk model used by doctors.</li>
@@ -44,8 +44,7 @@
             <button class="btn ghost" id="load-demo">Load demo person</button>
         </div>
         <p class="fineprint">
-            Lungitude is a screening guide, not a diagnosis. Audio and photos stay on your device.
-            Only numbers (like "7.2 seconds") go to the server.
+            Lungitude is a screening guide, not a diagnosis. The lung check sends health history and numeric observations to the server. Read “What data goes where” on your results.
         </p>
     </section>
 
@@ -165,7 +164,7 @@
             <p>
                 Press the bottom of your phone (the microphone) flat on your chest, just below the collarbone.
                 Breathe slowly and deeply through your open mouth for 15 seconds.
-                The AI listens for crackles and wheezes. It does not detect cancer.
+                No trained lung-sound model is supplied. This optional panel only operates if an evaluated research model is installed.
             </p>
             <button class="btn small" id="lung-ai-start">Record 15 seconds</button>
             <p class="live" id="lung-ai-result"></p>
@@ -264,13 +263,14 @@
 
     <!-- 7. Results -->
     <section class="step" id="step-results">
-        <div id="results"></div>
+        <div id="results" aria-live="polite"></div>
     </section>
 </main>
 
 <!-- Printable doctor note -->
 <article id="doctor-note" aria-hidden="true"></article>
 
+<script src="js/privacy.js"></script>
 <script src="js/app.js"></script>
 <script src="js/breath.js"></script>
 <script src="js/hands.js"></script>

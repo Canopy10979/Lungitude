@@ -26,19 +26,19 @@
             return {
                 cls: "urgent",
                 eyebrow: "Do not wait for a screening",
-                title: "Book a doctor visit this week.",
+                title: "Contact a clinician promptly.",
                 body: "You told us about " + r.red_flags.join(", ") + ". A doctor should check these. Screening scans are for people with no symptoms."
             };
         }
         if (r.tier === "screen") {
             const why = r.uspstf.eligible
                 ? "You meet the US Preventive Services Task Force guideline for yearly screening."
-                : "Your 6-year risk is above the 1.51% level where the model suggests screening.";
+                : "Your estimate exceeds the research comparison threshold. This is not a USPSTF eligibility rule; discuss it with a clinician.";
             return {
                 cls: "",
                 eyebrow: "Your next step",
                 title: "Ask your doctor for a low-dose CT lung scan.",
-                body: why + " The scan takes less than a minute and needs no needles."
+                body: why + " Discuss benefits, harms and suitability with your clinician."
             };
         }
         if (r.tier === "not_in_scope") {
@@ -66,7 +66,7 @@
             "<h3>6-year lung cancer risk</h3>" +
             '<div class="big">' + pct(r.risk) + " <small>PLCOm2012</small></div>" +
             '<div class="meter" role="img" aria-label="Risk ' + pct(r.risk) + '">' +
-            '<div class="cut" style="left:' + meterPos(PLCO_CUT) + '%"><span>screen at 1.51%</span></div>' +
+            '<div class="cut" style="left:' + meterPos(PLCO_CUT) + '%"><span>research reference 1.51%</span></div>' +
             '<div class="mark" style="left:' + meterPos(p) + '%"></div>' +
             "</div>" +
             '<p class="note">About ' + Math.max(1, Math.round(p * 10)) + " in 1,000 people like you get lung cancer in the next 6 years.</p>" +
@@ -350,6 +350,8 @@
             "</div>" +
             '<p class="fineprint">Lungitude is a student project and a screening guide. It does not diagnose cancer. ' +
             "Risk model: Tammemägi et al., NEJM 2013. Guideline: USPSTF 2021.</p>";
+        html += '<p><b>This is a warning-sign match, not a diagnosis.</b> See a clinician to discuss symptoms and screening. Red-flag symptoms require evaluation rather than routine screening.</p>';
+        html += '<section class="card"><h2>What data goes where</h2>' + window.LungitudePrivacy.map(function (text) { return '<p>' + esc(text) + '</p>'; }).join('') + '</section>';
         document.getElementById("results").innerHTML = html;
         document.getElementById("doctor-note").innerHTML = doctorNote(d);
         const consent = document.getElementById("study-consent");

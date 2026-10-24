@@ -36,6 +36,15 @@
         });
     }
 
+    function safeUrl(value) {
+        try {
+            const url = new URL(value);
+            return ["https:", "http:"].includes(url.protocol) ? url.href : "#";
+        } catch (error) {
+            return "#";
+        }
+    }
+
     function fmt(n) {
         if (n === null || n === undefined) {
             return "–";
@@ -173,7 +182,7 @@
         return {
             render: function () {
                 return card(
-                    '<label class="q-title" for="q-bmi">What is your BMI?</label>' +
+                    '<label class="q-title" for="q-bmi">What is your BMI? (optional)</label>' +
                     '<input class="q-input short" id="q-bmi" type="number" step="0.1" min="12" max="80" inputmode="decimal" value="' +
                     (state.bmi || "") + '">' +
                     '<details class="q-help"' + (state.heightIn ? " open" : "") + '><summary>I do not know my BMI</summary>' +
@@ -206,7 +215,12 @@
                 });
             },
             next: function () {
-                const v = Number(root.querySelector("#q-bmi").value);
+                const text = root.querySelector("#q-bmi").value.trim();
+                if (text === "") {
+                    state.bmi = null;
+                    return true;
+                }
+                const v = Number(text);
                 if (!v || v < 12 || v > 80) {
                     setError("Enter a BMI from 12 to 80, or use height and weight.");
                     return false;
@@ -388,7 +402,7 @@
         m.cancers.forEach(function (c) {
             html += '<div class="cancer"><b>' + esc(c.name) + "</b>";
             if (c.new_2026) {
-                html += "<p>About <b>" + fmt(c.new_2026) + "</b> people in Washington will be diagnosed in 2026" +
+                html += "<p>About <b>" + fmt(c.new_2026) + "</b> new cases are estimated for Washington in 2026 (ACS)" +
                     (c.deaths_2026 ? ", and about " + fmt(c.deaths_2026) + " will die from it." : ".") + "</p>";
             } else if (c.deaths_2026) {
                 html += "<p>About " + fmt(c.deaths_2026) + " people in Washington will die from it in 2026.</p>";
@@ -458,7 +472,6 @@
             return "<p>Google returned no healthcare places within 10 miles of this location. Call 1-800-4-CANCER (National Cancer Institute) for help.</p>";
         }
         let html = '<p class="note">Up to five Google Places healthcare listings within 10 miles, nearest first by straight-line distance. This is not a ranking of treatment quality. Call to confirm the service, insurance and availability.</p>';
-        html += '<iframe title="Map around your search location" loading="lazy" referrerpolicy="no-referrer-when-downgrade" style="width:100%;height:260px;border:0;border-radius:14px;margin-bottom:20px" src="https://maps.google.com/maps?q='+state.loc.lat+','+state.loc.lon+'&z=12&output=embed"></iframe>';
         html += '<ol class="centers">';
         list.forEach(function (p) {
             const dir = "https://www.google.com/maps/dir/?api=1&origin=" + state.loc.lat + "," + state.loc.lon +
@@ -472,7 +485,7 @@
         list.forEach(function (p) {
             html += "<li>" + (p.phone
                 ? '<a href="tel:' + esc(p.phone.replace(/[^0-9+]/g, "")) + '">' + esc(p.phone) + "</a>"
-                : '<span class="note">No phone listed. ' + (p.website ? '<a href="' + esc(p.website) + '" target="_blank" rel="noopener">Website</a>' : "Use Directions to find it.") + "</span>") +
+                : '<span class="note">No phone listed. ' + (p.website ? '<a href="' + esc(safeUrl(p.website)) + '" target="_blank" rel="noopener">Website</a>' : "Use Directions to find it.") + "</span>") +
                 ' <span class="note">(' + esc(p.name) + ")</span></li>";
         });
         html += "</ol>";
@@ -495,7 +508,7 @@
         html += '<h1 class="q-title"><span class="r-main">' + esc(headline) + "</span></h1>";
 
         if (r.matched.length > 0) {
-            html += '<p class="r-note"><b>This is not a diagnosis.</b> These signs often have other, common causes. ' +
+            html += '<p class="r-note"><b>This is a warning-sign match, not a diagnosis.</b> These signs often have other, common causes. ' +
                 "Only a doctor and tests can find out. Please book a visit.</p>";
             if (urgent.length > 0) {
                 html += '<p class="r-urgent">If you have ' + urgent.map(function (m) {
@@ -506,7 +519,7 @@
                 html += "<p>You said yes in " + r.matched.length + " areas. Start with a <b>primary care doctor</b>, who can check everything in one visit.</p>";
             }
         } else {
-            html += '<p class="r-note">You reported no symptoms in these categories. This survey cannot rule out cancer. Review the screening information below with your clinician.</p>';
+            html += '<p class="r-note">This is a warning-sign match, not a diagnosis. You reported no symptoms in these categories. This survey cannot rule out cancer. Review the screening information below with your clinician.</p>';
         }
 
         html += '<h2>Your nearest healthcare places · within 10 miles</h2>';
@@ -520,25 +533,20 @@
         }
 
         html += countyCard(r);
-        if(r.county && network) {
-            const provider=network.counties[r.county.fips];
-            html+='<div class="g-card screening-network"><span class="source-tag">BREAST & CERVICAL SCREENING</span><h3>Your regional screening network</h3><p>'+(provider ? esc(provider)+' serves the region shown for '+esc(r.county.name)+' in your supplied map.' : 'County coverage is not identified on the supplied map.')+'</p><p class="note">This is a screening-assistance network, not a directory for every cancer. Map date was not supplied; confirm current coverage and eligibility.</p><a href="'+esc(network.url)+'" target="_blank" rel="noopener">Contact the state screening program</a><details><summary>View the supplied service map</summary><img src="assets/screening-network.png" alt="Washington breast and cervical screening service network by county"></details></div>';
-        }
         html += "<h2>Screenings to discuss at age " + r.age + "</h2>";
         if (r.screenings_due.length === 0) {
-            html += "<p>No routine cancer screenings are recommended for everyone at your age. Ask your doctor about your own risk.</p>";
+            html += "<p>No age-based screening options are listed here for your age. Ask your doctor about your own risk.</p>";
         } else {
             html += '<ul class="screens">' + r.screenings_due.map(function (s) {
                 return "<li><b>" + esc(s.name) + "</b> <span class=\"note\">(" + esc(s.who) + ", age " + s.from + "–" + s.to + ")</span><br>" +
-                    esc(s.how) + (s.key === "lung" ? ' · <a href="lung.html">Check if you qualify</a>' : "") + "</li>";
+                    esc(s.how) + " · " + esc(s.grade) + (s.key === "lung" ? ' · <a href="lung.html">Check if you qualify</a>' : "") + "</li>";
             }).join("") + "</ul>";
         }
 
         if (r.bmi) {
             html += '<div class="g-card"><h3>Your BMI: ' + r.bmi.bmi + " (" + esc(r.bmi.category) + ")</h3>";
             if (r.bmi.cancer_link) {
-                html += "<p>The CDC links overweight and obesity to 13 kinds of cancer, which make up about 40% of cancers found in the US " +
-                    "(for example colorectal, breast after menopause, uterus, kidney, liver and pancreas).</p>";
+                html += "<p>Body weight is one health factor to discuss with a clinician. BMI does not diagnose cancer.</p>";
             } else {
                 html += "<p>BMI alone cannot establish your cancer risk. Discuss your personal and family history with your clinician.</p>";
             }
@@ -551,6 +559,7 @@
                 esc(f.ages) + ". " + esc(f.who) + '.</p><p>Contact: ' + esc(f.contact) + ' · <a href="' + esc(f.url) + '" target="_blank" rel="noopener">More information</a></p></div>';
         }
 
+        html += '<section class="g-card"><h2>What data goes where</h2>' + window.LungitudePrivacy.map(function (text) { return '<p>' + esc(text) + '</p>'; }).join('') + '</section>';
         html += '<p class="q-fine">Population statistics describe groups, not your probability of cancer. Screening eligibility also depends on medical history and other criteria. Source labels supplied with this prototype: ' + Object.keys(r.sources).map(function (k) {
             return esc(r.sources[k]);
         }).join(" · ") + ".</p>";

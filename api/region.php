@@ -27,10 +27,9 @@ if ($geo === null) {
 $stats = bw_county_stats($geo['fips']);
 
 /* State screening rates we have checked by hand. Add more states from lung.org. */
-$stateScreening = [
-    '53' => ['rate' => 15.8, 'rank' => 37, 'of' => 51, 'us_rate' => 18.2,
-        'source' => 'American Lung Association, State of Lung Cancer 2025'],
-];
+$evidence = json_decode(file_get_contents(__DIR__ . '/../data/wa_cancers.json'), true);
+$context = $evidence['screening_context'];
+$stateScreening = ['53' => ['rate' => $context['wa_rate'], 'rank' => $context['rank'], 'of' => $context['of'], 'us_rate' => $context['us_rate'], 'source' => 'American Lung Association 2025: ' . $context['source']]];
 
 bw_json([
     'sample' => false,

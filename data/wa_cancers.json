@@ -1,16 +1,19 @@
 {
     "sources": {
-        "new_cases": "American Cancer Society, Cancer Facts & Figures 2026, estimated new cases and deaths in Washington, 2026",
-        "rates": "NCI State Cancer Profiles, age-adjusted incidence per 100,000, 2019-2023 (Washington vs US)",
+        "new_cases": "ACS 2026 state estimates (not observed case counts): https://www.cancer.org/content/dam/cancer-org/research/cancer-facts-and-statistics/annual-cancer-facts-and-figures/2026/sd3-21-cancers-by-state-2026.pdf",
+        "rates": "NCI incidence comparisons removed: unverified export and years",
         "bmi": "CDC, cancers associated with overweight and obesity (13 types)",
         "smoking": "CDC, cancers caused by tobacco use",
-        "screening": "USPSTF final recommendations: breast 2024, colorectal 2021, cervical 2018, prostate 2018, lung 2021"
+        "screening": "USPSTF final recommendations: breast 2024, colorectal/lung 2021, cervical/prostate 2018; confirm individual eligibility"
     },
     "wa_all_sites": {
         "new_2026": 48590,
         "deaths_2026": 14160,
-        "rate_wa": 441.2,
-        "rate_us": 453.4
+        "rate_wa": null,
+        "rate_us": null,
+        "source": "https://www.cancer.org/content/dam/cancer-org/research/cancer-facts-and-statistics/annual-cancer-facts-and-figures/2026/sd3-21-cancers-by-state-2026.pdf",
+        "year": 2026,
+        "status": "verified estimate"
     },
     "groups": {
         "lung": {
@@ -23,9 +26,12 @@
                     "name": "Lung and bronchus",
                     "new_2026": 5020,
                     "deaths_2026": 2570,
-                    "rate_wa": 46.7,
-                    "rate_us": 51.8,
-                    "scp": "lung"
+                    "rate_wa": null,
+                    "rate_us": null,
+                    "scp": "lung",
+                    "source": "https://www.cancer.org/content/dam/cancer-org/research/cancer-facts-and-statistics/annual-cancer-facts-and-figures/2026/sd3-21-cancers-by-state-2026.pdf",
+                    "year": 2026,
+                    "status": "verified estimate"
                 }
             ],
             "bmi_linked": false,
@@ -42,9 +48,12 @@
                     "name": "Breast (female)",
                     "new_2026": 7710,
                     "deaths_2026": 960,
-                    "rate_wa": 139.9,
-                    "rate_us": 133.0,
-                    "scp": "breast"
+                    "rate_wa": null,
+                    "rate_us": null,
+                    "scp": "breast",
+                    "source": "https://www.cancer.org/content/dam/cancer-org/research/cancer-facts-and-statistics/annual-cancer-facts-and-figures/2026/sd3-21-cancers-by-state-2026.pdf",
+                    "year": 2026,
+                    "status": "verified estimate"
                 }
             ],
             "bmi_linked": true,
@@ -61,9 +70,12 @@
                     "name": "Colon and rectum",
                     "new_2026": 3300,
                     "deaths_2026": 1160,
-                    "rate_wa": 34.3,
-                    "rate_us": 36.9,
-                    "scp": "colorectal"
+                    "rate_wa": null,
+                    "rate_us": null,
+                    "scp": "colorectal",
+                    "source": "https://www.cancer.org/content/dam/cancer-org/research/cancer-facts-and-statistics/annual-cancer-facts-and-figures/2026/sd3-21-cancers-by-state-2026.pdf",
+                    "year": 2026,
+                    "status": "verified estimate"
                 }
             ],
             "bmi_linked": true,
@@ -80,25 +92,34 @@
                     "name": "Prostate",
                     "new_2026": 6980,
                     "deaths_2026": 980,
-                    "rate_wa": 106.9,
-                    "rate_us": 119.9,
-                    "scp": "prostate"
+                    "rate_wa": null,
+                    "rate_us": null,
+                    "scp": "prostate",
+                    "source": "https://www.cancer.org/content/dam/cancer-org/research/cancer-facts-and-statistics/annual-cancer-facts-and-figures/2026/sd3-21-cancers-by-state-2026.pdf",
+                    "year": 2026,
+                    "status": "verified estimate"
                 },
                 {
                     "name": "Urinary bladder",
                     "new_2026": 1980,
-                    "deaths_2026": null,
-                    "rate_wa": 19.8,
-                    "rate_us": 18.7,
-                    "scp": "bladder"
+                    "deaths_2026": 400,
+                    "rate_wa": null,
+                    "rate_us": null,
+                    "scp": "bladder",
+                    "source": "https://www.cancer.org/content/dam/cancer-org/research/cancer-facts-and-statistics/annual-cancer-facts-and-figures/2026/sd3-21-cancers-by-state-2026.pdf",
+                    "year": 2026,
+                    "status": "verified estimate"
                 },
                 {
                     "name": "Kidney and renal pelvis",
-                    "new_2026": 1550,
-                    "deaths_2026": null,
-                    "rate_wa": 15.7,
-                    "rate_us": 17.9,
-                    "scp": "kidney"
+                    "new_2026": 1560,
+                    "deaths_2026": 330,
+                    "rate_wa": null,
+                    "rate_us": null,
+                    "scp": "kidney",
+                    "source": "https://www.cancer.org/content/dam/cancer-org/research/cancer-facts-and-statistics/annual-cancer-facts-and-figures/2026/sd3-21-cancers-by-state-2026.pdf",
+                    "year": 2026,
+                    "status": "verified estimate"
                 }
             ],
             "bmi_linked": true,
@@ -115,10 +136,13 @@
                 {
                     "name": "Melanoma of the skin",
                     "new_2026": 2860,
-                    "deaths_2026": null,
-                    "rate_wa": 26.7,
-                    "rate_us": 23.8,
-                    "scp": "melanoma"
+                    "deaths_2026": 210,
+                    "rate_wa": null,
+                    "rate_us": null,
+                    "scp": "melanoma",
+                    "source": "https://www.cancer.org/content/dam/cancer-org/research/cancer-facts-and-statistics/annual-cancer-facts-and-figures/2026/sd3-21-cancers-by-state-2026.pdf",
+                    "year": 2026,
+                    "status": "verified estimate"
                 }
             ],
             "bmi_linked": false,
@@ -134,17 +158,23 @@
                     "name": "Leukemia",
                     "new_2026": 1550,
                     "deaths_2026": 540,
-                    "rate_wa": 14.7,
-                    "rate_us": 14.5,
-                    "scp": "leukemia"
+                    "rate_wa": null,
+                    "rate_us": null,
+                    "scp": "leukemia",
+                    "source": "https://www.cancer.org/content/dam/cancer-org/research/cancer-facts-and-statistics/annual-cancer-facts-and-figures/2026/sd3-21-cancers-by-state-2026.pdf",
+                    "year": 2026,
+                    "status": "verified estimate"
                 },
                 {
                     "name": "Non-Hodgkin lymphoma",
                     "new_2026": 1900,
                     "deaths_2026": 510,
-                    "rate_wa": 18.7,
-                    "rate_us": 18.5,
-                    "scp": "nhl"
+                    "rate_wa": null,
+                    "rate_us": null,
+                    "scp": "nhl",
+                    "source": "https://www.cancer.org/content/dam/cancer-org/research/cancer-facts-and-statistics/annual-cancer-facts-and-figures/2026/sd3-21-cancers-by-state-2026.pdf",
+                    "year": 2026,
+                    "status": "verified estimate"
                 }
             ],
             "bmi_linked": true,
@@ -161,19 +191,25 @@
             "cancers": [
                 {
                     "name": "Pancreas",
-                    "new_2026": 1220,
+                    "new_2026": 1560,
                     "deaths_2026": 1220,
-                    "rate_wa": 13.6,
-                    "rate_us": 13.9,
-                    "scp": "pancreas"
+                    "rate_wa": null,
+                    "rate_us": null,
+                    "scp": "pancreas",
+                    "source": "https://www.cancer.org/content/dam/cancer-org/research/cancer-facts-and-statistics/annual-cancer-facts-and-figures/2026/sd3-21-cancers-by-state-2026.pdf",
+                    "year": 2026,
+                    "status": "verified estimate"
                 },
                 {
                     "name": "Liver and bile duct",
-                    "new_2026": null,
+                    "new_2026": 990,
                     "deaths_2026": 730,
-                    "rate_wa": 8.5,
-                    "rate_us": 8.7,
-                    "scp": "liver"
+                    "rate_wa": null,
+                    "rate_us": null,
+                    "scp": "liver",
+                    "source": "https://www.cancer.org/content/dam/cancer-org/research/cancer-facts-and-statistics/annual-cancer-facts-and-figures/2026/sd3-21-cancers-by-state-2026.pdf",
+                    "year": 2026,
+                    "status": "verified estimate"
                 }
             ],
             "bmi_linked": true,
@@ -189,7 +225,10 @@
             "from": 45,
             "to": 75,
             "how": "A stool test (FIT) every year, or a colonoscopy every 10 years",
-            "grade": "USPSTF 2021"
+            "grade": "USPSTF 2021",
+            "source": "https://www.uspreventiveservicestaskforce.org/uspstf/recommendation/colorectal-cancer-screening",
+            "year": 2021,
+            "status": "verified final recommendation; individual exceptions apply"
         },
         {
             "key": "breast",
@@ -198,7 +237,10 @@
             "from": 40,
             "to": 74,
             "how": "Every 2 years",
-            "grade": "USPSTF 2024"
+            "grade": "USPSTF 2024",
+            "source": "https://www.uspreventiveservicestaskforce.org/uspstf/recommendation/breast-cancer-screening",
+            "year": 2024,
+            "status": "verified final recommendation; individual exceptions apply"
         },
         {
             "key": "cervical",
@@ -206,8 +248,11 @@
             "who": "Women with a cervix",
             "from": 21,
             "to": 65,
-            "how": "A Pap test every 3 years (age 21-29); from age 30, an HPV test every 5 years is an option",
-            "grade": "USPSTF 2018"
+            "how": "Pap every 3 years at ages 21–29; ages 30–65: Pap every 3 years, HPV every 5 years, or co-testing every 5 years (USPSTF 2018)",
+            "grade": "USPSTF 2018",
+            "source": "https://www.uspreventiveservicestaskforce.org/uspstf/recommendation/cervical-cancer-screening",
+            "year": 2018,
+            "status": "verified final recommendation; individual exceptions apply"
         },
         {
             "key": "prostate",
@@ -216,24 +261,32 @@
             "from": 55,
             "to": 69,
             "how": "Talk with a doctor and decide together",
-            "grade": "USPSTF 2018"
+            "grade": "USPSTF 2018",
+            "source": "https://www.uspreventiveservicestaskforce.org/uspstf/recommendation/prostate-cancer-screening",
+            "year": 2018,
+            "status": "verified final recommendation; individual exceptions apply"
         },
         {
             "key": "lung",
             "name": "Low-dose CT lung scan",
-            "who": "People who smoked a lot (20 pack-years or more)",
+            "who": "Adults with at least 20 pack-years who currently smoke or quit within 15 years",
             "from": 50,
             "to": 80,
-            "how": "Every year. Use the Lungitude lung check to see if you qualify",
-            "grade": "USPSTF 2021"
+            "how": "Annual low-dose CT for eligible people without symptoms; confirm benefits, harms and suitability with a clinician",
+            "grade": "USPSTF 2021",
+            "source": "https://www.uspreventiveservicestaskforce.org/uspstf/recommendation/lung-cancer-screening",
+            "year": 2021,
+            "status": "verified final recommendation; individual exceptions apply"
         }
     ],
     "free_screening": {
         "name": "Washington Breast, Cervical, and Colon Health Program",
-        "ages": "21 to 64",
-        "who": "People with no insurance or with insurance that does not cover screening, with income up to about 250-300% of the federal poverty level",
-        "contact": "Washington Healthplanfinder 1-855-923-4633, or the program office in your county",
-        "url": "https://doh.wa.gov/bcchp"
+        "ages": "Eligibility varies by service",
+        "who": "Eligibility depends on insurance, income, age and service. Contact the state program to confirm",
+        "contact": "Use the Washington Department of Health program contact directory",
+        "url": "https://doh.wa.gov/you-and-your-family/illness-and-disease-z/cancer/breast-cervical-and-colon-health-program",
+        "year": 2026,
+        "status": "program existence verified; numerical eligibility limits removed"
     },
     "order": [
         "lung",
@@ -243,5 +296,260 @@
         "skin",
         "blood",
         "liver_pancreas"
-    ]
+    ],
+    "screening_context": {
+        "year": 2025,
+        "wa_rate": 15.8,
+        "rank": 37,
+        "of": 51,
+        "us_rate": 18.2,
+        "source": "https://www.lung.org/media/press-releases/fy26-solc-washington",
+        "status": "verified report figures; not individual risk"
+    },
+    "unverified_or_corrected_values": [
+        {
+            "name": "all_sites",
+            "field": "rate_wa",
+            "original_value": 441.2,
+            "status": "unverified",
+            "claimed_years": "2019-2023",
+            "reason": "No matching dated NCI export supplied or verified. Removed from presentation.",
+            "claimed_source": "https://statecancerprofiles.cancer.gov/"
+        },
+        {
+            "name": "all_sites",
+            "field": "rate_us",
+            "original_value": 453.4,
+            "status": "unverified",
+            "claimed_years": "2019-2023",
+            "reason": "No matching dated NCI export supplied or verified. Removed from presentation.",
+            "claimed_source": "https://statecancerprofiles.cancer.gov/"
+        },
+        {
+            "name": "Lung and bronchus",
+            "field": "rate_wa",
+            "original_value": 46.7,
+            "status": "unverified",
+            "claimed_years": "2019-2023",
+            "reason": "No matching dated NCI export supplied or verified. Removed from presentation.",
+            "claimed_source": "https://statecancerprofiles.cancer.gov/"
+        },
+        {
+            "name": "Lung and bronchus",
+            "field": "rate_us",
+            "original_value": 51.8,
+            "status": "unverified",
+            "claimed_years": "2019-2023",
+            "reason": "No matching dated NCI export supplied or verified. Removed from presentation.",
+            "claimed_source": "https://statecancerprofiles.cancer.gov/"
+        },
+        {
+            "name": "Breast (female)",
+            "field": "rate_wa",
+            "original_value": 139.9,
+            "status": "unverified",
+            "claimed_years": "2019-2023",
+            "reason": "No matching dated NCI export supplied or verified. Removed from presentation.",
+            "claimed_source": "https://statecancerprofiles.cancer.gov/"
+        },
+        {
+            "name": "Breast (female)",
+            "field": "rate_us",
+            "original_value": 133.0,
+            "status": "unverified",
+            "claimed_years": "2019-2023",
+            "reason": "No matching dated NCI export supplied or verified. Removed from presentation.",
+            "claimed_source": "https://statecancerprofiles.cancer.gov/"
+        },
+        {
+            "name": "Colon and rectum",
+            "field": "rate_wa",
+            "original_value": 34.3,
+            "status": "unverified",
+            "claimed_years": "2019-2023",
+            "reason": "No matching dated NCI export supplied or verified. Removed from presentation.",
+            "claimed_source": "https://statecancerprofiles.cancer.gov/"
+        },
+        {
+            "name": "Colon and rectum",
+            "field": "rate_us",
+            "original_value": 36.9,
+            "status": "unverified",
+            "claimed_years": "2019-2023",
+            "reason": "No matching dated NCI export supplied or verified. Removed from presentation.",
+            "claimed_source": "https://statecancerprofiles.cancer.gov/"
+        },
+        {
+            "name": "Prostate",
+            "field": "rate_wa",
+            "original_value": 106.9,
+            "status": "unverified",
+            "claimed_years": "2019-2023",
+            "reason": "No matching dated NCI export supplied or verified. Removed from presentation.",
+            "claimed_source": "https://statecancerprofiles.cancer.gov/"
+        },
+        {
+            "name": "Prostate",
+            "field": "rate_us",
+            "original_value": 119.9,
+            "status": "unverified",
+            "claimed_years": "2019-2023",
+            "reason": "No matching dated NCI export supplied or verified. Removed from presentation.",
+            "claimed_source": "https://statecancerprofiles.cancer.gov/"
+        },
+        {
+            "name": "Urinary bladder",
+            "field": "rate_wa",
+            "original_value": 19.8,
+            "status": "unverified",
+            "claimed_years": "2019-2023",
+            "reason": "No matching dated NCI export supplied or verified. Removed from presentation.",
+            "claimed_source": "https://statecancerprofiles.cancer.gov/"
+        },
+        {
+            "name": "Urinary bladder",
+            "field": "rate_us",
+            "original_value": 18.7,
+            "status": "unverified",
+            "claimed_years": "2019-2023",
+            "reason": "No matching dated NCI export supplied or verified. Removed from presentation.",
+            "claimed_source": "https://statecancerprofiles.cancer.gov/"
+        },
+        {
+            "name": "Kidney and renal pelvis",
+            "field": "rate_wa",
+            "original_value": 15.7,
+            "status": "unverified",
+            "claimed_years": "2019-2023",
+            "reason": "No matching dated NCI export supplied or verified. Removed from presentation.",
+            "claimed_source": "https://statecancerprofiles.cancer.gov/"
+        },
+        {
+            "name": "Kidney and renal pelvis",
+            "field": "rate_us",
+            "original_value": 17.9,
+            "status": "unverified",
+            "claimed_years": "2019-2023",
+            "reason": "No matching dated NCI export supplied or verified. Removed from presentation.",
+            "claimed_source": "https://statecancerprofiles.cancer.gov/"
+        },
+        {
+            "name": "Melanoma of the skin",
+            "field": "rate_wa",
+            "original_value": 26.7,
+            "status": "unverified",
+            "claimed_years": "2019-2023",
+            "reason": "No matching dated NCI export supplied or verified. Removed from presentation.",
+            "claimed_source": "https://statecancerprofiles.cancer.gov/"
+        },
+        {
+            "name": "Melanoma of the skin",
+            "field": "rate_us",
+            "original_value": 23.8,
+            "status": "unverified",
+            "claimed_years": "2019-2023",
+            "reason": "No matching dated NCI export supplied or verified. Removed from presentation.",
+            "claimed_source": "https://statecancerprofiles.cancer.gov/"
+        },
+        {
+            "name": "Leukemia",
+            "field": "rate_wa",
+            "original_value": 14.7,
+            "status": "unverified",
+            "claimed_years": "2019-2023",
+            "reason": "No matching dated NCI export supplied or verified. Removed from presentation.",
+            "claimed_source": "https://statecancerprofiles.cancer.gov/"
+        },
+        {
+            "name": "Leukemia",
+            "field": "rate_us",
+            "original_value": 14.5,
+            "status": "unverified",
+            "claimed_years": "2019-2023",
+            "reason": "No matching dated NCI export supplied or verified. Removed from presentation.",
+            "claimed_source": "https://statecancerprofiles.cancer.gov/"
+        },
+        {
+            "name": "Non-Hodgkin lymphoma",
+            "field": "rate_wa",
+            "original_value": 18.7,
+            "status": "unverified",
+            "claimed_years": "2019-2023",
+            "reason": "No matching dated NCI export supplied or verified. Removed from presentation.",
+            "claimed_source": "https://statecancerprofiles.cancer.gov/"
+        },
+        {
+            "name": "Non-Hodgkin lymphoma",
+            "field": "rate_us",
+            "original_value": 18.5,
+            "status": "unverified",
+            "claimed_years": "2019-2023",
+            "reason": "No matching dated NCI export supplied or verified. Removed from presentation.",
+            "claimed_source": "https://statecancerprofiles.cancer.gov/"
+        },
+        {
+            "name": "Pancreas",
+            "field": "rate_wa",
+            "original_value": 13.6,
+            "status": "unverified",
+            "claimed_years": "2019-2023",
+            "reason": "No matching dated NCI export supplied or verified. Removed from presentation.",
+            "claimed_source": "https://statecancerprofiles.cancer.gov/"
+        },
+        {
+            "name": "Pancreas",
+            "field": "rate_us",
+            "original_value": 13.9,
+            "status": "unverified",
+            "claimed_years": "2019-2023",
+            "reason": "No matching dated NCI export supplied or verified. Removed from presentation.",
+            "claimed_source": "https://statecancerprofiles.cancer.gov/"
+        },
+        {
+            "name": "Liver and bile duct",
+            "field": "rate_wa",
+            "original_value": 8.5,
+            "status": "unverified",
+            "claimed_years": "2019-2023",
+            "reason": "No matching dated NCI export supplied or verified. Removed from presentation.",
+            "claimed_source": "https://statecancerprofiles.cancer.gov/"
+        },
+        {
+            "name": "Liver and bile duct",
+            "field": "rate_us",
+            "original_value": 8.7,
+            "status": "unverified",
+            "claimed_years": "2019-2023",
+            "reason": "No matching dated NCI export supplied or verified. Removed from presentation.",
+            "claimed_source": "https://statecancerprofiles.cancer.gov/"
+        },
+        {
+            "name": "Kidney and renal pelvis",
+            "field": "new_2026",
+            "original_value": 1550,
+            "corrected_value": 1560,
+            "status": "corrected",
+            "source": "https://www.cancer.org/content/dam/cancer-org/research/cancer-facts-and-statistics/annual-cancer-facts-and-figures/2026/sd3-21-cancers-by-state-2026.pdf",
+            "year": 2026
+        },
+        {
+            "name": "Pancreas",
+            "field": "new_2026",
+            "original_value": 1220,
+            "corrected_value": 1560,
+            "status": "corrected",
+            "source": "https://www.cancer.org/content/dam/cancer-org/research/cancer-facts-and-statistics/annual-cancer-facts-and-figures/2026/sd3-21-cancers-by-state-2026.pdf",
+            "year": 2026
+        },
+        {
+            "name": "Liver and bile duct",
+            "field": "new_2026",
+            "original_value": null,
+            "corrected_value": 990,
+            "status": "corrected",
+            "source": "https://www.cancer.org/content/dam/cancer-org/research/cancer-facts-and-statistics/annual-cancer-facts-and-figures/2026/sd3-21-cancers-by-state-2026.pdf",
+            "year": 2026
+        }
+    ],
+    "verification_date": "2026-10-24"
 }

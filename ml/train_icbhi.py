@@ -176,7 +176,7 @@ def main():
         "std": std.round(6).tolist(),
         "coef": clf.coef_.round(6).tolist(),
         "intercept": clf.intercept_.round(6).tolist(),
-        "test": {"specificity": round(sp, 3), "sensitivity": round(se, 3), "icbhi_score": round(score, 3),
+        "test": {"split": "patient-level", "specificity": round(sp, 3), "sensitivity": round(se, 3), "icbhi_score": round(score, 3),
                  "cycles": int(len(te)), "patients": int(len(set(groups[te])))},
     }
     out = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "data", "lung_model.json")

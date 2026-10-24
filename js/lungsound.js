@@ -269,6 +269,9 @@
             return res.json();
         })
         .then(function (m) {
+            if (!m.test || m.test.split !== "patient-level" || !Number.isFinite(m.test.icbhi_score) || m.test.icbhi_score < 0 || m.test.icbhi_score > 1 || !Number.isInteger(m.test.patients) || m.test.patients < 1) {
+                throw new Error("Model lacks patient-level evaluation metadata");
+            }
             model = prepare(m);
             box.hidden = false;
             document.getElementById("lung-ai-score").textContent =
