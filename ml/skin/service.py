@@ -1,5 +1,8 @@
 """Local research sidecar. Bind only to 127.0.0.1; PHP forwards approved requests."""
 import io
+import logging
+from threading import Lock
+from starlette.concurrency import run_in_threadpool
 import os
 from pathlib import Path
 import numpy as np
@@ -9,9 +12,19 @@ from features import describe
 
 Image.MAX_IMAGE_PIXELS = 6_000_000
 app=FastAPI(title='Lungitude research imaging',docs_url=None,redoc_url=None)
+from breast_service import router as breast_router
+app.include_router(breast_router)
+from account_service import router as account_router
+app.include_router(account_router)
+from engagement_service import router as engagement_router
+app.include_router(engagement_router)
+from care_service import router as care_router
+app.include_router(care_router)
 ROOT=Path(__file__).resolve().parent
-MODELS={'mobilenet_v3_small': ROOT/'output_mobile/model.pt','efficientnet_b0':ROOT/'output_efficient/model.pt'}
+from registry import ARCHITECTURES
+MODELS={name:ROOT/spec['output']/'model.pt' for name,spec in ARCHITECTURES.items()}
 loaded={}
+inference_lock=Lock()
 
 async def decode(file):
     raw=await file.read(8_000_001)
@@ -36,11 +49,26 @@ async def features(image:UploadFile=File(...),mask:UploadFile=File(...),consent:
     except ValueError as e:raise HTTPException(422,str(e))
 
 @app.post('/infer')
-async def infer(image:UploadFile=File(...),architecture:str=Form(...),research:str=Form('')):
+async def infer(image:UploadFile=File(...),architecture:str=Form(...),research:str=Form(''),consent:str=Form('')):
+    if consent!='yes':raise HTTPException(422,'Explicit selected-image upload consent required')
     if research!='yes':raise HTTPException(422,'Research acknowledgement required')
     if architecture not in MODELS:raise HTTPException(422,'Unsupported architecture')
     if not MODELS[architecture].is_file():raise HTTPException(503,'Trained checkpoint unavailable. Train this model first.')
     img=await decode(image)
+    return await run_in_threadpool(predict_still, img, architecture)
+
+
+def predict_still(img, architecture):
+    # Keep model loading/inference off the async event loop; serialize CPU work.
+    with inference_lock:
+        try:return _predict_still(img, architecture)
+        except HTTPException:raise
+        except Exception as error:
+            logging.getLogger(__name__).error("Skin model %s failed: %s",architecture,type(error).__name__)
+            raise HTTPException(503,"Skin model could not be loaded or evaluated")
+
+
+def _predict_still(img, architecture):
     import torch
     from train import build_model, weights_for, PAD_CLASSES
     if architecture not in loaded:
@@ -62,3 +90,37 @@ async def compare_route(previous:UploadFile=File(...),current:UploadFile=File(..
     images=[np.asarray(await decode(f)) for f in [previous,current,mask_before,mask_after]]
     try:return compare(images[0],images[1],images[2][:,:,0],images[3][:,:,0],date_before,date_after,scale_before,scale_after)
     except ValueError as e:raise HTTPException(422,str(e))
+
+@app.post('/infer_all')
+async def infer_all(image:UploadFile=File(...),research:str=Form(''),consent:str=Form('')):
+    if consent!='yes' or research!='yes':raise HTTPException(422,'Image analysis consent required')
+    results={}
+    for architecture in MODELS:
+        if not MODELS[architecture].is_file():
+            results[architecture]={'available':False,'probabilities':None};continue
+        await image.seek(0)
+        try:
+            result=await infer(image=image,architecture=architecture,research=research,consent=consent)
+            results[architecture]={'available':True,'probabilities':result['scores'],'calibration':'uncalibrated'}
+        except HTTPException as error:
+            if error.status_code in {413,422}:raise
+            results[architecture]={'available':False,'probabilities':None}
+    if not any(r['available'] for r in results.values()):raise HTTPException(503,'No skin assessment available')
+    return {'research_only':True,'models':results,'notice':'Uncalibrated image-category probability estimates. Not a validated personal probability of cancer. Models may share training data; agreement is not independent clinical evidence.'}
+
+
+@app.post('/infer_live')
+async def infer_live(image:UploadFile=File(...),research:str=Form(''),consent:str=Form('')):
+    """One sampled still per request. No video/temporal or clinical validation."""
+    if consent!='yes' or research!='yes':raise HTTPException(422,'Image analysis consent required')
+    for architecture in ['mobilenet_v3_small','resnet18','efficientnet_b0']:
+        if not MODELS[architecture].is_file():continue
+        await image.seek(0)
+        try:
+            result=await infer(image=image,architecture=architecture,research=research,consent=consent)
+            result['preliminary']=True
+            result['input_modality']='sampled_still_not_video_model'
+            return result
+        except HTTPException as error:
+            if error.status_code in {413,422}:raise
+    raise HTTPException(503,'No compatible live-preview checkpoint')

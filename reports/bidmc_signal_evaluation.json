@@ -1,0 +1,385 @@
+{
+  "source_sha256": "7c09847e8b9c9ad0005ad6f4041e887119e2ad9a745b6a63b1b394bd439f693b",
+  "benchmark": "BIDMC contact PPG against monitor HR; 30-second windows",
+  "research_only": true,
+  "subject_macro_mae_bpm": 1.2426234022833968,
+  "records": [
+    {
+      "record": "bidmc01",
+      "eligible_windows": 15,
+      "accepted_windows": 15,
+      "rejected_windows": 0,
+      "mae_bpm": 0.8533333333333313
+    },
+    {
+      "record": "bidmc02",
+      "eligible_windows": 15,
+      "accepted_windows": 15,
+      "rejected_windows": 0,
+      "mae_bpm": 1.2066798913541068
+    },
+    {
+      "record": "bidmc03",
+      "eligible_windows": 15,
+      "accepted_windows": 15,
+      "rejected_windows": 0,
+      "mae_bpm": 1.0666666280098884
+    },
+    {
+      "record": "bidmc04",
+      "eligible_windows": 15,
+      "accepted_windows": 14,
+      "rejected_windows": 1,
+      "mae_bpm": 0.7142900762527071
+    },
+    {
+      "record": "bidmc05",
+      "eligible_windows": 15,
+      "accepted_windows": 15,
+      "rejected_windows": 0,
+      "mae_bpm": 1.1866880296233016
+    },
+    {
+      "record": "bidmc06",
+      "eligible_windows": 15,
+      "accepted_windows": 15,
+      "rejected_windows": 0,
+      "mae_bpm": 0.600040691345967
+    },
+    {
+      "record": "bidmc07",
+      "eligible_windows": 15,
+      "accepted_windows": 15,
+      "rejected_windows": 0,
+      "mae_bpm": 0.24000000000000246
+    },
+    {
+      "record": "bidmc08",
+      "eligible_windows": 15,
+      "accepted_windows": 15,
+      "rejected_windows": 0,
+      "mae_bpm": 0.7866697185176121
+    },
+    {
+      "record": "bidmc09",
+      "eligible_windows": 15,
+      "accepted_windows": 15,
+      "rejected_windows": 0,
+      "mae_bpm": 1.3066523772901177
+    },
+    {
+      "record": "bidmc10",
+      "eligible_windows": 15,
+      "accepted_windows": 15,
+      "rejected_windows": 0,
+      "mae_bpm": 0.8933262898647674
+    },
+    {
+      "record": "bidmc11",
+      "eligible_windows": 15,
+      "accepted_windows": 15,
+      "rejected_windows": 0,
+      "mae_bpm": 1.1333305164748888
+    },
+    {
+      "record": "bidmc12",
+      "eligible_windows": 15,
+      "accepted_windows": 15,
+      "rejected_windows": 0,
+      "mae_bpm": 1.2599796543270154
+    },
+    {
+      "record": "bidmc13",
+      "eligible_windows": 15,
+      "accepted_windows": 15,
+      "rejected_windows": 0,
+      "mae_bpm": 0.7199999999999979
+    },
+    {
+      "record": "bidmc14",
+      "eligible_windows": 15,
+      "accepted_windows": 15,
+      "rejected_windows": 0,
+      "mae_bpm": 1.1333435061698263
+    },
+    {
+      "record": "bidmc15",
+      "eligible_windows": 15,
+      "accepted_windows": 15,
+      "rejected_windows": 0,
+      "mae_bpm": 0.8333353679006308
+    },
+    {
+      "record": "bidmc16",
+      "eligible_windows": 15,
+      "accepted_windows": 15,
+      "rejected_windows": 0,
+      "mae_bpm": 0.7532896381524722
+    },
+    {
+      "record": "bidmc17",
+      "eligible_windows": 15,
+      "accepted_windows": 3,
+      "rejected_windows": 12,
+      "mae_bpm": 1.2999542222357832
+    },
+    {
+      "record": "bidmc18",
+      "eligible_windows": 15,
+      "accepted_windows": 15,
+      "rejected_windows": 0,
+      "mae_bpm": 0.20000000000000284
+    },
+    {
+      "record": "bidmc19",
+      "eligible_windows": 15,
+      "accepted_windows": 15,
+      "rejected_windows": 0,
+      "mae_bpm": 1.3066666666666653
+    },
+    {
+      "record": "bidmc20",
+      "eligible_windows": 15,
+      "accepted_windows": 15,
+      "rejected_windows": 0,
+      "mae_bpm": 0.9200040691345948
+    },
+    {
+      "record": "bidmc21",
+      "eligible_windows": 15,
+      "accepted_windows": 15,
+      "rejected_windows": 0,
+      "mae_bpm": 0.7533709377322376
+    },
+    {
+      "record": "bidmc22",
+      "eligible_windows": 15,
+      "accepted_windows": 15,
+      "rejected_windows": 0,
+      "mae_bpm": 1.1866870123396505
+    },
+    {
+      "record": "bidmc23",
+      "eligible_windows": 15,
+      "accepted_windows": 15,
+      "rejected_windows": 0,
+      "mae_bpm": 0.9066921715952503
+    },
+    {
+      "record": "bidmc24",
+      "eligible_windows": 15,
+      "accepted_windows": 0,
+      "rejected_windows": 15,
+      "mae_bpm": null
+    },
+    {
+      "record": "bidmc25",
+      "eligible_windows": 15,
+      "accepted_windows": 15,
+      "rejected_windows": 0,
+      "mae_bpm": 1.0332862872201531
+    },
+    {
+      "record": "bidmc26",
+      "eligible_windows": 15,
+      "accepted_windows": 13,
+      "rejected_windows": 2,
+      "mae_bpm": 0.6461538461538476
+    },
+    {
+      "record": "bidmc27",
+      "eligible_windows": 15,
+      "accepted_windows": 15,
+      "rejected_windows": 0,
+      "mae_bpm": 0.8133312987660333
+    },
+    {
+      "record": "bidmc28",
+      "eligible_windows": 15,
+      "accepted_windows": 3,
+      "rejected_windows": 12,
+      "mae_bpm": 2.100081229081605
+    },
+    {
+      "record": "bidmc29",
+      "eligible_windows": 15,
+      "accepted_windows": 15,
+      "rejected_windows": 0,
+      "mae_bpm": 0.5400193283893354
+    },
+    {
+      "record": "bidmc30",
+      "eligible_windows": 15,
+      "accepted_windows": 15,
+      "rejected_windows": 0,
+      "mae_bpm": 1.0733325734224508
+    },
+    {
+      "record": "bidmc31",
+      "eligible_windows": 15,
+      "accepted_windows": 15,
+      "rejected_windows": 0,
+      "mae_bpm": 0.9333374024679311
+    },
+    {
+      "record": "bidmc32",
+      "eligible_windows": 15,
+      "accepted_windows": 15,
+      "rejected_windows": 0,
+      "mae_bpm": 0.20000012359997754
+    },
+    {
+      "record": "bidmc33",
+      "eligible_windows": 15,
+      "accepted_windows": 3,
+      "rejected_windows": 12,
+      "mae_bpm": 0.5332214321319242
+    },
+    {
+      "record": "bidmc34",
+      "eligible_windows": 15,
+      "accepted_windows": 15,
+      "rejected_windows": 0,
+      "mae_bpm": 0.8999688756985894
+    },
+    {
+      "record": "bidmc35",
+      "eligible_windows": 15,
+      "accepted_windows": 14,
+      "rejected_windows": 1,
+      "mae_bpm": 0.7357231005497117
+    },
+    {
+      "record": "bidmc36",
+      "eligible_windows": 15,
+      "accepted_windows": 15,
+      "rejected_windows": 0,
+      "mae_bpm": 0.7199999999999999
+    },
+    {
+      "record": "bidmc37",
+      "eligible_windows": 15,
+      "accepted_windows": 15,
+      "rejected_windows": 0,
+      "mae_bpm": 0.38000366084780807
+    },
+    {
+      "record": "bidmc38",
+      "eligible_windows": 15,
+      "accepted_windows": 15,
+      "rejected_windows": 0,
+      "mae_bpm": 0.8533197358113304
+    },
+    {
+      "record": "bidmc39",
+      "eligible_windows": 15,
+      "accepted_windows": 14,
+      "rejected_windows": 1,
+      "mae_bpm": 1.0286063700846728
+    },
+    {
+      "record": "bidmc40",
+      "eligible_windows": 15,
+      "accepted_windows": 11,
+      "rejected_windows": 4,
+      "mae_bpm": 1.0272755176355355
+    },
+    {
+      "record": "bidmc41",
+      "eligible_windows": 15,
+      "accepted_windows": 9,
+      "rejected_windows": 6,
+      "mae_bpm": 10.322298039353692
+    },
+    {
+      "record": "bidmc42",
+      "eligible_windows": 15,
+      "accepted_windows": 15,
+      "rejected_windows": 0,
+      "mae_bpm": 0.40000317972350674
+    },
+    {
+      "record": "bidmc43",
+      "eligible_windows": 15,
+      "accepted_windows": 13,
+      "rejected_windows": 2,
+      "mae_bpm": 1.4308020968563595
+    },
+    {
+      "record": "bidmc44",
+      "eligible_windows": 15,
+      "accepted_windows": 15,
+      "rejected_windows": 0,
+      "mae_bpm": 1.1066727703685606
+    },
+    {
+      "record": "bidmc45",
+      "eligible_windows": 15,
+      "accepted_windows": 2,
+      "rejected_windows": 13,
+      "mae_bpm": 8.299946592608418
+    },
+    {
+      "record": "bidmc46",
+      "eligible_windows": 15,
+      "accepted_windows": 15,
+      "rejected_windows": 0,
+      "mae_bpm": 1.0666812001911619
+    },
+    {
+      "record": "bidmc47",
+      "eligible_windows": 15,
+      "accepted_windows": 14,
+      "rejected_windows": 1,
+      "mae_bpm": 0.8714307513221067
+    },
+    {
+      "record": "bidmc48",
+      "eligible_windows": 15,
+      "accepted_windows": 15,
+      "rejected_windows": 0,
+      "mae_bpm": 1.733255002492344
+    },
+    {
+      "record": "bidmc49",
+      "eligible_windows": 15,
+      "accepted_windows": 15,
+      "rejected_windows": 0,
+      "mae_bpm": 0.7800061037018954
+    },
+    {
+      "record": "bidmc50",
+      "eligible_windows": 15,
+      "accepted_windows": 15,
+      "rejected_windows": 0,
+      "mae_bpm": 0.8933251950641392
+    },
+    {
+      "record": "bidmc51",
+      "eligible_windows": 15,
+      "accepted_windows": 15,
+      "rejected_windows": 0,
+      "mae_bpm": 0.7933201649016373
+    },
+    {
+      "record": "bidmc52",
+      "eligible_windows": 15,
+      "accepted_windows": 15,
+      "rejected_windows": 0,
+      "mae_bpm": 0.8733170567949468
+    },
+    {
+      "record": "bidmc53",
+      "eligible_windows": 15,
+      "accepted_windows": 3,
+      "rejected_windows": 12,
+      "mae_bpm": 1.2666971851761417
+    }
+  ],
+  "limitations": [
+    "Contact PPG is not facial video. No webcam validity established.",
+    "Reference is monitor numeric HR, not independently adjudicated beats.",
+    "Results conditional on quality gate; report rejected-window coverage.",
+    "No HRV or arrhythmia diagnosis. No model parameters trained."
+  ]
+}
