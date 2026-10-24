@@ -1,3 +1,5 @@
+For email/Google/Apple sign-in configuration and local service diagnostics, see [AUTH_SETUP.md](AUTH_SETUP.md).
+
 # Current recording flow
 
 Sign in / create account -> profile questionnaire -> national melanoma context and optional ZIP-area map -> camera -> automatic all-model skin-image analysis and next steps. Every installed compatible skin model runs without a model-selection step. Model percentages are explicitly uncalibrated image-category estimates, not validated personal cancer probabilities. Missing models do not produce percentages. See TRAIN_AND_RUN.md for setup, account/privacy limitations and data provenance.

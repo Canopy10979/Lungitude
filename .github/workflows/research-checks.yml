@@ -8,7 +8,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - run: pip install -r backend/requirements.txt -r ml/tabular/requirements.txt httpx pillow opencv-python-headless python-multipart
+      - run: pip install -r backend/requirements.txt -r ml/tabular/requirements.txt httpx pillow opencv-python-headless python-multipart -r ml/skin/auth-requirements.txt
       - run: python -m compileall -q ml backend tools
       - run: python -m unittest discover -s tests -p 'test_*.py' -v
 

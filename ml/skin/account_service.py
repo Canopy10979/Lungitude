@@ -16,6 +16,8 @@ def connect():
  DB.parent.mkdir(exist_ok=True)
  db=sqlite3.connect(DB,timeout=5);db.row_factory=sqlite3.Row
  db.execute('CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY,email TEXT UNIQUE,password TEXT,profile TEXT)')
+ db.execute('CREATE TABLE IF NOT EXISTS identities (provider TEXT,subject TEXT,user_id INTEGER,PRIMARY KEY(provider,subject))')
+ db.execute('CREATE TABLE IF NOT EXISTS oauth_attempts (token TEXT PRIMARY KEY,nonce TEXT,state TEXT,expires REAL)')
  db.execute('CREATE TABLE IF NOT EXISTS sessions (token TEXT PRIMARY KEY,user_id INTEGER,csrf TEXT,expires REAL)')
  return db
 
@@ -65,8 +67,8 @@ def login(request:Request,response:Response,email:str=Form(...),password:str=For
  email=credentials(request,email,password)
  with connect() as db:
   row=db.execute('SELECT * FROM users WHERE email=?',(email,)).fetchone()
-  stored=row['password'] if row else password_hash('dummy-password-123')
-  if not hmac.compare_digest(password_hash(password,stored.split(':')[0]),stored) or row is None:raise HTTPException(401,'Email or password not recognized')
+  stored=row['password'] if row and row['password'] else password_hash('dummy-password-123')
+  if not hmac.compare_digest(password_hash(password,stored.split(':')[0]),stored) or row is None or not row['password']:raise HTTPException(401,'Email or password not recognized')
   csrf=create_session(db,row['id'],response)
  return {'signed_in':True,'csrf':csrf,'profile':json.loads(row['profile']) if row['profile'] else None}
 
@@ -134,5 +136,76 @@ def logout(request:Request,response:Response,csrf:str=Form(...)):
 def delete(request:Request,response:Response,csrf:str=Form(...)):
  user=session(request,csrf)
  with connect() as db:
-  db.execute('DELETE FROM sessions WHERE user_id=?',(user['user_id'],));db.execute('DELETE FROM users WHERE id=?',(user['user_id'],))
+  db.execute('DELETE FROM sessions WHERE user_id=?',(user['user_id'],));db.execute('DELETE FROM identities WHERE user_id=?',(user['user_id'],));db.execute('DELETE FROM users WHERE id=?',(user['user_id'],))
  response.delete_cookie(COOKIE,path='/');return {'deleted':True}
+
+
+@router.get('/health')
+def health():
+ with connect() as db:db.execute('SELECT 1')
+ return {'ready':True,'password_signin':True}
+
+OAUTH_COOKIE='lungitude_oauth'
+def provider_config():
+ google=os.getenv('GOOGLE_WEB_CLIENT_ID','').strip()
+ apple=os.getenv('APPLE_SERVICES_ID','').strip();redirect=os.getenv('APPLE_REDIRECT_URI','').strip()
+ from urllib.parse import urlparse
+ parsed=urlparse(redirect)
+ import ipaddress
+ try:ipaddress.ip_address(parsed.hostname or '');is_ip=True
+ except ValueError:is_ip=False
+ apple_ok=bool(apple and parsed.scheme=='https' and parsed.hostname and parsed.hostname!='localhost' and not is_ip and not parsed.fragment)
+ return {'google':{'enabled':bool(google),'client_id':google},'apple':{'enabled':apple_ok,'client_id':apple if apple_ok else '', 'redirect_uri':redirect if apple_ok else ''}}
+
+@router.get('/oauth/config')
+def oauth_config(response:Response):
+ providers=provider_config()
+ if not any(p['enabled'] for p in providers.values()):return {'providers':providers}
+ token=secrets.token_urlsafe(32);nonce=secrets.token_urlsafe(32);state=secrets.token_urlsafe(32)
+ with connect() as db:
+  db.execute('DELETE FROM oauth_attempts WHERE expires<?',(time.time(),))
+  db.execute('INSERT INTO oauth_attempts VALUES (?,?,?,?)',(hashlib.sha256(token.encode()).hexdigest(),nonce,state,time.time()+600))
+ response.set_cookie(OAUTH_COOKIE,token,httponly=True,samesite='strict',secure=os.getenv('LUNGITUDE_SECURE_COOKIES')=='1',max_age=600,path='/')
+ return {'providers':providers,'nonce':nonce,'state':state}
+
+def verify_identity(provider,credential,audience,nonce):
+ if provider=='google':
+  from google.oauth2 import id_token
+  from google.auth.transport.requests import Request as GoogleRequest
+  claims=id_token.verify_oauth2_token(credential,GoogleRequest(),audience)
+ else:
+  import jwt
+  key=jwt.PyJWKClient('https://appleid.apple.com/auth/keys',timeout=5).get_signing_key_from_jwt(credential).key
+  claims=jwt.decode(credential,key,algorithms=['RS256'],audience=audience,issuer='https://appleid.apple.com',options={'require':['exp','iss','aud','sub']})
+ if not isinstance(claims.get('sub'),str) or not claims['sub'] or not hmac.compare_digest(str(claims.get('nonce','')),nonce):raise ValueError('Invalid identity nonce or subject')
+ return claims
+
+@router.post('/oauth')
+def oauth(request:Request,response:Response,provider:str=Form(...),credential:str=Form(...),state:str=Form(...)):
+ config=provider_config().get(provider)
+ if not config or not config['enabled']:raise HTTPException(503,'Sign-in could not be completed')
+ if len(credential)>20000:raise HTTPException(422,'Invalid credential')
+ token=request.cookies.get(OAUTH_COOKIE,'');digest=hashlib.sha256(token.encode()).hexdigest()
+ with connect() as db:
+  attempt=db.execute('SELECT * FROM oauth_attempts WHERE token=? AND expires>?',(digest,time.time())).fetchone()
+  if not attempt or not hmac.compare_digest(state,attempt['state']):raise HTTPException(403,'Please restart sign-in')
+  # Consume atomically before verification so concurrent/replayed callbacks cannot reuse it.
+  deleted=db.execute('DELETE FROM oauth_attempts WHERE token=?',(digest,)).rowcount
+  if deleted!=1:raise HTTPException(403,'Please restart sign-in')
+ try:claims=verify_identity(provider,credential,config['client_id'],attempt['nonce'])
+ except Exception:raise HTTPException(401,'Identity could not be verified')
+ with connect() as db:
+  row=db.execute('SELECT users.* FROM identities JOIN users ON users.id=identities.user_id WHERE provider=? AND subject=?',(provider,claims['sub'])).fetchone()
+  if row is None:
+   email=str(claims.get('email','')).lower().strip()
+   verified=claims.get('email_verified') in (True,'true')
+   if not verified or not re.fullmatch(r'[^\s@]+@[^\s@]+\.[^\s@]+',email):raise HTTPException(401,'A verified email is required')
+   # Do not link an existing password account solely by matching its email address.
+   if db.execute('SELECT id FROM users WHERE email=?',(email,)).fetchone():raise HTTPException(409,'Use your existing sign-in method for this account')
+   uid=db.execute('INSERT INTO users(email,password) VALUES (?,NULL)',(email,)).lastrowid
+   db.execute('INSERT INTO identities VALUES (?,?,?)',(provider,claims['sub'],uid))
+   saved_profile=None
+  else:uid=row['id'];saved_profile=json.loads(row['profile']) if row['profile'] else None
+  csrf=create_session(db,uid,response)
+ response.delete_cookie(OAUTH_COOKIE,path='/')
+ return {'signed_in':True,'csrf':csrf,'profile':saved_profile}
