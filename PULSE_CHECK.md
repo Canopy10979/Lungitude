@@ -48,3 +48,9 @@ node tests/test_neck_page.cjs
 ```
 
 Passed synthetic fixtures for six rates and estimated cycle totals, flat/common illumination rejection, duration/timestamp/exposure rejection; a simulated full-minute camera/ROI/result path; denied permission; and switching modes. Existing pulse tests also cover reduced motion, labeled result summary and an inactive glow after capture. A real canvas render of the labeled Option 2 waveform was inspected. Whole-page visual browser QA and physical-person RGB neck accuracy remain unverified. These tests do not establish medical performance.
+
+## Neck camera visibility fix
+
+The shared skin stylesheet sets `canvas` backgrounds with `!important`. The neck ROI canvas previously inherited that opaque background and could cover the video underneath. The overlay now explicitly uses a transparent important background, including an inline override. A reserved-aspect preview frame shows an off/permission placeholder that disappears only after the video starts. Front/rear selection, a neck-camera navigation shortcut and clear consent/start instructions make the control discoverable. Insecure-context, denied-permission, missing-camera and camera-in-use failures now have distinct recovery messages. Preview dimensions follow the selected camera to keep the ROI overlay aligned.
+
+Regression checks include computed transparency with the shared stylesheet loaded, camera control/shortcut visibility, live/off placeholder transitions, denied-permission recovery and insecure-context behavior. Existing full-minute neck and fingertip checks continue to pass. Physical-device behavior still needs verification.
