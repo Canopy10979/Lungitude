@@ -23,6 +23,10 @@ def connect():
  db.execute('CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY,email TEXT UNIQUE,password TEXT,profile TEXT)')
  db.execute('CREATE TABLE IF NOT EXISTS identities (provider TEXT,subject TEXT,user_id INTEGER,PRIMARY KEY(provider,subject))')
  db.execute('CREATE TABLE IF NOT EXISTS oauth_attempts (token TEXT PRIMARY KEY,nonce TEXT,state TEXT,expires REAL)')
+ db.execute('CREATE TABLE IF NOT EXISTS learning_awards (user_id INTEGER,mission TEXT,points INTEGER,PRIMARY KEY(user_id,mission))')
+ db.execute('CREATE TABLE IF NOT EXISTS learning_visibility (user_id INTEGER PRIMARY KEY,alias TEXT,opt_in INTEGER)')
+ db.execute('CREATE TABLE IF NOT EXISTS assistant_global_usage (day TEXT PRIMARY KEY,count INTEGER)')
+ db.execute('CREATE TABLE IF NOT EXISTS assistant_usage (user_id INTEGER,day TEXT,count INTEGER,last_request REAL,PRIMARY KEY(user_id,day))')
  db.execute('CREATE TABLE IF NOT EXISTS sessions (token TEXT PRIMARY KEY,user_id INTEGER,csrf TEXT,expires REAL)')
  return db
 
@@ -143,6 +147,7 @@ def logout(request:Request,response:Response,csrf:str=Form(...)):
 def delete(request:Request,response:Response,csrf:str=Form(...)):
  user=session(request,csrf)
  with connect() as db:
+  for table in ['learning_awards','learning_visibility','assistant_usage']:db.execute('DELETE FROM '+table+' WHERE user_id=?',(user['user_id'],))
   db.execute('DELETE FROM sessions WHERE user_id=?',(user['user_id'],));db.execute('DELETE FROM identities WHERE user_id=?',(user['user_id'],));db.execute('DELETE FROM users WHERE id=?',(user['user_id'],))
  response.delete_cookie(COOKIE,path='/');return {'deleted':True}
 

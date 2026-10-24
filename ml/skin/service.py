@@ -16,6 +16,8 @@ from breast_service import router as breast_router
 app.include_router(breast_router)
 from account_service import router as account_router
 app.include_router(account_router)
+from engagement_service import router as engagement_router
+app.include_router(engagement_router)
 from care_service import router as care_router
 app.include_router(care_router)
 ROOT=Path(__file__).resolve().parent

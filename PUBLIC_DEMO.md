@@ -25,7 +25,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\Set-ClaudeKey.ps1
 .\.venv\Scripts\python.exe tools/test_claude.py
 ```
 
-The test is a small billable request sending only a fixed “Reply with only OK” message. It does not send images/health profiles or integrate Claude into the visitor UI. The key remains in ignored local .env. requests/python-dotenv are installed with ml/skin/auth-requirements.txt. No real credentials are committed in this change.
+The test is a small billable request sending only a fixed “Reply with only OK” message. It does not send images/health profiles or test the visitor UI. The signed-in learning hub now offers a separate consent-based Claude guide; restart Python after saving the key. The key remains in ignored local .env. requests/python-dotenv are installed with ml/skin/auth-requirements.txt. No real credentials are committed in this change.
 
 ## Share the working laptop app over HTTPS for a temporary demo
 

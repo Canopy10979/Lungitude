@@ -18,7 +18,7 @@ def main():
   print('PASS: Claude API HTTP',r.status_code)
   print('Response:',' '.join(b.get('text','') for b in data.get('content',[]) if b.get('type')=='text'))
   usage=data.get('usage',{});print('Tokens:',usage.get('input_tokens'), 'input,',usage.get('output_tokens'),'output')
-  print('Connectivity test only; Claude is not integrated into the app UI.')
+  print('Connectivity test only; use the signed-in learning hub to test the AI guide UI.')
   return 0
  except (requests.RequestException,ValueError):print('API connection/response failed. Check your connection; no credentials were printed.');return 1
 
