@@ -1,4 +1,5 @@
 <?php
+
 /* Run: php tests/test_survey.php */
 require __DIR__ . '/../api/survey.php';
 
@@ -48,8 +49,13 @@ check('Importer: King County rate 30.9 (note "#" removed)', $imp['counties']['53
 check('Importer: "*" becomes null', $imp['counties']['53023']['colorectal']['rate'] === null);
 check('Importer: state row kept apart', $imp['state']['colorectal']['rate'] === 34.1 && !isset($imp['counties']['53000']));
 
-$withCounty = bw_survey_county($col, ['fips' => '53033', 'county' => 'King County'], ['obesity' => 25.1],
-    $imp['counties']['53033'], $imp['years']);
+$withCounty = bw_survey_county(
+    $col,
+    ['fips' => '53033', 'county' => 'King County'],
+    ['obesity' => 25.1],
+    $imp['counties']['53033'],
+    $imp['years']
+);
 $cr = $withCounty['matched'][0]['cancers'][0]['county_rate'];
 check('Survey: county rate attached to colorectal', $cr['rate'] === 30.9 && $cr['years'] === '2017-2021');
 check('Survey: county is in WA', $withCounty['county']['in_wa'] === true);

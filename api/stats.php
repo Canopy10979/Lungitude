@@ -1,4 +1,5 @@
 <?php
+
 /*
  * GET: summary of the accuracy study, for study.html and the demo video.
  * Returns totals only. No single row is returned.

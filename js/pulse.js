@@ -14,7 +14,7 @@
  * calibration, which a phone camera does not have. The user can type in a
  * reading from a clip-on pulse oximeter instead.
  */
-(function () {
+(function() {
     const SECONDS = 25;
     const SETTLE = 3;
     const RATE = 30;
@@ -32,7 +32,9 @@
     const grab = document.createElement("canvas");
     grab.width = 40;
     grab.height = 30;
-    const gg = grab.getContext("2d", { willReadFrequently: true });
+    const gg = grab.getContext("2d", {
+        willReadFrequently: true
+    });
 
     function meanRgb() {
         gg.drawImage(video, 0, 0, grab.width, grab.height);
@@ -102,7 +104,7 @@
         return y;
     }
 
-    BW.pulseAnalyse = function (raw, rate) {
+    BW.pulseAnalyse = function(raw, rate) {
         const x = raw;
         const y = bandpass(x).slice(RATE, x.length - RATE);
         let mean = 0;
@@ -180,7 +182,7 @@
         const n = Math.min(y.length, RATE * 6);
         const part = y.slice(y.length - n);
         let max = 1e-6;
-        part.forEach(function (v) {
+        part.forEach(function(v) {
             max = Math.max(max, Math.abs(v));
         });
         g.beginPath();
@@ -205,7 +207,12 @@
         let stream;
         try {
             stream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: "environment", width: 320, height: 240, frameRate: 30 }
+                video: {
+                    facingMode: "environment",
+                    width: 320,
+                    height: 240,
+                    frameRate: 30
+                }
             });
         } catch (err) {
             out.textContent = "The camera is blocked. Allow it, or skip this step.";
@@ -215,7 +222,11 @@
         const track = stream.getVideoTracks()[0];
         let torch = false;
         try {
-            await track.applyConstraints({ advanced: [{ torch: true }] });
+            await track.applyConstraints({
+                advanced: [{
+                    torch: true
+                }]
+            });
             torch = true;
         } catch (err) {
             torch = false;
@@ -229,7 +240,7 @@
         let lastT = t0;
 
         function stop(message) {
-            stream.getTracks().forEach(function (t) {
+            stream.getTracks().forEach(function(t) {
                 t.stop();
             });
             btn.disabled = false;
@@ -248,9 +259,9 @@
 
             if (!fingerOn(rgb)) {
                 offFor += dt;
-                out.textContent = torch
-                    ? "Cover the camera and the flash fully with your fingertip."
-                    : "Cover the camera with your fingertip, and hold the phone near a bright light.";
+                out.textContent = torch ?
+                    "Cover the camera and the flash fully with your fingertip." :
+                    "Cover the camera with your fingertip, and hold the phone near a bright light.";
                 if (offFor > 1.5 && samples.length > 0) {
                     samples.length = 0;
                 }
@@ -262,11 +273,14 @@
                 return;
             }
             offFor = 0;
-            samples.push({ t: now, v: rgb[0] });
+            samples.push({
+                t: now,
+                v: rgb[0]
+            });
             const have = samples.length ? now - samples[0].t : 0;
-            out.textContent = have < SETTLE
-                ? "Hold still… the camera is adjusting."
-                : "Hold still… " + Math.max(0, Math.ceil(SECONDS - have)) + " s";
+            out.textContent = have < SETTLE ?
+                "Hold still… the camera is adjusting." :
+                "Hold still… " + Math.max(0, Math.ceil(SECONDS - have)) + " s";
 
             if (samples.length > RATE * 2) {
                 const live = bandpass(resample(samples.slice(-RATE * 8)));
@@ -274,12 +288,13 @@
             }
 
             if (have >= SECONDS) {
-                const usable = samples.filter(function (s) {
+                const usable = samples.filter(function(s) {
                     return s.t - samples[0].t >= SETTLE;
                 });
                 const res = BW.pulseAnalyse(resample(usable), RATE);
                 if (res === null || res.quality < 0.3) {
-                    stop("The pulse signal was not clear. Press more lightly, keep still, and try again.");
+                    stop(
+                        "The pulse signal was not clear. Press more lightly, keep still, and try again.");
                     return;
                 }
                 const quality = res.quality >= 0.5 ? "good" : "fair";

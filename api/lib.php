@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Lungitude risk engine.
  *

@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Small key-value cache and rate limiter in SQLite (data/cache.sqlite).
  * Used to avoid paying Google twice for the same search, and to stop

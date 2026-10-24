@@ -1,4 +1,5 @@
 <?php
+
 /*
  * POST: symptom survey -> warning-sign match, Washington data, screenings due.
  *

@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Google Places healthcare listings: nearest five within 10 miles.
  * Straight-line distance is independent of routing and treatment quality.
@@ -169,7 +170,9 @@ function bw_google_places(float $lat, float $lon, string $query): ?array
         return null;
     }
     $data = json_decode($body, true);
-    if (!is_array($data) || isset($data['error'])) return null;
+    if (!is_array($data) || isset($data['error'])) {
+        return null;
+    }
     $data['places'] = $data['places'] ?? [];
 
     $places = [];
@@ -270,9 +273,11 @@ $rawLat = filter_var($_GET['lat'] ?? null, FILTER_VALIDATE_FLOAT);
 $rawLon = filter_var($_GET['lon'] ?? null, FILTER_VALIDATE_FLOAT);
 if ($rawLat === false || $rawLat === null || $rawLon === false || $rawLon === null ||
     !is_finite($rawLat) || !is_finite($rawLon) || abs($rawLat) > 90 || abs($rawLon) > 180) {
-    bw_json(['error' => 'Provide a valid location or ZIP code.', 'places' => []], 400); exit;
+    bw_json(['error' => 'Provide a valid location or ZIP code.', 'places' => []], 400);
+    exit;
 }
-$lat = (float)$rawLat; $lon = (float)$rawLon;
+$lat = (float)$rawLat;
+$lon = (float)$rawLon;
 $sample = FORCE_DEMO || isset($_GET['demo']) || GOOGLE_KEY === '' || !extension_loaded('curl');
 $type = (string)($_GET['type'] ?? 'primary');
 $places = null;
@@ -288,14 +293,16 @@ $seen = [];
 $places = array_values(array_filter($places, function ($p) use (&$seen, $lat, $lon) {
     $meters = bw_haversine_m($lat, $lon, $p['lat'], $p['lon']);
     $key = strtolower($p['name'] . '|' . $p['address']);
-    if ($meters > SEARCH_RADIUS_METERS || isset($seen[$key])) return false;
+    if ($meters > SEARCH_RADIUS_METERS || isset($seen[$key])) {
+        return false;
+    }
     $seen[$key] = true;
     return true;
 }));
-usort($places, fn($a, $b) => bw_haversine_m($lat,$lon,$a['lat'],$a['lon']) <=> bw_haversine_m($lat,$lon,$b['lat'],$b['lon']));
+usort($places, fn ($a, $b) => bw_haversine_m($lat, $lon, $a['lat'], $a['lon']) <=> bw_haversine_m($lat, $lon, $b['lat'], $b['lon']));
 $places = array_slice($places, 0, 5);
 foreach ($places as &$pl) {
-    $pl['miles'] = round(bw_haversine_m($lat,$lon,$pl['lat'],$pl['lon']) / 1609.344, 2);
+    $pl['miles'] = round(bw_haversine_m($lat, $lon, $pl['lat'], $pl['lon']) / 1609.344, 2);
     $pl['drive_min'] = max(2, (int)round($pl['meters'] * 1.4 / 500));
 }
 unset($pl);

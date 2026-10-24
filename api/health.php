@@ -1,4 +1,5 @@
 <?php
+
 /*
  * GET: what is set up and what is missing. Open it in the browser:
  *     http://localhost:8000/api/health.php

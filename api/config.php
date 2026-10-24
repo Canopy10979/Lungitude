@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Optional settings. The app works with no keys.
  *

@@ -10,7 +10,11 @@ const STATIC_FILES = [
     "./assets/favicon.svg",
     "./css/app.css",
     "./css/survey.css",
+    "./css/lab-page.css",
     "./css/website.css",
+    "./css/study-page.css",
+    "./css/record-page.css",
+    "./css/followup-page.css",
     "./js/lungsound.js",
     "./js/pulse.js",
     "./js/app.js",
@@ -18,44 +22,48 @@ const STATIC_FILES = [
     "./js/record.js",
     "./js/lab.js",
     "./js/breath.js",
+    "./js/privacy.js",
     "./js/followup.js",
     "./js/survey.js",
     "./js/pwa.js",
+    "./js/study-page.js",
     "./js/hands.js"
 ];
-const STATIC_URLS = new Set(STATIC_FILES.map(function (path) {
+const STATIC_URLS = new Set(STATIC_FILES.map(function(path) {
     return new URL(path, self.location.href).href;
 }));
-self.addEventListener("install", function (event) {
-    event.waitUntil(caches.open(CACHE_NAME).then(function (cache) {
+self.addEventListener("install", function(event) {
+    event.waitUntil(caches.open(CACHE_NAME).then(function(cache) {
         return cache.addAll(STATIC_FILES);
     }));
 });
-self.addEventListener("activate", function (event) {
-    event.waitUntil(caches.keys().then(function (names) {
-        return Promise.all(names.filter(function (name) {
-            return name.startsWith("lungitude-static-") && name !== CACHE_NAME;
-        }).map(function (name) {
+self.addEventListener("activate", function(event) {
+    event.waitUntil(caches.keys().then(function(names) {
+        return Promise.all(names.filter(function(name) {
+            return name.startsWith("lungitude-static-") && name !==
+            CACHE_NAME;
+        }).map(function(name) {
             return caches.delete(name);
         }));
     }));
 });
-self.addEventListener("fetch", function (event) {
+self.addEventListener("fetch", function(event) {
     const request = event.request;
     const url = new URL(request.url);
-    if (request.method !== "GET" || url.origin !== self.location.origin || !STATIC_URLS.has(url.href)) {
+    if (request.method !== "GET" || url.origin !== self.location.origin || !STATIC_URLS.has(url
+        .href)) {
         return;
     }
-    event.respondWith(fetch(request).then(function (response) {
+    event.respondWith(fetch(request).then(function(response) {
         if (response.ok && response.type === "basic") {
             const copy = response.clone();
-            event.waitUntil(caches.open(CACHE_NAME).then(function (cache) {
+            event.waitUntil(caches.open(CACHE_NAME).then(function(cache) {
                 return cache.put(request, copy);
             }));
         }
         return response;
-    }).catch(function () {
-        return caches.match(request).then(function (response) {
+    }).catch(function() {
+        return caches.match(request).then(function(response) {
             if (response) {
                 return response;
             }

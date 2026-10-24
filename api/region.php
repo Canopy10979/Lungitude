@@ -1,4 +1,5 @@
 <?php
+
 /*
  * GET lat, lon -> county -> local lung health context (used by lung.html).
  * The lookup functions are in geo.php.

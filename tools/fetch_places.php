@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Run once:
  *     php tools/fetch_places.php          (Washington's 39 counties)

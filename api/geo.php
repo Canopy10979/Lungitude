@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Location -> county, and county -> local data.
  *   County FIPS: US Census Geocoder, then the FCC Area API (both free).

@@ -1,4 +1,6 @@
 <?php
+
+/* Lungitude router: PHP endpoint or shared server helper. */
 $path = rawurldecode(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH));
 
 $blocked = [
@@ -24,7 +26,7 @@ header('X-Frame-Options: DENY');
 header('Permissions-Policy: camera=(self), microphone=(self), geolocation=(self)');
 header(
     "Content-Security-Policy: default-src 'self'; img-src 'self' data: blob:; media-src 'self' blob:; "
-    . "style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self'; "
+    . "style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; "
     . "frame-ancestors 'none'; base-uri 'self'"
 );
 

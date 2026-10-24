@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Import NCI State Cancer Profiles county CSV exports (data/scp/*.csv)
  * into data/wa_county_rates.json. See data/scp/README.txt.

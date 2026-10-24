@@ -1,4 +1,5 @@
 <?php
+
 /*
  * POST: add one person's numbers to the accuracy study.
  * The browser sends this only after the person ticks the consent box.
