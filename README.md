@@ -1,3 +1,7 @@
+# Current recording flow
+
+Sign in / create account -> profile questionnaire -> national melanoma context and optional ZIP-area map -> camera -> automatic all-model skin-image analysis and next steps. Every installed compatible skin model runs without a model-selection step. Model percentages are explicitly uncalibrated image-category estimates, not validated personal cancer probabilities. Missing models do not produce percentages. See TRAIN_AND_RUN.md for setup, account/privacy limitations and data provenance.
+
 # Lungitude — skin-photo and breast-cell research
 
 Current interface: [skin camera](index.html) and [breast measurement research](breast.html). See [TRAIN_AND_RUN.md](TRAIN_AND_RUN.md) for Windows setup and model training. The two model tasks use different inputs and never combine their predictions.

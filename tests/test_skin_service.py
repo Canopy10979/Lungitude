@@ -1,5 +1,6 @@
 """API consent and unavailable-model checks. No trained model/accuracy claimed."""
 import io
+import tempfile
 import sys
 import unittest
 from pathlib import Path
@@ -27,3 +28,23 @@ class SkinServiceTests(unittest.TestCase):
         r=self.client.post('/infer',data={'architecture':'fake','consent':'yes','research':'yes'},files={'image':('test.png',self.png,'image/png')})
         self.assertEqual(r.status_code,422)
 if __name__=='__main__':unittest.main()
+
+
+class AllModelTests(unittest.TestCase):
+    def test_no_model_has_no_probabilities(self):
+        client=TestClient(service.app)
+        with patch.object(service,'MODELS',{'mobilenet_v3_small':Path('/missing/model.pt')}):
+            r=client.post('/infer_all',data={'research':'yes','consent':'yes'},files={'image':('test.png',b'none','image/png')})
+        self.assertEqual(r.status_code,503)
+        self.assertNotIn('models',r.json())
+
+    def test_runs_available_models_and_reports_missing(self):
+        from unittest.mock import AsyncMock
+        with tempfile.TemporaryDirectory() as d:
+            existing=Path(d)/'model.pt';existing.write_bytes(b'fixture')
+            with patch.object(service,'MODELS',{'mobilenet_v3_small':existing,'vit_b_16':existing,'efficientnet_b0':Path('/missing/model.pt')}),patch.object(service,'infer',new_callable=AsyncMock) as run:
+                run.return_value={'scores':{'BCC':.7,'NEV':.3}}
+                r=TestClient(service.app).post('/infer_all',data={'research':'yes','consent':'yes'},files={'image':('test.png',b'fixture','image/png')})
+                self.assertEqual(r.status_code,200);self.assertEqual(run.await_count,2)
+                models=r.json()['models'];self.assertIsNone(models['efficientnet_b0']['probabilities'])
+                self.assertEqual(models['mobilenet_v3_small']['calibration'],'uncalibrated')
