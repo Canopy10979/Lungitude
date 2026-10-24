@@ -2,6 +2,8 @@ api/secrets.php
 .env
 .env.*
 !.env.example
+node_modules/
+/www/
 .venv/
 __pycache__/
 *.py[cod]

@@ -1,0 +1,23 @@
+{
+  "name": "lungitude",
+  "version": "1.0.0",
+  "description": "Lungitude health education and research prototype",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Canopy10979/Lungitude.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Canopy10979/Lungitude/issues"
+  },
+  "homepage": "https://github.com/Canopy10979/Lungitude#readme",
+  "scripts": {
+    "build:capacitor": "node scripts/build-capacitor-web.mjs"
+  },
+  "dependencies": {
+    "@capacitor/core": "^8.5.3",
+    "@capacitor/ios": "^8.5.3"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.4.3"
+  }
+}

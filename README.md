@@ -25,6 +25,19 @@ The camera supports front/rear selection, still photo capture, 10-second recordi
 
 The imaging lab computes descriptive asymmetry/border, color and texture measurements from a manually outlined lesion. Follow-up comparison accepts dated photos with ruler calibration and attempts image registration. Vessel analysis needs suitable dermoscopic imaging and is unavailable. These measurements do not determine malignancy.
 
+## Capacitor
+
+Install Node.js 22 or newer, then install the JavaScript dependencies and build the static web bundle before syncing a native project:
+
+```bat
+npm ci
+npm run build:capacitor
+npx cap add ios
+npx cap sync ios
+```
+
+`www/` is generated from the current website pages and public static assets; the old project's prebuilt `www/` bundle is intentionally not reused. Building the web bundle does not include or run the PHP backend. API-backed survey, location, and imaging features still require a separately hosted PHP service and native-app API configuration before they can work in a Capacitor app. Building iOS apps requires macOS and Xcode.
+
 MobileNet and EfficientNet research training scripts and a local inference endpoint are included. No trained cancer checkpoints or real-data accuracy results are supplied. CNN inference stays disabled until a compatible PAD-UFES-20 checkpoint is trained. Video analysis is a frame-ensemble research experiment, not a trained temporal cancer detector. Breathing and ordinary camera recordings cannot diagnose lung, pancreatic or colon cancer.
 
 See `ml/skin/README.md` for training commands. PHP risk/survey tests and JavaScript syntax checks passed during development. Dataset rates in the original prototype still require source verification before clinical use.
