@@ -1,0 +1,445 @@
+{
+  "dataset": "breast",
+  "target": "malignant sampled breast mass (not questionnaire risk)",
+  "source_sha256": "1425d9affa78ba8e53afc81d0ef8a19069ee10c4b21fe89b3cf514071b12ee33",
+  "split_fingerprint": "7cbc78512feb69548f1ff6da8e6ff6e4717b6c762b31eb9a8da9872d22de285c",
+  "seed": [
+    42,
+    43
+  ],
+  "selected_model": "logistic",
+  "selection_metric": "validation average precision",
+  "rows": 569,
+  "train_rows": 341,
+  "validation_rows": 114,
+  "test_rows": 114,
+  "test_positive_count": 42,
+  "models": {
+    "logistic": {
+      "validation": {
+        "average_precision": 0.9873202723052816,
+        "roc_auc": 0.9914021164021165,
+        "report": {
+          "0": {
+            "precision": 0.9855072463768116,
+            "recall": 0.9444444444444444,
+            "f1-score": 0.9645390070921985,
+            "support": 72.0
+          },
+          "1": {
+            "precision": 0.9111111111111111,
+            "recall": 0.9761904761904762,
+            "f1-score": 0.9425287356321839,
+            "support": 42.0
+          },
+          "accuracy": 0.956140350877193,
+          "macro avg": {
+            "precision": 0.9483091787439614,
+            "recall": 0.9603174603174602,
+            "f1-score": 0.9535338713621913,
+            "support": 114.0
+          },
+          "weighted avg": {
+            "precision": 0.9580981439105009,
+            "recall": 0.956140350877193,
+            "f1-score": 0.9564299597121931,
+            "support": 114.0
+          }
+        },
+        "confusion_matrix": [
+          [
+            68,
+            4
+          ],
+          [
+            1,
+            41
+          ]
+        ]
+      },
+      "test": {
+        "average_precision": 0.9983508554937127,
+        "roc_auc": 0.9990079365079365,
+        "report": {
+          "0": {
+            "precision": 0.9859154929577465,
+            "recall": 0.9722222222222222,
+            "f1-score": 0.9790209790209791,
+            "support": 72.0
+          },
+          "1": {
+            "precision": 0.9534883720930233,
+            "recall": 0.9761904761904762,
+            "f1-score": 0.9647058823529412,
+            "support": 42.0
+          },
+          "accuracy": 0.9736842105263158,
+          "macro avg": {
+            "precision": 0.9697019325253848,
+            "recall": 0.9742063492063492,
+            "f1-score": 0.9718634306869601,
+            "support": 114.0
+          },
+          "weighted avg": {
+            "precision": 0.9739686589549538,
+            "recall": 0.9736842105263158,
+            "f1-score": 0.9737469960380177,
+            "support": 114.0
+          }
+        },
+        "confusion_matrix": [
+          [
+            70,
+            2
+          ],
+          [
+            1,
+            41
+          ]
+        ]
+      },
+      "split_fingerprint": "7cbc78512feb69548f1ff6da8e6ff6e4717b6c762b31eb9a8da9872d22de285c",
+      "fit_partition": "train_only"
+    },
+    "svm": {
+      "validation": {
+        "average_precision": 0.9866820039318973,
+        "roc_auc": 0.9907407407407407,
+        "report": {
+          "0": {
+            "precision": 0.9857142857142858,
+            "recall": 0.9583333333333334,
+            "f1-score": 0.971830985915493,
+            "support": 72.0
+          },
+          "1": {
+            "precision": 0.9318181818181818,
+            "recall": 0.9761904761904762,
+            "f1-score": 0.9534883720930233,
+            "support": 42.0
+          },
+          "accuracy": 0.9649122807017544,
+          "macro avg": {
+            "precision": 0.9587662337662337,
+            "recall": 0.9672619047619048,
+            "f1-score": 0.9626596790042581,
+            "support": 114.0
+          },
+          "weighted avg": {
+            "precision": 0.9658578263841422,
+            "recall": 0.9649122807017544,
+            "f1-score": 0.9650731808230041,
+            "support": 114.0
+          }
+        },
+        "confusion_matrix": [
+          [
+            69,
+            3
+          ],
+          [
+            1,
+            41
+          ]
+        ]
+      },
+      "test": {
+        "average_precision": 0.9988793967199283,
+        "roc_auc": 0.9993386243386244,
+        "report": {
+          "0": {
+            "precision": 0.9861111111111112,
+            "recall": 0.9861111111111112,
+            "f1-score": 0.9861111111111112,
+            "support": 72.0
+          },
+          "1": {
+            "precision": 0.9761904761904762,
+            "recall": 0.9761904761904762,
+            "f1-score": 0.9761904761904762,
+            "support": 42.0
+          },
+          "accuracy": 0.9824561403508771,
+          "macro avg": {
+            "precision": 0.9811507936507937,
+            "recall": 0.9811507936507937,
+            "f1-score": 0.9811507936507937,
+            "support": 114.0
+          },
+          "weighted avg": {
+            "precision": 0.9824561403508771,
+            "recall": 0.9824561403508771,
+            "f1-score": 0.9824561403508771,
+            "support": 114.0
+          }
+        },
+        "confusion_matrix": [
+          [
+            71,
+            1
+          ],
+          [
+            1,
+            41
+          ]
+        ]
+      },
+      "split_fingerprint": "7cbc78512feb69548f1ff6da8e6ff6e4717b6c762b31eb9a8da9872d22de285c",
+      "fit_partition": "train_only"
+    },
+    "random_forest": {
+      "validation": {
+        "average_precision": 0.9831421844682069,
+        "roc_auc": 0.9897486772486773,
+        "report": {
+          "0": {
+            "precision": 0.9710144927536232,
+            "recall": 0.9305555555555556,
+            "f1-score": 0.950354609929078,
+            "support": 72.0
+          },
+          "1": {
+            "precision": 0.8888888888888888,
+            "recall": 0.9523809523809523,
+            "f1-score": 0.9195402298850575,
+            "support": 42.0
+          },
+          "accuracy": 0.9385964912280702,
+          "macro avg": {
+            "precision": 0.929951690821256,
+            "recall": 0.941468253968254,
+            "f1-score": 0.9349474199070678,
+            "support": 114.0
+          },
+          "weighted avg": {
+            "precision": 0.9407576913297737,
+            "recall": 0.9385964912280702,
+            "f1-score": 0.9390019435970705,
+            "support": 114.0
+          }
+        },
+        "confusion_matrix": [
+          [
+            67,
+            5
+          ],
+          [
+            2,
+            40
+          ]
+        ]
+      },
+      "test": {
+        "average_precision": 0.9947404316235855,
+        "roc_auc": 0.9966931216931216,
+        "report": {
+          "0": {
+            "precision": 0.9466666666666667,
+            "recall": 0.9861111111111112,
+            "f1-score": 0.9659863945578231,
+            "support": 72.0
+          },
+          "1": {
+            "precision": 0.9743589743589743,
+            "recall": 0.9047619047619048,
+            "f1-score": 0.9382716049382716,
+            "support": 42.0
+          },
+          "accuracy": 0.956140350877193,
+          "macro avg": {
+            "precision": 0.9605128205128205,
+            "recall": 0.9454365079365079,
+            "f1-score": 0.9521289997480473,
+            "support": 114.0
+          },
+          "weighted avg": {
+            "precision": 0.9568690958164642,
+            "recall": 0.956140350877193,
+            "f1-score": 0.9557756825927252,
+            "support": 114.0
+          }
+        },
+        "confusion_matrix": [
+          [
+            71,
+            1
+          ],
+          [
+            4,
+            38
+          ]
+        ]
+      },
+      "split_fingerprint": "7cbc78512feb69548f1ff6da8e6ff6e4717b6c762b31eb9a8da9872d22de285c",
+      "fit_partition": "train_only"
+    },
+    "gradient_boosting": {
+      "validation": {
+        "average_precision": 0.9828357054760619,
+        "roc_auc": 0.9877645502645502,
+        "report": {
+          "0": {
+            "precision": 0.9714285714285714,
+            "recall": 0.9444444444444444,
+            "f1-score": 0.9577464788732394,
+            "support": 72.0
+          },
+          "1": {
+            "precision": 0.9090909090909091,
+            "recall": 0.9523809523809523,
+            "f1-score": 0.9302325581395349,
+            "support": 42.0
+          },
+          "accuracy": 0.9473684210526315,
+          "macro avg": {
+            "precision": 0.9402597402597402,
+            "recall": 0.9484126984126984,
+            "f1-score": 0.9439895185063871,
+            "support": 114.0
+          },
+          "weighted avg": {
+            "precision": 0.9484620642515378,
+            "recall": 0.9473684210526315,
+            "f1-score": 0.9476097712345061,
+            "support": 114.0
+          }
+        },
+        "confusion_matrix": [
+          [
+            68,
+            4
+          ],
+          [
+            2,
+            40
+          ]
+        ]
+      },
+      "test": {
+        "average_precision": 0.997810329205678,
+        "roc_auc": 0.9986772486772486,
+        "report": {
+          "0": {
+            "precision": 0.9726027397260274,
+            "recall": 0.9861111111111112,
+            "f1-score": 0.9793103448275862,
+            "support": 72.0
+          },
+          "1": {
+            "precision": 0.975609756097561,
+            "recall": 0.9523809523809523,
+            "f1-score": 0.963855421686747,
+            "support": 42.0
+          },
+          "accuracy": 0.9736842105263158,
+          "macro avg": {
+            "precision": 0.9741062479117941,
+            "recall": 0.9692460317460317,
+            "f1-score": 0.9715828832571666,
+            "support": 114.0
+          },
+          "weighted avg": {
+            "precision": 0.9737105878629081,
+            "recall": 0.9736842105263158,
+            "f1-score": 0.9736164257756981,
+            "support": 114.0
+          }
+        },
+        "confusion_matrix": [
+          [
+            71,
+            1
+          ],
+          [
+            2,
+            40
+          ]
+        ]
+      },
+      "split_fingerprint": "7cbc78512feb69548f1ff6da8e6ff6e4717b6c762b31eb9a8da9872d22de285c",
+      "fit_partition": "train_only"
+    }
+  },
+  "features": [
+    "radius_mean",
+    "texture_mean",
+    "perimeter_mean",
+    "area_mean",
+    "smoothness_mean",
+    "compactness_mean",
+    "concavity_mean",
+    "concave_points_mean",
+    "symmetry_mean",
+    "fractal_dimension_mean",
+    "radius_se",
+    "texture_se",
+    "perimeter_se",
+    "area_se",
+    "smoothness_se",
+    "compactness_se",
+    "concavity_se",
+    "concave_points_se",
+    "symmetry_se",
+    "fractal_dimension_se",
+    "radius_worst",
+    "texture_worst",
+    "perimeter_worst",
+    "area_worst",
+    "smoothness_worst",
+    "compactness_worst",
+    "concavity_worst",
+    "concave_points_worst",
+    "symmetry_worst",
+    "fractal_dimension_worst"
+  ],
+  "research_only": true,
+  "limitations": [
+    "Internal holdout only; no clinical validation.",
+    "No calibration or individual cancer probability claim.",
+    "Requires sampled-cell measurements, not user photos."
+  ],
+  "versions": {
+    "python": "3.12.14",
+    "sklearn": "1.8.0",
+    "pandas": "2.2.3"
+  },
+  "test_average_precision": 0.9983508554937127,
+  "test_roc_auc": 0.9990079365079365,
+  "test_report": {
+    "0": {
+      "precision": 0.9859154929577465,
+      "recall": 0.9722222222222222,
+      "f1-score": 0.9790209790209791,
+      "support": 72.0
+    },
+    "1": {
+      "precision": 0.9534883720930233,
+      "recall": 0.9761904761904762,
+      "f1-score": 0.9647058823529412,
+      "support": 42.0
+    },
+    "accuracy": 0.9736842105263158,
+    "macro avg": {
+      "precision": 0.9697019325253848,
+      "recall": 0.9742063492063492,
+      "f1-score": 0.9718634306869601,
+      "support": 114.0
+    },
+    "weighted avg": {
+      "precision": 0.9739686589549538,
+      "recall": 0.9736842105263158,
+      "f1-score": 0.9737469960380177,
+      "support": 114.0
+    }
+  },
+  "confusion_matrix": [
+    [
+      70,
+      2
+    ],
+    [
+      1,
+      41
+    ]
+  ]
+}

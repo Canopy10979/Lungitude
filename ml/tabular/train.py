@@ -16,8 +16,8 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
 from sklearn.ensemble import RandomForestClassifier, HistGradientBoostingClassifier
-from sklearn.model_selection import StratifiedGroupKFold, cross_val_score
-from sklearn.metrics import classification_report, confusion_matrix, average_precision_score, roc_auc_score, brier_score_loss
+from sklearn.model_selection import StratifiedGroupKFold
+from sklearn.metrics import classification_report, confusion_matrix, average_precision_score, roc_auc_score
 
 
 def load(path, dataset):
@@ -58,6 +58,26 @@ def load(path, dataset):
     return X, y.astype(int), target
 
 
+def three_way_split(X, y):
+    groups = pd.util.hash_pandas_object(X, index=False).to_numpy()
+    development, test = next(StratifiedGroupKFold(n_splits=5, shuffle=True, random_state=42).split(X,y,groups))
+    train, validation = next(StratifiedGroupKFold(n_splits=4, shuffle=True, random_state=43).split(X.iloc[development],y.iloc[development],groups[development]))
+    parts = [development[train], development[validation], test]
+    sets = [set(groups[part]) for part in parts]
+    if sets[0]&sets[1] or sets[0]&sets[2] or sets[1]&sets[2]:raise ValueError('Duplicate predictors cross splits')
+    if any(set(y.iloc[part])!={0,1} for part in parts):raise ValueError('Each split must contain both classes')
+    return parts, groups
+
+
+def evaluate(model, X, y):
+    pred=model.predict(X)
+    rank=model.decision_function(X) if hasattr(model,'decision_function') else model.predict_proba(X)[:,1]
+    return {'average_precision':float(average_precision_score(y,rank)),
+            'roc_auc':float(roc_auc_score(y,rank)),
+            'report':classification_report(y,pred,output_dict=True,zero_division=0),
+            'confusion_matrix':confusion_matrix(y,pred,labels=[0,1]).tolist()}
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--dataset', choices=['breast', 'cervical'], required=True)
@@ -65,43 +85,49 @@ def main():
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
     X, y, target = load(args.zip, args.dataset)
-    groups = pd.util.hash_pandas_object(X, index=False).to_numpy()
-    outer = StratifiedGroupKFold(n_splits=5, shuffle=True, random_state=42)
-    tr, te = next(outer.split(X, y, groups))
-    assert not (set(groups[tr]) & set(groups[te]))
+    (tr, va, te), groups = three_way_split(X,y)
     candidates = {
         'logistic': LogisticRegression(max_iter=3000, class_weight='balanced'),
         'svm': SVC(class_weight='balanced'),
         'random_forest': RandomForestClassifier(n_estimators=200, min_samples_leaf=3, class_weight='balanced', random_state=42, n_jobs=1),
         'gradient_boosting': HistGradientBoostingClassifier(max_iter=100, l2_regularization=1, random_state=42),
     }
-    cv = StratifiedGroupKFold(n_splits=5, shuffle=True, random_state=42)
+    args.output.mkdir(parents=True, exist_ok=True)
+    source_hash=hashlib.sha256(args.zip.read_bytes()).hexdigest()
+    manifest={'source_sha256':source_hash,'seed':[42,43],'policy':'Identical predictor rows grouped. Approximately 60/20/20; group sizes affect exact counts.',
+              'partitions':{name:{'row_indices':part.tolist(),'group_hashes':[str(g) for g in groups[part]],'rows':len(part),'positive_count':int(y.iloc[part].sum())} for name,part in zip(['train','validation','test'],[tr,va,te])}}
+    fingerprint=hashlib.sha256(json.dumps(manifest,sort_keys=True).encode()).hexdigest()
+    manifest['fingerprint']=fingerprint
+    (args.output/'split_audit.json').write_text(json.dumps(manifest,indent=2))
     scores, models = {}, {}
     for name, classifier in candidates.items():
-        model = make_pipeline(SimpleImputer(strategy='median', add_indicator=True), StandardScaler(), classifier)
-        folds = cross_val_score(model, X.iloc[tr], y.iloc[tr], cv=cv, groups=groups[tr], scoring='average_precision')
-        scores[name] = {'mean_average_precision': float(folds.mean()), 'std': float(folds.std())}
-        models[name] = model
-        print(name, scores[name], flush=True)
-    winner = max(scores, key=lambda n: scores[n]['mean_average_precision'])
-    model = models[winner].fit(X.iloc[tr], y.iloc[tr])
-    pred = model.predict(X.iloc[te])
-    rank = model.decision_function(X.iloc[te]) if hasattr(model, 'decision_function') else model.predict_proba(X.iloc[te])[:,1]
-    result = {'dataset':args.dataset, 'target':target, 'source_sha256':hashlib.sha256(args.zip.read_bytes()).hexdigest(),
-              'seed':42, 'split_policy':'identical predictor rows grouped across all folds', 'selected_model':winner, 'development_cv':scores,
-              'rows':len(y), 'development_rows':len(tr), 'test_rows':len(te), 'test_positive_count':int(y.iloc[te].sum()),
-              'test_average_precision':float(average_precision_score(y.iloc[te], rank)),
-              'test_roc_auc':float(roc_auc_score(y.iloc[te], rank)),
-              'test_report':classification_report(y.iloc[te], pred, output_dict=True, zero_division=0),
-              'confusion_matrix':confusion_matrix(y.iloc[te], pred, labels=[0,1]).tolist(),
-              'features':list(X.columns), 'research_only':True,
-              'limitations':['Internal holdout only; no clinical validation.', 'No calibration or individual cancer probability claim.',
-                             'Cervical source lacks patient identifiers; repeated-patient leakage cannot be excluded.' if args.dataset == 'cervical' else 'Requires sampled-cell measurements, not user photos.'],
-              'versions':{'python':platform.python_version(), 'sklearn':sklearn.__version__, 'pandas':pd.__version__}}
-    args.output.mkdir(parents=True, exist_ok=True)
-    joblib.dump({'pipeline':model, 'features':list(X.columns), 'target':target, 'research_only':True}, args.output/'model.joblib')
-    (args.output/'evaluation.json').write_text(json.dumps(result, indent=2))
-    print('Selected:',winner,'Test AP:',result['test_average_precision'])
+        model=make_pipeline(SimpleImputer(strategy='median',add_indicator=True),StandardScaler(),classifier)
+        model.fit(X.iloc[tr],y.iloc[tr])  # Imputer/scaler see training rows only.
+        scores[name]=evaluate(model,X.iloc[va],y.iloc[va]);models[name]=model
+        print(name,'validation AP:',scores[name]['average_precision'],flush=True)
+    winner=max(scores,key=lambda name:scores[name]['average_precision'])
+    # Selection is locked BEFORE touching the test set. No test-based ensemble or tuning.
+    result={'dataset':args.dataset,'target':target,'source_sha256':source_hash,'split_fingerprint':fingerprint,
+            'seed':[42,43],'selected_model':winner,'selection_metric':'validation average precision',
+            'rows':len(y),'train_rows':len(tr),'validation_rows':len(va),'test_rows':len(te),
+            'test_positive_count':int(y.iloc[te].sum()),'models':{},'features':list(X.columns),'research_only':True,
+            'limitations':['Internal holdout only; no clinical validation.','No calibration or individual cancer probability claim.',
+             'Cervical source lacks patient identifiers; repeated-patient leakage cannot be excluded.' if args.dataset=='cervical' else 'Requires sampled-cell measurements, not user photos.'],
+            'versions':{'python':platform.python_version(),'sklearn':sklearn.__version__,'pandas':pd.__version__}}
+    for name,model in models.items():
+        holdout=evaluate(model,X.iloc[te],y.iloc[te])
+        evaluation={'validation':scores[name],'test':holdout,'split_fingerprint':fingerprint,'fit_partition':'train_only'}
+        result['models'][name]=evaluation
+        checkpoint={'pipeline':model,'features':list(X.columns),'target':target,'research_only':True,'architecture':name,'split_fingerprint':fingerprint}
+        joblib.dump(checkpoint,args.output/(name+'.joblib'))
+        (args.output/(name+'_evaluation.json')).write_text(json.dumps(evaluation,indent=2))
+        if name==winner:joblib.dump(checkpoint,args.output/'model.joblib')
+    chosen=result['models'][winner]['test']
+    result.update(test_average_precision=chosen['average_precision'],test_roc_auc=chosen['roc_auc'],test_report=chosen['report'],confusion_matrix=chosen['confusion_matrix'])
+    (args.output/'evaluation.json').write_text(json.dumps(result,indent=2))
+    print('Validation-selected:',winner,'Final test AP:',chosen['average_precision'])
+    print('Saved all four trained models, validation/test reports and shared split audit.')
 
 if __name__ == '__main__':
-    main()
+    from threadpoolctl import threadpool_limits
+    with threadpool_limits(limits=1):main()

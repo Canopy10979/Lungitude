@@ -1,7 +1,7 @@
 <?php
 require __DIR__.'/lib.php';
 $action = $_GET['action'] ?? 'status';
-if (!in_array($action,['status','features','infer','infer_all','compare','breast_status','breast_infer'],true)) {bw_json(['error'=>'Unsupported imaging action'],422);exit;}
+if (!in_array($action,['status','features','infer','infer_all','infer_live','compare','breast_status','breast_infer'],true)) {bw_json(['error'=>'Unsupported imaging action'],422);exit;}
 if (!extension_loaded('curl')) {bw_json(['error'=>'Analysis is temporarily unavailable. Please try again later.'],503);exit;}
 $endpoint=['breast_status'=>'breast/status','breast_infer'=>'breast/infer'][$action]??$action;
 $ch=curl_init('http://127.0.0.1:8010/'.$endpoint);

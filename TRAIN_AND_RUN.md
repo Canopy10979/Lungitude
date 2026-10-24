@@ -23,7 +23,7 @@ If that branch doesn't exist locally, `git switch --track origin/codex/model-tra
 powershell -ExecutionPolicy Bypass -File .\scripts\Train-Models.ps1 -BreastOnly -BreastInput "C:\Users\rishi\Downloads\Cancer_Data.csv"
 ```
 
-Use your actual CSV path if different. The script creates .venv, installs tabular dependencies, compares four candidates with development-only grouped cross-validation, evaluates the selected model on a held-out fold and saves `ml/tabular/output_breast/model.joblib` and `evaluation.json`. Models remain local and ignored by git. Only load joblib checkpoints from your own trusted training runs.
+Use your actual CSV path if different. The script creates .venv, installs tabular dependencies, fits four candidates on training rows, selects on validation average precision, evaluates each frozen model once on the same held-out test partition and saves `ml/tabular/output_breast/model.joblib` and `evaluation.json`. Models remain local and ignored by git. Only load joblib checkpoints from your own trusted training runs.
 
 The UI accepts a measurement CSV with the same named features, ignores id/diagnosis and sends only the selected record after consent. Reusing a training row demonstrates wiring, not an unbiased accuracy test. The service returns a research dataset class, not a patient diagnosis or calibrated probability.
 
@@ -35,7 +35,7 @@ Download PAD-UFES-20 images and metadata from https://data.mendeley.com/datasets
 powershell -ExecutionPolicy Bypass -File .\scripts\Train-Models.ps1 -SkinOnly -SkinMetadata ".\data\pad_ufes20\metadata.csv" -SkinImages ".\data\pad_ufes20\images" -Epochs 10
 ```
 
-This trains MobileNetV3, EfficientNet-B0 and ViT classifier heads using frozen pretrained backbones, with the existing patient-separated PAD splits. Start at one epoch to smoke-test installation; that is not adequate evidence of performance. Training time depends on your hardware; CPU ViT can be slow. Compare validation metrics and latency before choosing the skin architecture. Preserve the held-out test fold for final reporting.
+This trains MobileNetV3, EfficientNet-B0, ViT, ResNet-18, DenseNet-121 and ConvNeXt-Tiny classifier heads using frozen pretrained backbones. Every architecture uses the same deterministic patient/lesion/exact-file-duplicate-separated PAD train/validation/test partitions and fingerprint. Start at one epoch to smoke-test installation; that is not adequate evidence of performance. Training time depends on your hardware; CPU ViT can be slow. Compare validation metrics and latency before choosing the skin architecture. Preserve the held-out test fold for final reporting.
 
 No skin image data has been uploaded in this conversation, so no skin checkpoint has been trained here. Wisconsin and cervical tables cannot fill this gap. Cervical data remains an unrelated research experiment, not an active app feature.
 
@@ -53,7 +53,7 @@ cd "C:\Users\rishi\Downloads\Lungitude"
 php -S localhost:8000 router.php
 ```
 
-PHP requires curl. Open http://localhost:8000 for skin; http://localhost:8000/breast.html for breast measurement research. The PHP proxy routes both tasks to port 8010. The breast model is reloaded from its fixed local path for each request; restart the service after replacing a skin checkpoint because skin models are cached. No database profile is required for either flow.
+PHP requires curl. Open http://localhost:8000 for skin; http://localhost:8000/breast.html for breast measurement research. The PHP proxy routes both tasks to port 8010. The breast model is reloaded from its fixed local path for each request; restart the service after replacing a skin checkpoint because skin models are cached. The skin flow requires an account/profile; breast measurement research is a separate flow.
 
 Live iPhone capture requires HTTPS hosting with the same-origin API proxy. Your iPhone's localhost is not your laptop. This change does not deploy a public service or certify iPhone hardware behavior.
 
@@ -97,3 +97,11 @@ The main recording/photo flow now calls `/infer_all`. It runs every installed co
 ## Graceful result presentation
 
 The user result list displays only models that actually returned estimates. Missing or failed model slots are omitted; they never produce mock percentages or a visible "unavailable model" card. If the entire assessment fails, a short recovery message clearly states it could not be completed and offers to save/retry. This intentionally does not claim a successful/full analysis when none occurred. Diagnostic model availability remains in backend status responses for operators. Failed model slots are not converted to zero probabilities and are not averaged into other models.
+
+## Six-model comparison and live preview
+
+See MODEL_TRAINING.md for split policies, saved evidence and staged Windows commands. Models do not alter the national registry statistics or produce calibrated personal cancer probabilities.
+
+While recording, local lighting/motion/sharpness heuristics give capture guidance; they are not trained skin detectors. Experimental live AI preview is a separate unchecked opt-in and also requires image-analysis consent. It uploads at most two still frames, at least 2.5 seconds apart, with one request in flight. It uses the first installed compatible lightweight checkpoint in MobileNetV3, ResNet-18, EfficientNet-B0 order. A slow response may not arrive within an eight-second capture; no real-time latency guarantee is made. Stop, consent withdrawal and backgrounding clear the preview and ignore stale responses. Server-side computation already started may still finish after an HTTP abort.
+
+After recording, the selected still is evaluated by all installed compatible skin checkpoints. This is not a trained temporal video classifier; no labeled videos were supplied. No scores are invented if training is blocked. The full recording remains local. Test or train recordings from the same person must never cross evaluation partitions if a future temporal model is added.

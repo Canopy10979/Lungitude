@@ -27,7 +27,22 @@ class SkinServiceTests(unittest.TestCase):
     def test_unsupported_architecture(self):
         r=self.client.post('/infer',data={'architecture':'fake','consent':'yes','research':'yes'},files={'image':('test.png',self.png,'image/png')})
         self.assertEqual(r.status_code,422)
-if __name__=='__main__':unittest.main()
+    def test_live_requires_consent(self):
+        r=self.client.post('/infer_live',data={'research':'yes'},files={'image':('test.png',self.png,'image/png')})
+        self.assertEqual(r.status_code,422)
+    def test_live_uses_one_fast_model(self):
+        from unittest.mock import AsyncMock
+        with tempfile.TemporaryDirectory() as d:
+            checkpoint=Path(d)/'model.pt';checkpoint.touch()
+            with patch.object(service,'MODELS',{name:checkpoint for name in service.MODELS}),patch.object(service,'infer',new_callable=AsyncMock) as predict:
+                predict.return_value={'research_only':True,'architecture':'mobilenet_v3_small','scores':{'BCC':.7,'NEV':.3}}
+                r=self.client.post('/infer_live',data={'research':'yes','consent':'yes'},files={'image':('test.png',self.png,'image/png')})
+                self.assertEqual(r.status_code,200);self.assertTrue(r.json()['preliminary']);predict.assert_awaited_once()
+    def test_live_missing_models_produces_no_scores(self):
+        with patch.object(service,'MODELS',{name:Path('/no-model') for name in service.MODELS}):
+            r=self.client.post('/infer_live',data={'research':'yes','consent':'yes'},files={'image':('test.png',self.png,'image/png')})
+            self.assertEqual(r.status_code,503);self.assertNotIn('scores',r.json())
+
 
 
 class AllModelTests(unittest.TestCase):
@@ -48,3 +63,5 @@ class AllModelTests(unittest.TestCase):
                 self.assertEqual(r.status_code,200);self.assertEqual(run.await_count,2)
                 models=r.json()['models'];self.assertIsNone(models['efficientnet_b0']['probabilities'])
                 self.assertEqual(models['mobilenet_v3_small']['calibration'],'uncalibrated')
+
+if __name__=='__main__':unittest.main()

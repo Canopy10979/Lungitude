@@ -4,7 +4,8 @@ param(
   [string]$SkinImages = '',
   [ValidateRange(1,100)][int]$Epochs = 10,
   [switch]$BreastOnly,
-  [switch]$SkinOnly
+  [switch]$SkinOnly,
+  [ValidateSet("mobilenet_v3_small","efficientnet_b0","vit_b_16","resnet18","densenet121","convnext_tiny")][string[]]$SkinArchitectures = @("mobilenet_v3_small","efficientnet_b0","vit_b_16","resnet18","densenet121","convnext_tiny")
 )
 $ErrorActionPreference = 'Stop'
 if ($BreastOnly -and $SkinOnly) { throw 'Choose BreastOnly or SkinOnly, not both.' }
@@ -36,10 +37,11 @@ if (-not $BreastOnly) {
     throw 'Skin training needs PAD-UFES-20 images and metadata. Download them, then provide -SkinMetadata and -SkinImages. Breast/cervical tables cannot replace them.'
   }
   Run-Python -m pip install -r ml/skin/requirements.txt
-  $architectures = @(@('mobilenet_v3_small','output_mobile',16),@('efficientnet_b0','output_efficient',16),@('vit_b_16','output_vit',4))
+  $architectures = @(@('mobilenet_v3_small','output_mobile',16),@('efficientnet_b0','output_efficient',16),@('vit_b_16','output_vit',4),@('resnet18','output_resnet',16),@('densenet121','output_dense',8),@('convnext_tiny','output_convnext',4))
   foreach ($modelSpec in $architectures) {
+    if ($modelSpec[0] -notin $SkinArchitectures) { continue }
     Run-Python ml/skin/train.py --dataset pad_ufes20 --architecture $modelSpec[0] --metadata $SkinMetadata --images $SkinImages --epochs $Epochs --batch-size $modelSpec[2] --output (Join-Path 'ml/skin' $modelSpec[1])
   }
-  Write-Host 'Three skin checkpoints saved. Restart the image service to load new checkpoints.'
+  Write-Host 'Selected skin checkpoints and train/validation/test audits saved. Restart the image service to load new checkpoints.'
 }
 Write-Host 'Training complete. This is research evaluation, not clinical validation.'
