@@ -173,36 +173,58 @@
         };
     };
 
-    function drawWave(y) {
-        const w = canvas.width;
-        const h = canvas.height;
-        g.clearRect(0, 0, w, h);
-        if (!y || y.length < 2) {
-            return;
-        }
-        const n = Math.min(y.length, RATE * 6);
-        const part = y.slice(y.length - n);
-        let max = 1e-6;
-        part.forEach(function (v) {
-            max = Math.max(max, Math.abs(v));
-        });
-        g.beginPath();
-        for (let i = 0; i < n; i++) {
-            const px = i / (n - 1) * w;
-            const py = h / 2 - part[i] / max * (h / 2 - 6);
-            if (i === 0) {
-                g.moveTo(px, py);
-            } else {
-                g.lineTo(px, py);
-            }
-        }
-        g.strokeStyle = "#b42318";
-        g.lineWidth = 2;
-        g.stroke();
+    const $ = id => document.getElementById(id);
+    const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true;
+    let lastLiveEstimate = -Infinity;
+    function setText(id, text) {if ($(id).textContent !== text) $(id).textContent = text;}
+    function clearMonitor(stage) {
+        $('finger-contact-glow').setAttribute('opacity', '0');
+        $('pulse-live-bpm').textContent = '—';
+        $('pulse-progress').value = 0;
+        $('pulse-summary').hidden = true;
+        setText('pulse-contact-state', 'No live signal.');
+        setText('pulse-stage', stage);
+        drawWave(null);
     }
+    function drawWave(y) {
+        const w = canvas.width, h = canvas.height;
+        const left=80, right=24, top=30, bottom=66, pw=w-left-right, ph=h-top-bottom;
+        g.clearRect(0,0,w,h);g.fillStyle='#0b1b28';g.fillRect(0,0,w,h);
+        g.font='16px system-ui';g.textAlign='right';g.textBaseline='middle';
+        for (const value of [-1,-.5,0,.5,1]) {
+            const py=top+(1-value)/2*ph;
+            g.strokeStyle=value===0?'#769aa8':'#294654';g.lineWidth=1;
+            g.beginPath();g.moveTo(left,py);g.lineTo(w-right,py);g.stroke();
+            g.fillStyle='#bcd5df';g.fillText(value>0?'+'+value:String(value),left-12,py);
+        }
+        g.textAlign='center';
+        for(let seconds=0;seconds<=6;seconds++){
+            const px=left+seconds/6*pw;
+            g.strokeStyle='#294654';g.beginPath();g.moveTo(px,top);g.lineTo(px,h-bottom);g.stroke();
+            g.fillStyle='#bcd5df';g.fillText(String(seconds-6),px,h-bottom+22);
+        }
+        g.fillStyle='#cee3eb';g.fillText('Seconds before latest plotted sample',left+pw/2,h-15);
+        g.save();g.translate(19,top+ph/2);g.rotate(-Math.PI/2);g.fillText('Relative optical signal (scaled)',0,0);g.restore();
+        if(!y||y.length<2){g.fillStyle='#9ab7c5';g.fillText('Waiting for a measurable optical signal',left+pw/2,top+ph/2-25);return;}
+        const n=Math.min(y.length,RATE*6),part=y.slice(y.length-n);
+        const max=Math.max(1e-6,...Array.from(part,Math.abs));
+        g.beginPath();
+        for(let i=0;i<n;i++){
+            const seconds=(i-(n-1))/RATE;
+            const px=left+(seconds+6)/6*pw;
+            const py=top+ph/2-part[i]/max*(ph/2-8);
+            if(i===0)g.moveTo(px,py);else g.lineTo(px,py);
+        }
+        g.strokeStyle='#79e0cf';g.lineWidth=2.5;g.stroke();
+        const last=part[part.length-1]/max;
+        if(!reducedMotion)$('finger-contact-glow').setAttribute('opacity',String(.15+.75*(last+1)/2));
+    }
+    clearMonitor('Ready · no measurement yet');
 
     async function run() {
+        window.dispatchEvent(new CustomEvent('lungitude-pulse-start',{detail:{mode:'finger'}}));
         const attempt = ++generation;
+        clearMonitor('Requesting camera permission…');lastLiveEstimate=-Infinity;
         btn.disabled = true;
         out.textContent = "";
         BW.measures.pulse = null;
@@ -213,6 +235,7 @@
             });
         } catch (err) {
             if(attempt !== generation)return;
+            clearMonitor('Camera unavailable · no result');
             out.textContent = "The camera is blocked. Allow it, or skip this step.";
             btn.disabled = false;
             return;
@@ -229,7 +252,7 @@
         }
         if (attempt !== generation) {stream.getTracks().forEach(t => t.stop());return;}
         video.srcObject = stream;
-        try {await video.play();} catch (error) {if(attempt !== generation)return;if(activeCancel)activeCancel();activeCancel=null;out.textContent='Could not start the camera. Try again or use the manual wrist count.';return;}
+        try {await video.play();} catch (error) {if(attempt !== generation)return;if(activeCancel)activeCancel();activeCancel=null;clearMonitor('Camera unavailable · no result');out.textContent='Could not start the camera. Try again or use the manual wrist count.';return;}
         if (attempt !== generation) {stream.getTracks().forEach(t => t.stop());return;}
 
         const samples = [];
@@ -237,7 +260,9 @@
         let offFor = 0;
         let lastT = t0;
 
-        function stop(message) {
+        function stop(message, completed = false) {
+            if(!completed)clearMonitor('Unable to measure · try again');
+            else {$('finger-contact-glow').setAttribute('opacity','0');setText('pulse-contact-state','Measurement ended · illustration inactive');setText('pulse-stage','Complete · waveform is frozen');}
             stream.getTracks().forEach(function (t) {
                 t.stop();
             });
@@ -260,6 +285,8 @@
 
             if (!fingerOn(rgb)) {
                 offFor += dt;
+                clearMonitor('Waiting for camera coverage · no pulse estimate');
+                setText('pulse-contact-state', 'Fingertip-like image not detected (heuristic)');
                 out.textContent = torch
                     ? "Cover the camera and the flash fully with your fingertip."
                     : "Cover the camera with your fingertip, and hold the phone near a bright light.";
@@ -274,15 +301,24 @@
                 return;
             }
             offFor = 0;
+            setText('pulse-contact-state', 'Fingertip-like image detected (heuristic)');
             samples.push({ t: now, v: rgb[0] });
             const have = samples.length ? now - samples[0].t : 0;
             out.textContent = have < SETTLE
                 ? "Hold still… the camera is adjusting."
                 : "Hold still… " + Math.max(0, Math.ceil(SECONDS - have)) + " s";
 
+            $('pulse-progress').value=Math.min(SECONDS,have);
+            setText('pulse-stage',have<SETTLE?'Settling · hold still':'Recording · light variation, not an ECG');
+            if(reducedMotion)$('finger-contact-glow').setAttribute('opacity','.25');
             if (samples.length > RATE * 2) {
                 const live = bandpass(resample(samples.slice(-RATE * 8)));
                 drawWave(live.slice(RATE, live.length - 3));
+                if(have>=10 && now-lastLiveEstimate>=1){
+                    lastLiveEstimate=now;
+                    const candidate=BW.pulseAnalyse(resample(samples.filter(s=>s.t-samples[0].t>=SETTLE)),RATE);
+                    $('pulse-live-bpm').textContent=candidate && candidate.quality>=.5?String(Math.round(candidate.bpm)):'—';
+                }
             }
 
             if (have >= SECONDS) {
@@ -300,8 +336,13 @@
                     quality: quality,
                     perfusion: Math.round(res.perfusion * 100) / 100
                 };
+                drawWave(res.wave);
+                $('pulse-summary').hidden=false;
+                $('pulse-live-bpm').textContent=String(Math.round(res.bpm));
+                $('pulse-final-bpm').textContent=Math.round(res.bpm)+' beats per minute · experimental';
+                $('pulse-final-quality').textContent=(res.quality>=.5?'More consistent':'Less consistent')+' periodicity · heuristic only';
                 stop("Experimental pulse estimate: " + Math.round(res.bpm) + " beats per minute (signal " + quality +
-                    "). Not clinically validated; this does not assess cancer, oxygen saturation or heart rhythm disorders.");
+                    "). Not clinically validated; this does not assess cancer, oxygen saturation or heart rhythm disorders.", true);
                 return;
             }
             requestAnimationFrame(tick);
@@ -309,7 +350,8 @@
         requestAnimationFrame(tick);
     }
 
-    function cancel(){BW.measures.pulse=null;generation++;if(activeCancel){activeCancel();activeCancel=null;}btn.disabled=false;out.textContent='Measurement stopped. No result produced.';}
+    function cancel(){clearMonitor('Stopped · no result');BW.measures.pulse=null;generation++;if(activeCancel){activeCancel();activeCancel=null;}btn.disabled=false;out.textContent='Measurement stopped. No result produced.';}
+    window.addEventListener('lungitude-pulse-start',e=>{if(e.detail?.mode!=='finger'&&(activeCancel||btn.disabled))cancel();});
     document.getElementById('pulse-stop').addEventListener('click',cancel);
     document.addEventListener('visibilitychange',()=>{if(document.hidden&&activeCancel)cancel();});
     window.addEventListener('pagehide',cancel);
