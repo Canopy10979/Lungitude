@@ -1,0 +1,112 @@
+{
+  "dataset": "breast",
+  "target": "malignant sampled breast mass (not questionnaire risk)",
+  "source_sha256": "bc154869ef13f753f9e2b5a17e248cfe1ba4b6721db7c4da9f4880e40b05d3af",
+  "seed": 42,
+  "split_policy": "identical predictor rows grouped across all folds",
+  "selected_model": "svm",
+  "development_cv": {
+    "logistic": {
+      "mean_average_precision": 0.9898482634692831,
+      "std": 0.00547306558933504
+    },
+    "svm": {
+      "mean_average_precision": 0.9931199181865455,
+      "std": 0.005854277564914941
+    },
+    "random_forest": {
+      "mean_average_precision": 0.9875140676354597,
+      "std": 0.0068075469512240885
+    },
+    "gradient_boosting": {
+      "mean_average_precision": 0.9853492597957633,
+      "std": 0.009938740026403993
+    }
+  },
+  "rows": 569,
+  "development_rows": 455,
+  "test_rows": 114,
+  "test_positive_count": 42,
+  "test_average_precision": 1.0,
+  "test_roc_auc": 1.0,
+  "test_report": {
+    "0": {
+      "precision": 0.9863013698630136,
+      "recall": 1.0,
+      "f1-score": 0.993103448275862,
+      "support": 72.0
+    },
+    "1": {
+      "precision": 1.0,
+      "recall": 0.9761904761904762,
+      "f1-score": 0.9879518072289156,
+      "support": 42.0
+    },
+    "accuracy": 0.9912280701754386,
+    "macro avg": {
+      "precision": 0.9931506849315068,
+      "recall": 0.9880952380952381,
+      "f1-score": 0.9905276277523889,
+      "support": 114.0
+    },
+    "weighted avg": {
+      "precision": 0.9913482335976929,
+      "recall": 0.9912280701754386,
+      "f1-score": 0.9912054752585661,
+      "support": 114.0
+    }
+  },
+  "confusion_matrix": [
+    [
+      72,
+      0
+    ],
+    [
+      1,
+      41
+    ]
+  ],
+  "features": [
+    "cell_measurement_1",
+    "cell_measurement_2",
+    "cell_measurement_3",
+    "cell_measurement_4",
+    "cell_measurement_5",
+    "cell_measurement_6",
+    "cell_measurement_7",
+    "cell_measurement_8",
+    "cell_measurement_9",
+    "cell_measurement_10",
+    "cell_measurement_11",
+    "cell_measurement_12",
+    "cell_measurement_13",
+    "cell_measurement_14",
+    "cell_measurement_15",
+    "cell_measurement_16",
+    "cell_measurement_17",
+    "cell_measurement_18",
+    "cell_measurement_19",
+    "cell_measurement_20",
+    "cell_measurement_21",
+    "cell_measurement_22",
+    "cell_measurement_23",
+    "cell_measurement_24",
+    "cell_measurement_25",
+    "cell_measurement_26",
+    "cell_measurement_27",
+    "cell_measurement_28",
+    "cell_measurement_29",
+    "cell_measurement_30"
+  ],
+  "research_only": true,
+  "limitations": [
+    "Internal holdout only; no clinical validation.",
+    "No calibration or individual cancer probability claim.",
+    "Requires sampled-cell measurements, not user photos."
+  ],
+  "versions": {
+    "python": "3.12.14",
+    "sklearn": "1.8.0",
+    "pandas": "2.2.3"
+  }
+}

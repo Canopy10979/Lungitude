@@ -9,8 +9,13 @@ from features import describe
 
 Image.MAX_IMAGE_PIXELS = 6_000_000
 app=FastAPI(title='Lungitude research imaging',docs_url=None,redoc_url=None)
+from breast_service import router as breast_router
+app.include_router(breast_router)
+from account_service import router as account_router
+app.include_router(account_router)
 ROOT=Path(__file__).resolve().parent
 MODELS={'mobilenet_v3_small': ROOT/'output_mobile/model.pt','efficientnet_b0':ROOT/'output_efficient/model.pt'}
+MODELS['vit_b_16'] = ROOT/'output_vit/model.pt'
 loaded={}
 
 async def decode(file):
@@ -36,7 +41,8 @@ async def features(image:UploadFile=File(...),mask:UploadFile=File(...),consent:
     except ValueError as e:raise HTTPException(422,str(e))
 
 @app.post('/infer')
-async def infer(image:UploadFile=File(...),architecture:str=Form(...),research:str=Form('')):
+async def infer(image:UploadFile=File(...),architecture:str=Form(...),research:str=Form(''),consent:str=Form('')):
+    if consent!='yes':raise HTTPException(422,'Explicit selected-image upload consent required')
     if research!='yes':raise HTTPException(422,'Research acknowledgement required')
     if architecture not in MODELS:raise HTTPException(422,'Unsupported architecture')
     if not MODELS[architecture].is_file():raise HTTPException(503,'Trained checkpoint unavailable. Train this model first.')
@@ -62,3 +68,20 @@ async def compare_route(previous:UploadFile=File(...),current:UploadFile=File(..
     images=[np.asarray(await decode(f)) for f in [previous,current,mask_before,mask_after]]
     try:return compare(images[0],images[1],images[2][:,:,0],images[3][:,:,0],date_before,date_after,scale_before,scale_after)
     except ValueError as e:raise HTTPException(422,str(e))
+
+@app.post('/infer_all')
+async def infer_all(image:UploadFile=File(...),research:str=Form(''),consent:str=Form('')):
+    if consent!='yes' or research!='yes':raise HTTPException(422,'Image analysis consent required')
+    results={}
+    for architecture in MODELS:
+        if not MODELS[architecture].is_file():
+            results[architecture]={'available':False,'probabilities':None};continue
+        await image.seek(0)
+        try:
+            result=await infer(image=image,architecture=architecture,research=research,consent=consent)
+            results[architecture]={'available':True,'probabilities':result['scores'],'calibration':'uncalibrated'}
+        except HTTPException as error:
+            if error.status_code in {413,422}:raise
+            results[architecture]={'available':False,'probabilities':None}
+    if not any(r['available'] for r in results.values()):raise HTTPException(503,'No skin assessment available')
+    return {'research_only':True,'models':results,'notice':'Uncalibrated image-category probability estimates. Not a validated personal probability of cancer. Models may share training data; agreement is not independent clinical evidence.'}

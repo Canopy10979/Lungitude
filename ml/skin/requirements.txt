@@ -8,3 +8,5 @@ opencv-python
 fastapi
 uvicorn
 python-multipart
+
+-r auth-requirements.txt

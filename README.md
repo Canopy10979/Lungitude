@@ -1,3 +1,21 @@
+For email/Google/Apple sign-in configuration and local service diagnostics, see [AUTH_SETUP.md](AUTH_SETUP.md).
+
+# Current recording flow
+
+Sign in / create account -> profile questionnaire -> national melanoma context and optional ZIP-area map -> camera -> automatic all-model skin-image analysis and next steps. Every installed compatible skin model runs without a model-selection step. Model percentages are explicitly uncalibrated image-category estimates, not validated personal cancer probabilities. Missing models do not produce percentages. See TRAIN_AND_RUN.md for setup, account/privacy limitations and data provenance.
+
+# Lungitude — skin-photo and breast-cell research
+
+Current interface: [skin camera](index.html) and [breast measurement research](breast.html). See [TRAIN_AND_RUN.md](TRAIN_AND_RUN.md) for Windows setup and model training. The two model tasks use different inputs and never combine their predictions.
+
+---
+
+# Lungitude — skin-lesion capture and research
+
+Lungitude now focuses only on skin spots and iPhone-friendly capture. Start with [SKIN_ONLY.md](SKIN_ONLY.md) for the current mission, run commands, skin training datasets and limitations. Earlier multi-cancer and pulse material below is historical and is not the current app scope.
+
+---
+
 # Start the updated website locally
 
 Extract the ZIP to a permanent folder such as `C:\Users\rishi\Projects\Lungitude`. Do not run it inside the ZIP preview or a temporary extraction directory.
@@ -309,3 +327,7 @@ Patterns that these winners share: a real personal reason, a check with no needl
 - ICBHI 2017: Rocha et al., Physiological Measurement 2019.
 - EvergreenHealth lung cancer screening: (425) 899-6972. A referral is needed.
 - Congressional App Challenge past winners: congressionalappchallenge.us (25-WA01, 19-WA08, 25-WA08).
+
+## Model evidence and signal research upgrade
+
+Open [Model evidence](evidence.html) to inspect the new tabular evaluations, contact-PPG benchmark and Washington lung cancer context. [Pulse research](live.html) is a local, consent-based camera experiment; it is not a validated patient monitor. See [UPGRADE.md](UPGRADE.md) for exact training/run commands, measured limitations and the staged production plan.
