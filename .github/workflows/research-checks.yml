@@ -23,4 +23,5 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - run: node tests/skin-state.cjs
       - run: node tests/account-state.cjs
+      - run: node tests/account-providers.cjs
       - run: npm run test:browser

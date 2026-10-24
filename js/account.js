@@ -14,11 +14,32 @@ async function showContext(){$('profile-card').hidden=true;$('context-card').hid
 $('open-camera').onclick=()=>{$('app-main').hidden=false;$('context-card').hidden=false;$('capture').scrollIntoView({behavior:'smooth'});$('enable').onclick();};$('edit-profile').onclick=()=>{$('stop').onclick();profileView();};
 $('sign-out').onclick=async()=>{try{await request('logout',{csrf});authView();}catch(e){$('profile-status').textContent='Could not sign out. Please try again.';}};
 $('delete-account').onclick=async()=>{if(!confirm('Delete your account and saved profile? This cannot be undone.'))return;try{await request('delete',{csrf});authView();$('auth-status').textContent='Your account and saved profile were deleted.';}catch(e){$('profile-status').textContent='Could not delete your account. Please try again.';}};
-function loadScript(src){return new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=src;script.async=true;script.onload=resolve;script.onerror=reject;document.head.append(script);});}
+const providerScripts=new Map();
+function loadScript(src){if(providerScripts.has(src))return providerScripts.get(src);const promise=new Promise((resolve,reject)=>{const script=document.createElement('script');const timeout=setTimeout(()=>{script.remove();reject(Error('Sign-in script timed out'));},10000);script.src=src;script.async=true;script.onload=()=>{clearTimeout(timeout);resolve();};script.onerror=()=>{clearTimeout(timeout);script.remove();reject(Error('Sign-in script failed'));};document.head.append(script);});providerScripts.set(src,promise);promise.catch(()=>providerScripts.delete(src));return promise;}
 async function completeProvider(provider,credential,state){if(working)return;authRevision++;working=true;$('social-status').textContent='Completing sign-in…';try{const d=await request('oauth',{provider,credential,state});acceptIdentity(d);}catch(e){$('social-status').textContent=e.publicMessage||'We couldn’t complete sign-in. Please refresh and try again.';}finally{working=false;}}
-async function setupProviders(){try{const config=await request('oauth_config');const providers=config.providers||{};if(providers.google?.enabled){await loadScript('https://accounts.google.com/gsi/client');google.accounts.id.initialize({client_id:providers.google.client_id,nonce:config.nonce,auto_select:false,button_auto_select:false,ux_mode:'popup',callback:response=>completeProvider('google',response.credential,config.state)});google.accounts.id.renderButton($('google-signin'),{theme:'outline',size:'large',text:'continue_with',shape:'pill'});$('google-signin').hidden=false;$('social-signin').hidden=false;}
-if(providers.apple?.enabled){await loadScript('https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js');AppleID.auth.init({clientId:providers.apple.client_id,scope:'name email',redirectURI:providers.apple.redirect_uri,state:config.state,nonce:config.nonce,usePopup:true});$('apple-signin').hidden=false;$('social-signin').hidden=false;$('apple-signin').onclick=async()=>{if(working)return;try{const result=await AppleID.auth.signIn();await completeProvider('apple',result.authorization.id_token,result.authorization.state);}catch(e){$('social-status').textContent='Sign-in wasn’t completed. You can try again or use email.';}};}
+let providersLoading=false;
+async function setupProviders(){if(providersLoading||working)return;providersLoading=true;$('retry-social').hidden=true;
+try{const config=await request('oauth_config');const providers=config.providers||{};const enabled=Object.values(providers).some(p=>p.enabled);
+if(!enabled)return;
+$('social-signin').hidden=false;$('social-status').textContent='Loading sign-in options…';
+const failures=[];
+if(providers.google?.enabled){try{
+ await loadScript('https://accounts.google.com/gsi/client');
+ google.accounts.id.initialize({client_id:providers.google.client_id,nonce:config.nonce,auto_select:false,button_auto_select:false,ux_mode:'popup',callback:response=>completeProvider('google',response.credential,config.state)});
+ // The official button measures its container: reveal it BEFORE rendering.
+ $('google-signin').hidden=false;$('google-signin').replaceChildren();
+ google.accounts.id.renderButton($('google-signin'),{theme:'outline',size:'large',text:'continue_with',shape:'pill'});
+ }catch(error){$('google-signin').hidden=true;failures.push('Google');}}
+if(providers.apple?.enabled){try{
+ await loadScript('https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js');
+ AppleID.auth.init({clientId:providers.apple.client_id,scope:'name email',redirectURI:providers.apple.redirect_uri,state:config.state,nonce:config.nonce,usePopup:true});$('apple-signin').hidden=false;
+ $('apple-signin').onclick=async()=>{if(working)return;try{const result=await AppleID.auth.signIn();await completeProvider('apple',result.authorization.id_token,result.authorization.state);}catch(error){$('social-status').textContent='Sign-in wasn’t completed. You can try again or use email.';}};
+ }catch(error){$('apple-signin').hidden=true;failures.push('Apple');}}
+$('social-status').textContent=failures.length?'Some sign-in options didn’t load. Retry or continue with email.':'';
+$('retry-social').hidden=!failures.length;
 // No One Tap, automatic account selection, or provider prompt on page load.
-}catch(e){/* Email sign-in remains available; do not show a broken provider button. */}}
+}catch(error){$('social-signin').hidden=false;$('social-status').textContent='Sign-in options couldn’t load. Retry or continue with email.';$('retry-social').hidden=false;}
+finally{providersLoading=false;}}
+$('retry-social').onclick=setupProviders;
 setupProviders();
 const initialRevision=authRevision;request('me').then(d=>{if(authRevision!==initialRevision)return;csrf=d.csrf;profile=d.profile;profileView();}).catch(()=>{if(authRevision===initialRevision)authView();});})();

@@ -75,3 +75,16 @@ The app owner supplied this public Web client ID, now used as the default OAuth 
 ```
 
 A nonempty GOOGLE_WEB_CLIENT_ID environment value overrides it. A blank or absent value uses the project default, so an older blank .env does not hide the button. Set LUNGITUDE_GOOGLE_SIGNIN=0 to disable Google explicitly. Apple still requires its own configuration. The Google Cloud Console must authorize the browser origin (http://localhost:8000 or http://127.0.0.1:8000 locally). The current popup/callback flow requires no redirect URI or Google client secret. Push/pull and restarting the service activate this configuration; an actual Google account authorization has not been tested here.
+
+## Google button does not appear
+
+From the running project, check the Python service and actual website proxy independently:
+
+```powershell
+Invoke-RestMethod http://127.0.0.1:8010/account/health | ConvertTo-Json -Depth 4
+(Invoke-RestMethod 'http://localhost:8000/api/account.php?action=oauth_config').providers.google | Format-List
+```
+
+The proxy must return enabled=True and the project client ID. Do not share the whole OAuth config response: it contains a short-lived state and nonce. If Python reports readiness but the proxy/config fails, check that PHP and Python both serve this updated worktree. Restart the existing service after updates rather than launching a second process on the same port.
+
+The page now reveals Google's container before rendering its official button and offers Retry sign-in options if the SDK/config fails. Google and Apple SDK failures are isolated from one another. If config is enabled but the button still fails, allow https://accounts.google.com/gsi/client in browser/network blockers and check the Console for the exact error; do not paste tokens. Google Console authorized origins must match the website origin.
