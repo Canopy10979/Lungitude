@@ -33,5 +33,5 @@ if(extension_loaded('curl')){
 if($body===false||!$code){error_log('[Lungitude account] action='.$action.' transport_failed');account_error('This step is temporarily unavailable. Please try again shortly.',503);}
 $out=json_decode($body,true);
 if(!is_array($out))account_error('We could not complete this step. Please try again.',502);
-if($code>=400){$messages=[401=>'Please sign in again, or check your email and password.',403=>'Please sign in again to continue.',409=>'Unable to create this account. Try signing in.',422=>'Please review the required fields and try again.',429=>'Too many attempts. Please wait before trying again.'];account_error($messages[$code]??'This step is temporarily unavailable. Please try again later.',$code);}
+if($code>=400){$messages=[401=>($action==='login'?'That email and password do not match. New to Lungitude? Choose Create account.':($action==='oauth'?'We could not verify this sign-in. Please try again.':'Your session ended. Please sign in to continue.')),403=>'Please sign in again to continue.',409=>'Unable to create this account. Try signing in.',422=>'Please review the required fields and try again.',429=>'Too many attempts. Please wait before trying again.'];account_error($messages[$code]??'This step is temporarily unavailable. Please try again later.',$code);}
 echo json_encode($out);

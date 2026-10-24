@@ -29,4 +29,16 @@ class AccountTests(unittest.TestCase):
   source={'source':'test','source_url':'https://example.org','year':2023,'site':'Melanomas of the Skin','unit':'per 100000','rows':[{'AGE':'15-19','RACE':'All Races','SEX':'Male and Female','RATE':None,'COUNT':None,'CI_LOWER':None,'CI_UPPER':None}]}
   with patch('account_service.json.loads',return_value=source):
    d=accounts.context_for({'age':15,'race':'All Races','registry_sex':'Male and Female'});self.assertIsNone(d['rate'])
+ def test_login_after_logout(self):
+  csrf=self.register()
+  self.assertEqual(self.client.post('/account/logout',data={'csrf':csrf}).status_code,200)
+  self.assertEqual(self.client.get('/account/me').status_code,401)
+  r=self.client.post('/account/login',data={'email':'demo@example.org','password':'unique-example-123'})
+  self.assertEqual(r.status_code,200);self.assertEqual(self.client.get('/account/me').status_code,200)
+ def test_malformed_password_record_is_not_server_error(self):
+  self.register()
+  with accounts.connect() as db:db.execute("UPDATE users SET password='malformed' WHERE email='demo@example.org'")
+  r=self.client.post('/account/login',data={'email':'demo@example.org','password':'unique-example-123'})
+  self.assertEqual(r.status_code,401)
+
 if __name__=='__main__':unittest.main()

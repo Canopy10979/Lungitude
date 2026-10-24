@@ -8,6 +8,11 @@ from fastapi import APIRouter,Form,Request,Response,HTTPException
 
 router=APIRouter(prefix='/account')
 ROOT=Path(__file__).resolve().parents[2]
+try:
+ from dotenv import load_dotenv
+ load_dotenv(ROOT/'.env',override=False)
+except ImportError:
+ pass
 DB=ROOT/'data'/'accounts.sqlite'
 COOKIE='lungitude_session'
 LIMITS=defaultdict(deque)
@@ -67,8 +72,10 @@ def login(request:Request,response:Response,email:str=Form(...),password:str=For
  email=credentials(request,email,password)
  with connect() as db:
   row=db.execute('SELECT * FROM users WHERE email=?',(email,)).fetchone()
-  stored=row['password'] if row and row['password'] else password_hash('dummy-password-123')
-  if not hmac.compare_digest(password_hash(password,stored.split(':')[0]),stored) or row is None or not row['password']:raise HTTPException(401,'Email or password not recognized')
+  stored=row['password'] if row and row['password'] else None
+  valid_format=isinstance(stored,str) and re.fullmatch(r'[0-9a-f]{32}:[0-9a-f]{64}',stored)
+  candidate=password_hash(password,stored.split(':')[0]) if valid_format else password_hash(password)
+  if not valid_format or not hmac.compare_digest(candidate,stored):raise HTTPException(401,'Email or password not recognized')
   csrf=create_session(db,row['id'],response)
  return {'signed_in':True,'csrf':csrf,'profile':json.loads(row['profile']) if row['profile'] else None}
 
@@ -143,7 +150,7 @@ def delete(request:Request,response:Response,csrf:str=Form(...)):
 @router.get('/health')
 def health():
  with connect() as db:db.execute('SELECT 1')
- return {'ready':True,'password_signin':True}
+ return {'ready':True,'password_signin':True,'providers_configured':{key:value['enabled'] for key,value in provider_config().items()}}
 
 OAUTH_COOKIE='lungitude_oauth'
 def provider_config():

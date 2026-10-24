@@ -17,7 +17,7 @@ In another terminal, keep `php -S localhost:8000 router.php` running. Check both
 powershell -ExecutionPolicy Bypass -File .\scripts\Check-Services.ps1
 ```
 
-Both checks should pass. A wrong password returns a sign-in error; an absent account must be created first. Local accounts persist in the ignored data/accounts.sqlite file. Developer health endpoints contain readiness only, never credentials or health profiles. Actual Windows/PHP execution remains unverified in this environment.
+Both checks should pass. A wrong password returns a sign-in error; an absent account must be created first. Local accounts persist in the ignored data/accounts.sqlite file. Developer health endpoints contain readiness and provider-configuration flags only, never credentials or health profiles. Actual Windows/PHP execution remains unverified in this environment.
 
 ## Configure Google web sign-in
 
@@ -51,3 +51,17 @@ Source documentation:
 - https://developer.apple.com/documentation/signinwithapple/configuring-your-webpage-for-sign-in-with-apple
 
 Validation for this update: 35 Python tests passed, including failed token verification, state mismatch, one-time callback replay protection, no automatic email linking, provider-only password rejection and absent provider configuration. PHP files were syntax-parsed with php-parser; actual PHP runtime transport and real Google/Apple authorization were not tested here.
+
+## Diagnose credential/session errors
+
+The account page now separates Create account from Sign in. Create an account first; an email/password form does not accept a Google or Apple password. A late startup session check cannot erase a successful new sign-in. Invalid or malformed password records fail safely without resetting accounts.
+
+The service loads the repository .env even when launched manually with uvicorn. Restart after changing configuration. Existing process environment variables take precedence.
+
+With both website and Python service running, execute this from the project folder:
+
+```powershell
+.\.venv\Scripts\python.exe tools/check_auth.py --base http://localhost:8000
+```
+
+This creates a temporary diagnostic account, checks the PHP proxy, registration, session cookies, logout and password login, then deletes the temporary account. It never changes existing accounts or prints passwords/tokens. Keep localhost consistent across browser and commands; localhost and 127.0.0.1 have different cookies. Secure cookies require HTTPS; use LUNGITUDE_SECURE_COOKIES=0 for HTTP localhost. Share only the PASS/FAIL lines. A successful diagnostic does not verify an existing account's credentials or actual Google/Apple authorization.
