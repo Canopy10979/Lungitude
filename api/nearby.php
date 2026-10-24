@@ -273,10 +273,16 @@ if ($rawLat === false || $rawLat === null || $rawLon === false || $rawLon === nu
     bw_json(['error' => 'Provide a valid location or ZIP code.', 'places' => []], 400); exit;
 }
 $lat = (float)$rawLat; $lon = (float)$rawLon;
-if (GOOGLE_KEY === '') { bw_json(['error' => 'Google Places is not configured on the server.', 'places' => []], 503); exit; }
-if (!bw_rate_ok('google', GOOGLE_MAX_PER_HOUR)) { bw_json(['error' => 'Search limit reached. Please try again later.', 'places' => []], 429); exit; }
-$places = bw_google_places($lat, $lon, 'healthcare');
-if ($places === null) { bw_json(['error' => 'Google Places could not complete this search. Check Places API (New), billing and server-key restrictions.', 'places' => []], 502); exit; }
+$sample = FORCE_DEMO || isset($_GET['demo']) || GOOGLE_KEY === '' || !extension_loaded('curl');
+$type = (string)($_GET['type'] ?? 'primary');
+$places = null;
+if (!$sample && bw_rate_ok('google', GOOGLE_MAX_PER_HOUR)) {
+    $places = bw_google_places($lat, $lon, bw_place_query($type));
+}
+if ($places === null) {
+    $sample = true;
+    $places = bw_demo_places($lat, $lon, $type);
+}
 // Independently enforce the radius, deduplicate listings and sort by straight-line distance.
 $seen = [];
 $places = array_values(array_filter($places, function ($p) use (&$seen, $lat, $lon) {
@@ -293,6 +299,6 @@ foreach ($places as &$pl) {
     $pl['drive_min'] = max(2, (int)round($pl['meters'] * 1.4 / 500));
 }
 unset($pl);
-bw_json(['sample' => false, 'source' => 'google', 'origin' => ['lat' => $lat, 'lon' => $lon],
+bw_json(['sample' => $sample, 'source' => $sample ? 'sample' : 'google', 'origin' => ['lat' => $lat, 'lon' => $lon],
     'radius_miles' => 10, 'radius_meters' => SEARCH_RADIUS_METERS, 'distance_basis' => 'straight_line',
     'type' => 'healthcare', 'places' => $places]);

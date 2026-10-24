@@ -453,7 +453,7 @@
         if (!state.loc) return "<p>County selected. Share your location by starting again to find care near you.</p>";
         if (places.source === "pending") return '<p role="status">Finding nearby care…</p>';
         const list = places.places.slice(0, 5);
-        if (places.source === "sample") return '<div class="data-empty"><b>Demo only — no live clinic results.</b><p>Sample clinics and phone numbers are hidden. Live search requires a working location service and provider connection.</p></div>';
+        if (places.source === "sample") return '<div class="data-empty"><b>Demo only — no live clinic results.</b><p>Live search is unavailable or demo mode is selected. Fictional clinic examples below must not be used to seek care.</p></div>' + "<ol>" + list.map(function (p) { return "<li>" + esc(p.name) + " — sample location</li>"; }).join("") + "</ol>";
         if (list.length === 0) {
             return "<p>Google returned no healthcare places within 10 miles of this location. Call 1-800-4-CANCER (National Cancer Institute) for help.</p>";
         }
