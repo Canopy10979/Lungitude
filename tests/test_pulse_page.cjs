@@ -1,0 +1,18 @@
+const assert=require('node:assert/strict'),fs=require('node:fs');
+const {JSDOM}=require('jsdom');const tick=()=>new Promise(r=>setTimeout(r,0));
+function setup(){const dom=new JSDOM(fs.readFileSync('pulse-check.html','utf8'),{url:'http://localhost:8000/pulse-check.html',runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window;let time=0,interval=null,frames=[];
+Object.defineProperty(w.performance,'now',{value:()=>time});w.setInterval=f=>(interval=f,1);w.clearInterval=()=>{interval=null};w.requestAnimationFrame=f=>(frames.push(f),1);
+w.HTMLMediaElement.prototype.play=async()=>{};w.HTMLMediaElement.prototype.pause=()=>{};
+w.HTMLCanvasElement.prototype.getContext=()=>({drawImage(){},getImageData(){const a=new Uint8ClampedArray(20*14*4);const r=120+3*Math.sin(2*Math.PI*1.2*time/1000);for(let i=0;i<a.length;i+=4){a[i]=r;a[i+1]=40;a[i+2]=35;a[i+3]=255;}return {data:a}},clearRect(){},beginPath(){},moveTo(){},lineTo(){},stroke(){}});
+w.BW={measures:{}};w.eval(fs.readFileSync('js/pulse-manual.js','utf8'));w.eval(fs.readFileSync('js/pulse-measure.js','utf8'));
+return {w,dom,advance(ms){time+=ms;interval?.()},frame(){time+=1000/30;const f=frames.shift();if(f)f();return !!f}};}
+(async()=>{
+let s=setup(),w=s.w,$=id=>w.document.getElementById(id);
+assert.equal($('manual-submit').disabled,true);$('manual-start').click();s.advance(60000);assert.equal($('manual-submit').disabled,false);$('manual-count').value='72';$('manual-form').dispatchEvent(new w.Event('submit',{cancelable:true}));assert.match($('manual-result').textContent,/72 beats per minute/);$('manual-cancel').click();assert.equal($('manual-submit').disabled,true);console.log('PASS manual 60-second count, displayed result and cancellation');
+for(const bpm of [42,60,72,100,150,180]){const raw=Float64Array.from({length:750},(_,i)=>120+3*Math.sin(2*Math.PI*bpm/60*i/30));const r=w.BW.pulseAnalyse(raw,30);assert.ok(r&&Math.abs(r.bpm-bpm)<3,`${bpm}: ${r?.bpm}`);}assert.equal(w.BW.pulseAnalyse(new Float64Array(750).fill(120),30),null);assert.equal(w.BW.pulseAnalyse([1,2],30),null);console.log('PASS synthetic pulse frequencies, flat/short signal rejection');w.close();
+s=setup();w=s.w;$=id=>w.document.getElementById(id);let stopped=0;
+Object.defineProperty(w.navigator,'mediaDevices',{value:{getUserMedia:async()=>({getVideoTracks:()=>[{applyConstraints:async()=>{}}],getTracks:()=>[{stop(){stopped++}}]})}});
+$('pulse-start').click();await tick();for(let i=0;i<1000;i++){if(!s.frame())break;}assert.match($('pulse-result').textContent,/Experimental pulse estimate: 7[0-4] beats/);assert.ok(stopped>0);assert.equal($('pulse-start').disabled,false);console.log('PASS simulated camera produces measured result and stops tracks');w.close();
+s=setup();w=s.w;$=id=>w.document.getElementById(id);Object.defineProperty(w.navigator,'mediaDevices',{value:{getUserMedia:async()=>{throw Error('denied')}}});$('pulse-start').click();await tick();assert.match($('pulse-result').textContent,/camera is blocked/);assert.equal($('pulse-start').disabled,false);console.log('PASS denied camera remains recoverable');w.close();
+s=setup();w=s.w;$=id=>w.document.getElementById(id);let resolve,lateStopped=0;Object.defineProperty(w.navigator,'mediaDevices',{value:{getUserMedia:()=>new Promise(r=>resolve=r)}});$('pulse-start').click();$('pulse-stop').click();resolve({getTracks:()=>[{stop(){lateStopped++}}]});await tick();assert.equal(lateStopped,1);assert.match($('pulse-result').textContent,/stopped/);console.log('PASS cancellation while permission pending closes late stream');w.close();
+})().catch(e=>{console.error(e);process.exitCode=1});
