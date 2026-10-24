@@ -128,7 +128,7 @@
                 return card(
                     '<label class="q-title" for="q-name">What is your name?</label>' +
                     '<input class="q-input" id="q-name" autocomplete="given-name" maxlength="60" value="' + esc(state.name) + '">' +
-                    '<p class="q-fine">Your name stays on this device. We do not send it anywhere.</p>' +
+                    '<p class="q-fine">Your name stays in this page’s memory and is not included in survey requests.</p>' +
                     '<p class="q-error"></p>',
                     { next: "Next" }
                 );
@@ -340,7 +340,15 @@
                 })
             });
             state.result = result;
-            renderScans(result);
+            renderResult(result, {places: [], source: state.loc ? "pending" : "none"});
+            if (state.loc) {
+                try {
+                    const places = await getJson(placesUrl(result.place_key));
+                    root.querySelector("#places").innerHTML = placesBlock(places);
+                } catch (error) {
+                    root.querySelector("#places").textContent = "Care search unavailable. Choose demo location or contact a clinician. " + error.message;
+                }
+            }
 
         } catch (err) {
             status.textContent = "Could not prepare your results. " + err.message;
@@ -350,27 +358,6 @@
         }
     }
 
-
-    function renderScans(result) {
-        barFill.style.width="85%";
-        document.getElementById("stage-label").textContent="OPTIONAL GUIDED CHECKS";
-        root.innerHTML='<section class="q-card"><p class="q-eyebrow">YOUR ANSWERS ARE READY</p><h1 class="q-title">Take a closer look, at your pace.</h1><p>Thank you for completing the survey. These optional checks collect observations; they cannot determine whether you have cancer.</p><div class="scan-grid"><article class="scan-option"><h3>Skin and physical observations</h3><p>Record a close-up. Outline a lesion to explore asymmetry, borders, color and texture. Vessel analysis and growth tracking require additional imaging and follow-up data.</p><div class="scan-tabs"><button class="btn" data-check="lab.html">Open skin imaging</button><button class="btn ghost" data-check="record.html">Open recording</button></div></article><article class="scan-option"><h3>Breathing and finger observations</h3><p>Optional respiratory recording, breathing timing and finger measurements. Lung-sound categories are separate from cancer diagnosis.</p><button class="btn" data-check="lung.html">Open lung observations</button></article></div><p class="scan-status" id="model-summary">Checking imaging availability…</p><div id="scan-content"></div><div class="q-nav"><button class="btn primary" id="show-results">View my next steps</button></div></section>';
-        root.querySelectorAll('[data-check]').forEach(b=>b.addEventListener('click',()=>{
-            root.querySelector('#scan-content').innerHTML='<iframe class="scan-frame" title="Optional guided observations" allow="camera; microphone" src="'+b.dataset.check+'?embedded=1"></iframe>';
-        }));
-        getJson('api/imaging.php?action=status').then(status=>{
-            const ready=Object.keys(status.models||{}).filter(k=>status.models[k].checkpoint_present);
-            const target=root.querySelector('#model-summary');
-            if(target)target.textContent=ready.length?'Research checkpoints present: '+ready.join(', ')+'. Clinical validation not established.':'Shape, color and texture service available. CNN checkpoints have not been trained yet; no cancer prediction will be produced.';
-        }).catch(()=>{const target=root.querySelector('#model-summary');if(target)target.textContent='Imaging service offline. You can still record locally and view your survey results.';});
-        root.querySelector('#show-results').addEventListener('click',async()=>{
-            renderResult(result,{places:[],source:'pending'});
-            if(state.loc){
-                try{const places=await getJson(placesUrl(result.place_key));if(state.result===result)root.querySelector('#places').innerHTML=placesBlock(places);}
-                catch(err){if(state.result===result)root.querySelector('#places').innerHTML='<p>Nearby care is temporarily unavailable. '+esc(err.message)+'</p>';}
-            }
-        });
-    }
 
     function rateLine(c) {
         if (!Number.isFinite(c.rate_wa) || !Number.isFinite(c.rate_us)) {
@@ -567,6 +554,8 @@
         html += '<p class="q-fine">Population statistics describe groups, not your probability of cancer. Screening eligibility also depends on medical history and other criteria. Source labels supplied with this prototype: ' + Object.keys(r.sources).map(function (k) {
             return esc(r.sources[k]);
         }).join(" · ") + ".</p>";
+        html += '<p><a href="lung.html">Lung screening guideline check</a></p>';
+        html += '<details class="g-card"><summary>Research prototypes (not validated)</summary><p>These experiments are outside the survey and do not diagnose disease. Some require a separate Python service.</p><a href="lab.html">Imaging lab</a> · <a href="record.html">Recording</a> · <a href="followup.html">Follow-up</a> · <a href="study.html">Measurement study</a></details>';
         html += '<div class="q-nav"><button class="btn ghost" data-act="restart">Start again</button></div>';
         html += "</section>";
         root.innerHTML = html;
