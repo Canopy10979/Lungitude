@@ -71,6 +71,20 @@ The optional research study sends numeric measurements, age band and smoking sta
 
 The separate imaging prototypes can upload photos and masks to the PHP server, which forwards them to a Python service on the same server. PHP uses temporary upload files; Python processing and any configured server logging are outside browser storage. Main survey results do not require images, Python or an AI model. No trained lung-sound or skin model is supplied.
 
+LungBot sends only chat text you explicitly submit and up to four recent chat exchanges through this PHP server to Anthropic (Claude), after consent. Survey answers, images and location are not attached automatically. Conversation text is held in page memory and is not written to an app database or browser storage. Anthropic handles requests under its own API data policies; hosting infrastructure may log requests. Clearing chat does not delete data already received by the provider. IP-derived request-limit counts and expiry timestamps are stored in data/cache.sqlite.
+
+## LungBot (Claude chat)
+
+LungBot provides optional AI education on the survey and lung-check pages. It does not diagnose, interpret images or replace professional care. No survey answers, photos or location are automatically added to chat. It is unavailable without server configuration; there are no pretend AI replies.
+
+Set `ANTHROPIC_API_KEY` privately in the PHP server environment, or define it in ignored `api/secrets.php`. The server also accepts `CLAUDE_API_KEY` for compatibility. Set `ANTHROPIC_MODEL` to override the default `claude-haiku-4-5-20251001`. Never put keys into frontend code or Git. Restart PHP after setting environment variables. Replace keys previously shared in chat before use.
+
+The endpoint is `POST api/chat.php`; `GET api/chat.php` reports whether credentials/extensions are configured, not whether billing or credentials work. Requires cURL and PDO SQLite. Chat fails closed if rate-limit storage is unavailable. Limits: five requests/minute and twenty/hour per IP-derived bucket, plus one hundred/hour for this server. These reduce abuse, but are not a hard account spending limit; configure billing controls with your provider. Use the router to protect helper/config files.
+
+Chat is bounded to nine alternating messages and 12,000 bytes of conversation text, with a 500-token reply budget and a thirty-second provider timeout. Error responses never include the key or provider response body. Chat requests/responses use no-store and are outside the service-worker cache.
+
+API reference: [Anthropic Messages API](https://platform.claude.com/docs/en/api/messages/create). AI assistance is disclosed; this integration was prepared while the execution workspace was offline. Its new PHP/JS tests have not been run here, and no live Claude request or paid-key test was performed. Prior test counts describe the earlier revision, not this addition.
+
 ## Limits
 
 Lungitude does not diagnose cancer, analyze a photo for cancer, validate a symptom, or replace a clinician. “No signs reported” does not rule out disease. Age-based screening lists cannot establish suitability without anatomy, history, prior screening and shared decision-making. Concerning symptoms require clinical evaluation rather than waiting for screening. Severe breathing difficulty or another emergency needs emergency care.
@@ -90,7 +104,7 @@ find . -type f -name '*.php' -not -path './.git/*' -exec php -l {} \;
 find . -type f -name '*.js' -not -path './.git/*' -exec node --check {} \;
 ```
 
-`test_risk.php`: **14 checks passed**. `test_survey.php`: **70 checks passed**. All **20 PHP files** and **14 JavaScript files** pass syntax checks. Additional verification and browser limitations are recorded in `docs/validation.md`. Tests check application behavior and calculations, not medical accuracy.
+Last validated before LungBot: `test_risk.php` **14 checks passed**, `test_survey.php` **70 checks passed**, and syntax checks passed for the then-existing 20 PHP and 14 JavaScript files. This addition has **23 PHP files** and **16 JavaScript files** in total; their syntax checks have not been rerun. The new `tests/test_chat.php` defines 21 checks with PDO SQLite (17 without); no PHP pass result is claimed for it. Eleven mocked LungBot UI checks passed, without a live provider. See `docs/lungbot-validation.md` for current verification steps and limits. Tests check application behavior and calculations, not medical accuracy.
 
 ## Credits and licenses
 
@@ -108,3 +122,7 @@ find . -type f -name '*.js' -not -path './.git/*' -exec node --check {} \;
 ## Why I built this
 
 TODO: Rishi will write this section in his own words.
+
+## Uploaded logo
+
+The header supports `assets/lungitude-logo.png` and retains the existing L mark until that file is present. The uploaded image could not be read because the execution workspace was disconnected; **the actual PNG has not been added**. Copy the original logo to that path, commit it and refresh. The logo is not in the service-worker precache until the asset is available; this avoids breaking installation on a missing file.

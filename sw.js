@@ -1,6 +1,9 @@
 /* Cache only an explicit list of public interface files; never API or Places data. */
-const CACHE_NAME = "lungitude-static-v1";
+const CACHE_NAME = "lungitude-static-v2";
 const STATIC_FILES = [
+    "./css/lungbot.css",
+    "./js/lungbot.js",
+    "./js/branding.js",
     "./index.html",
     "./lung.html",
     "./offline.html",

@@ -6,7 +6,7 @@ $path = rawurldecode(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH));
 $blocked = [
     '#^/(ml|tests|tools|\.git)(/|$)#',
     '#^/data/scp(/|$)#',
-    '#^/api/(secrets|config|lib|geo|store|db)(\.example)?\.php$#',
+    '#^/api/(secrets|config|lib|geo|store|db|chat_lib)(\.example)?\.php$#',
     '#/\.#',
     '#\.(sqlite|db|pt|pth|onnx|zip|env|csv|tcia|h5|py|md)$#i',
 ];
