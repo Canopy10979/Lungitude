@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Location -> county, and county -> local data.
  *   County FIPS: US Census Geocoder, then the FCC Area API (both free).
@@ -126,7 +127,14 @@ function bw_stats_live(string $fips): ?array
 
 function bw_county_stats(string $fips): ?array
 {
-    return bw_stats_cache($fips) ?? bw_stats_live($fips);
+    $cached = bw_stats_cache($fips);
+    if ($cached !== null) {
+        return $cached;
+    }
+    if (getenv('ALLOW_LIVE_COUNTY_STATS') === '1') {
+        return bw_stats_live($fips);
+    }
+    return null;
 }
 
 function bw_national(): ?array

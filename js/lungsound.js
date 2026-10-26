@@ -9,7 +9,7 @@
  *
  * The feature math must match features() in ml/train_icbhi.py.
  */
-(function () {
+(function() {
     const box = document.getElementById("lung-ai");
     if (!box) {
         return;
@@ -17,10 +17,10 @@
     let model = null;
 
     function melFilters(m) {
-        const hzToMel = function (f) {
+        const hzToMel = function(f) {
             return 2595 * Math.log10(1 + f / 700);
         };
-        const melToHz = function (x) {
+        const melToHz = function(x) {
             return 700 * (Math.pow(10, x / 2595) - 1);
         };
         const lo = hzToMel(m.fmin);
@@ -159,7 +159,7 @@
     }
 
     function classify(m, f) {
-        const scores = m.coef.map(function (w, c) {
+        const scores = m.coef.map(function(w, c) {
             let s = m.intercept[c];
             for (let i = 0; i < f.length; i++) {
                 s += w[i] * (f[i] - m.mean[i]) / m.std[i];
@@ -167,13 +167,13 @@
             return s;
         });
         const max = Math.max.apply(null, scores);
-        const exp = scores.map(function (s) {
+        const exp = scores.map(function(s) {
             return Math.exp(s - max);
         });
-        const total = exp.reduce(function (a, b) {
+        const total = exp.reduce(function(a, b) {
             return a + b;
         }, 0);
-        const probs = exp.map(function (e) {
+        const probs = exp.map(function(e) {
             return e / total;
         });
         return m.classes[probs.indexOf(Math.max.apply(null, probs))];
@@ -195,21 +195,29 @@
     function analyse(samples) {
         const win = Math.round(model.sr * 2.5);
         const hop = Math.round(model.sr * 1.25);
-        const counts = { normal: 0, crackle: 0, wheeze: 0, both: 0 };
+        const counts = {
+            normal: 0,
+            crackle: 0,
+            wheeze: 0,
+            both: 0
+        };
         let total = 0;
         for (let s = 0; s + win <= samples.length; s += hop) {
             counts[classify(model, features(model, samples.subarray(s, s + win)))]++;
             total++;
         }
-        return { counts: counts, total: total };
+        return {
+            counts: counts,
+            total: total
+        };
     }
 
     BW.lungSound = {
-        features: function (arr) {
+        features: function(arr) {
             return features(model, arr);
         },
         analyse: analyse,
-        ready: function () {
+        ready: function() {
             return model !== null;
         }
     };
@@ -221,7 +229,11 @@
         let stream;
         try {
             stream = await navigator.mediaDevices.getUserMedia({
-                audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false }
+                audio: {
+                    echoCancellation: false,
+                    noiseSuppression: false,
+                    autoGainControl: false
+                }
             });
         } catch (err) {
             out.textContent = "The microphone is blocked.";
@@ -230,11 +242,11 @@
         }
         const rec = new MediaRecorder(stream);
         const chunks = [];
-        rec.ondataavailable = function (e) {
+        rec.ondataavailable = function(e) {
             chunks.push(e.data);
         };
-        rec.onstop = async function () {
-            stream.getTracks().forEach(function (t) {
+        rec.onstop = async function() {
+            stream.getTracks().forEach(function(t) {
                 t.stop();
             });
             out.textContent = "Listening to the recording…";
@@ -242,16 +254,18 @@
             const r = analyse(samples);
             const abnormal = r.counts.crackle + r.counts.wheeze + r.counts.both;
             BW.measures.lungSound = r;
-            out.textContent = r.total === 0
-                ? "The recording was too short."
-                : abnormal + " of " + r.total + " windows sounded like crackles or wheezes (experimental). " +
-                  (abnormal / r.total > 0.3 ? "Mention this to a doctor." : "Mostly normal sounds.");
+            out.textContent = r.total === 0 ?
+                "The recording was too short." :
+                abnormal + " of " + r.total +
+                " windows sounded like crackles or wheezes (experimental). " +
+                (abnormal / r.total > 0.3 ? "Mention this to a doctor." :
+                    "Mostly normal sounds.");
             btn.disabled = false;
         };
         rec.start();
         let left = 15;
         out.textContent = "Breathe deeply through your mouth… " + left;
-        const timer = setInterval(function () {
+        const timer = setInterval(function() {
             left--;
             out.textContent = "Breathe deeply through your mouth… " + left;
             if (left <= 0) {
@@ -262,20 +276,26 @@
     }
 
     fetch("data/lung_model.json")
-        .then(function (res) {
+        .then(function(res) {
             if (!res.ok) {
                 throw new Error("no model");
             }
             return res.json();
         })
-        .then(function (m) {
+        .then(function(m) {
+            if (!m.test || m.test.split !== "patient-level" || !Number.isFinite(m.test.icbhi_score) ||
+                m.test.icbhi_score < 0 || m.test.icbhi_score > 1 || !Number.isInteger(m.test
+                .patients) || m.test.patients < 1) {
+                throw new Error("Model lacks patient-level evaluation metadata");
+            }
             model = prepare(m);
             box.hidden = false;
             document.getElementById("lung-ai-score").textContent =
-                "Model test score (ICBHI): " + m.test.icbhi_score + " on " + m.test.patients + " patients it never saw.";
+                "Model test score (ICBHI): " + m.test.icbhi_score + " on " + m.test.patients +
+                " patients it never saw.";
             document.getElementById("lung-ai-start").addEventListener("click", record);
         })
-        .catch(function () {
+        .catch(function() {
             box.hidden = true;
         });
 })();

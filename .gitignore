@@ -2,8 +2,6 @@ api/secrets.php
 .env
 .env.*
 !.env.example
-node_modules/
-/www/
 .venv/
 __pycache__/
 *.py[cod]
@@ -23,3 +21,15 @@ uploads/
 *.mp4
 *.zip
 .DS_Store
+
+# Publish only reviewed trained artifacts; keep raw data and split CSVs private.
+!ml/skin/output_mobile/
+ml/skin/output_mobile/*
+!ml/skin/output_mobile/model.pt
+!ml/skin/output_mobile/evaluation.json
+!ml/skin/output_efficient/
+ml/skin/output_efficient/*
+!ml/skin/output_efficient/model.pt
+!ml/skin/output_efficient/evaluation.json
+
+!ml/skin/output_efficient/model.pt.part*

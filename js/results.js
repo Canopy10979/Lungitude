@@ -1,11 +1,26 @@
 /* Lungitude results page and printable doctor note. */
-(function () {
+(function() {
     const PLCO_CUT = 1.51;
 
     function esc(s) {
-        return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
-            return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+        return String(s == null ? "" : s).replace(/[&<>"']/g, function(c) {
+            return {
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                '"': "&quot;",
+                "'": "&#39;"
+            } [c];
         });
+    }
+
+    function safeUrl(value) {
+        try {
+            const url = new URL(value);
+            return ["https:", "http:"].includes(url.protocol) ? url.href : "#";
+        } catch (error) {
+            return "#";
+        }
     }
 
     function pct(x) {
@@ -26,19 +41,20 @@
             return {
                 cls: "urgent",
                 eyebrow: "Do not wait for a screening",
-                title: "Book a doctor visit this week.",
-                body: "You told us about " + r.red_flags.join(", ") + ". A doctor should check these. Screening scans are for people with no symptoms."
+                title: "Contact a clinician promptly.",
+                body: "You told us about " + r.red_flags.join(", ") +
+                    ". A doctor should check these. Screening scans are for people with no symptoms."
             };
         }
         if (r.tier === "screen") {
-            const why = r.uspstf.eligible
-                ? "You meet the US Preventive Services Task Force guideline for yearly screening."
-                : "Your 6-year risk is above the 1.51% level where the model suggests screening.";
+            const why = r.uspstf.eligible ?
+                "You meet the US Preventive Services Task Force guideline for yearly screening." :
+                "Your estimate exceeds the research comparison threshold. This is not a USPSTF eligibility rule; discuss it with a clinician.";
             return {
                 cls: "",
                 eyebrow: "Your next step",
                 title: "Ask your doctor for a low-dose CT lung scan.",
-                body: why + " The scan takes less than a minute and needs no needles."
+                body: why + " Discuss benefits, harms and suitability with your clinician."
             };
         }
         if (r.tier === "not_in_scope") {
@@ -53,7 +69,8 @@
             cls: "calm",
             eyebrow: "Your result",
             title: "You do not meet screening guidelines today.",
-            body: "Your 6-year risk is " + pct(r.risk) + ". The screening level is 1.51%. Check again each year, or if your health changes."
+            body: "Your 6-year risk is " + pct(r.risk) +
+                ". This research estimate is not a screening order. Discuss eligibility with a clinician."
         };
     }
 
@@ -66,36 +83,40 @@
             "<h3>6-year lung cancer risk</h3>" +
             '<div class="big">' + pct(r.risk) + " <small>PLCOm2012</small></div>" +
             '<div class="meter" role="img" aria-label="Risk ' + pct(r.risk) + '">' +
-            '<div class="cut" style="left:' + meterPos(PLCO_CUT) + '%"><span>screen at 1.51%</span></div>' +
+            '<div class="cut" style="left:' + meterPos(PLCO_CUT) +
+            '%"><span>research reference 1.51%</span></div>' +
             '<div class="mark" style="left:' + meterPos(p) + '%"></div>' +
             "</div>" +
-            '<p class="note">About ' + Math.max(1, Math.round(p * 10)) + " in 1,000 people like you get lung cancer in the next 6 years.</p>" +
+            '<p class="note">About ' + Math.max(1, Math.round(p * 10)) +
+            " in 1,000 in the model reference population over six years. This is an unvalidated implementation and may not apply to you, especially outside ages 55–74.</p>" +
             "</div>";
     }
 
     function criteriaCard(r, input) {
         const u = r.uspstf;
+
         function li(ok, text) {
             return '<li class="' + (ok ? "yes" : "no") + '">' + text + "</li>";
         }
-        const quitText = input.smoking_status === "current"
-            ? "Still smoking (counts)"
-            : "Quit " + input.years_quit + " years ago (must be 15 or less)";
+        const quitText = input.smoking_status === "current" ?
+            "Still smoking (counts)" :
+            "Quit " + esc(input.years_quit) + " years ago (must be 15 or less)";
         let medicare = "";
         if (u.eligible && !r.medicare.eligible) {
             medicare = '<p class="note">Medicare covers screening to age 77. Check your plan.</p>';
         }
         if (r.medicare.eligible) {
-            medicare = '<p class="note">Medicare and most private plans cover this scan at no cost to you.</p>';
+            medicare =
+                '<p class="note">Coverage depends on your plan and the full eligibility criteria. Confirm with the clinician and insurer.</p>';
         }
         return '<div class="card">' +
             "<h3>Screening guideline check</h3>" +
             '<ul class="crit">' +
-            li(u.age, "Age " + input.age + " (must be 50 to 80)") +
+            li(u.age, "Age " + esc(input.age) + " (must be 50 to 80)") +
             li(u.pack_years, r.pack_years + " pack-years (must be 20 or more)") +
             li(u.quit_window, quitText) +
             "</ul>" +
-            "<p><b>" + (u.eligible ? "You qualify." : "You do not qualify yet.") + "</b></p>" +
+            "<p><b>" + (u.eligible ? "These entered criteria match; confirm eligibility with a clinician." : "You do not qualify yet.") + "</b></p>" +
             medicare +
             "</div>";
     }
@@ -105,15 +126,16 @@
             return "";
         }
         let max = 0;
-        r.drivers.forEach(function (d) {
+        r.drivers.forEach(function(d) {
             max = Math.max(max, Math.abs(d.effect));
         });
-        const rows = r.drivers.map(function (d) {
+        const rows = r.drivers.map(function(d) {
             const mult = Math.exp(d.effect);
             const w = (Math.abs(d.effect) / max) * 50;
             const dir = d.effect > 0 ? "up" : "down";
             return '<div class="row"><span>' + esc(d.label) + '</span>' +
-                '<span class="track"><span class="bar ' + dir + '" style="width:' + w + '%"></span></span>' +
+                '<span class="track"><span class="bar ' + dir + '" style="width:' + w +
+                '%"></span></span>' +
                 "<b>×" + mult.toFixed(2) + "</b></div>";
         }).join("");
 
@@ -139,10 +161,15 @@
         const h = r.hands;
         let breath = "<p>Skipped.</p>";
         if (b.fet !== null) {
-            const words = { typical: "Typical", long: "Longer than typical", very_long: "Long" };
-            breath = '<div class="big">' + b.fet + " s <small>" + words[b.level] + "</small></div>";
+            const words = {
+                typical: "Typical",
+                long: "Longer than typical",
+                very_long: "Long"
+            };
+            breath = '<div class="big">' + esc(b.fet) + " s <small>" + words[b.level] + "</small></div>";
             if (r.what_if && r.what_if.if_copd_confirmed) {
-                breath += '<p class="note">A long exhale can mean blocked airways (COPD). If a breathing test confirms COPD, your risk becomes ' +
+                breath +=
+                    '<p class="note">A long exhale can mean blocked airways (COPD). If a breathing test confirms COPD, your risk becomes ' +
                     pct(r.what_if.if_copd_confirmed) + ".</p>";
             }
         }
@@ -151,13 +178,13 @@
             hands = "<p>The finger photo could not be measured. Take it again.</p>";
         }
         if (h.pdr_status === "unsteady") {
-            hands = "<p>The 3 finger measurements did not agree (spread " + h.pdr_spread +
+            hands = "<p>The 3 finger measurements did not agree (spread " + esc(h.pdr_spread) +
                 "), so we did not use them. Measure again with the finger held still.</p>";
         }
         if ((h.pdr !== null && h.pdr_status === "ok") || h.schamroth_closed) {
             hands = "<p>";
             if (h.pdr !== null && h.pdr_status === "ok") {
-                hands += "Depth ratio <b>" + h.pdr + "</b> (clubbing sign above 1.0)";
+                hands += "Depth ratio <b>" + esc(h.pdr) + "</b> (clubbing sign above 1.0)";
                 if (h.pdr_repeatable) {
                     hands += ", " + h.pdr_trials.length + " trials within " + h.pdr_spread;
                 } else {
@@ -172,15 +199,21 @@
             hands += "</p>";
         }
         if (h.nail_pallor) {
-            hands += '<p class="note">Nail beds looked pale (experimental). A blood test (CBC) checks hemoglobin.</p>';
+            hands +=
+                '<p class="note">Nail beds looked pale (experimental). A blood test (CBC) checks hemoglobin.</p>';
         }
         const v = r.vitals;
         let vitals = "<p>Skipped.</p>";
         if (v.hr !== null || v.spo2 !== null) {
             vitals = "";
             if (v.hr !== null) {
-                const hrWords = { normal: "in the usual resting range", fast: "fast for rest (over 100)", slow: "slow (under 50)" };
-                vitals += '<div class="big">' + Math.round(v.hr) + " <small>beats per minute, " + hrWords[v.hr_level] + "</small></div>";
+                const hrWords = {
+                    normal: "in the usual resting range",
+                    fast: "fast for rest (over 100)",
+                    slow: "slow (under 50)"
+                };
+                vitals += '<div class="big">' + Math.round(v.hr) + " <small>beats per minute, " + hrWords[
+                    v.hr_level] + "</small></div>";
             }
             if (v.spo2 !== null) {
                 const o2Words = {
@@ -188,11 +221,12 @@
                     borderline: "a little low. Measure again at rest. If it stays below 95%, tell a doctor.",
                     low: "low. See a doctor soon."
                 };
-                vitals += "<p>Blood oxygen <b>" + v.spo2 + "%</b>: " + o2Words[v.spo2_level] + "</p>";
+                vitals += "<p>Blood oxygen <b>" + esc(v.spo2) + "%</b>: " + o2Words[v.spo2_level] + "</p>";
             }
-            vitals += '<p class="note">Pulse and oxygen show how your lungs and heart work today. They do not show cancer.</p>';
+            vitals +=
+                '<p class="note">Pulse and oxygen show how your lungs and heart work today. They do not show cancer.</p>';
         }
-        return '<div class="card"><h3>Breath (microphone)</h3>' + breath + "</div>" +
+        return '<div class="card"><h3>Experimental observations</h3><p>Numeric flags below are unvalidated research heuristics. They do not establish disease or clinical normality; confirm measurements with a clinician.</p><h3>Breath (microphone)</h3>' + breath + "</div>" +
             '<div class="card"><h3>Pulse and oxygen</h3>' + vitals + "</div>" +
             '<div class="card"><h3>Fingers (camera)</h3>' + hands + "</div>";
     }
@@ -205,17 +239,19 @@
         html += "</h3>";
         if (region.state_screening) {
             const s = region.state_screening;
-            html += '<p><span class="big">' + s.rate + "%</span> of people who qualify in " + esc(region.state) +
-                " get screened. That ranks " + s.rank + " of " + s.of + ". The US rate is " + s.us_rate + "%.</p>";
+            html += '<p><span class="big">' + esc(s.rate) + "%</span> of people who qualify in " + esc(region
+                    .state) +
+                " get screened. That ranks " + esc(s.rank) + " of " + esc(s.of) + ". The US rate is " + esc(s.us_rate) +
+                "%.</p>";
         }
-        if (region.smoking !== null && region.smoking !== undefined) {
-            html += "<p>" + esc(region.county) + ": " + region.smoking + "% of adults smoke";
+        if (region.verified === true && region.year && region.smoking !== null && region.smoking !== undefined) {
+            html += "<p>" + esc(region.county) + ": " + esc(region.smoking) + "% of adults smoke";
             if (region.national) {
-                html += " (US " + region.national.smoking + "%)";
+                html += " (US " + esc(region.national.smoking) + "%)";
             }
-            html += ", " + region.copd + "% have COPD";
+            html += ", " + esc(region.copd) + "% have COPD";
             if (region.national) {
-                html += " (US " + region.national.copd + "%)";
+                html += " (US " + esc(region.national.copd) + "%)";
             }
             html += ".</p>";
         }
@@ -227,67 +263,94 @@
     function radar(places, limit) {
         const c = 150;
         const ringR = 115;
-        let svg = '<svg class="radar" viewBox="0 0 300 300" width="300" height="300" role="img" aria-label="Places by walking time">';
-        svg += '<circle cx="150" cy="150" r="' + ringR + '" fill="#dcebe8" fill-opacity="0.45" stroke="#0e5c57" stroke-dasharray="4 4"/>';
-        svg += '<circle cx="150" cy="150" r="' + ringR / 2 + '" fill="none" stroke="#0e5c57" stroke-opacity="0.4" stroke-dasharray="4 4"/>';
-        svg += '<text x="150" y="' + (c - ringR - 6) + '" text-anchor="middle">' + limit + " min walk</text>";
-        svg += '<text x="150" y="' + (c - ringR / 2 - 6) + '" text-anchor="middle">' + limit / 2 + " min</text>";
+        let svg =
+            '<svg class="radar" viewBox="0 0 300 300" width="300" height="300" role="img" aria-label="Places by walking time">';
+        svg += '<circle cx="150" cy="150" r="' + ringR +
+            '" fill="#dcebe8" fill-opacity="0.45" stroke="#0e5c57" stroke-dasharray="4 4"/>';
+        svg += '<circle cx="150" cy="150" r="' + ringR / 2 +
+            '" fill="none" stroke="#0e5c57" stroke-opacity="0.4" stroke-dasharray="4 4"/>';
+        svg += '<text x="150" y="' + (c - ringR - 6) + '" text-anchor="middle">' + limit +
+            " min walk</text>";
+        svg += '<text x="150" y="' + (c - ringR / 2 - 6) + '" text-anchor="middle">' + limit / 2 +
+            " min</text>";
         svg += '<text x="150" y="292" text-anchor="middle">N is up</text>';
-        places.forEach(function (p, i) {
+        places.forEach(function(p, i) {
             const r = Math.min(p.walk_min / limit, 1.2) * ringR;
             const a = (p.bearing - 90) * Math.PI / 180;
             const x = c + r * Math.cos(a);
             const y = c + r * Math.sin(a);
             const fill = p.kind === "ct" ? "#0e5c57" : "#a8640c";
-            svg += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="11" fill="' + fill + '"/>';
-            svg += '<text x="' + x.toFixed(1) + '" y="' + (y + 4).toFixed(1) + '" text-anchor="middle" style="fill:#fff;font-weight:700">' + (i + 1) + "</text>";
+            svg += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="11" fill="' +
+                fill + '"/>';
+            svg += '<text x="' + x.toFixed(1) + '" y="' + (y + 4).toFixed(1) +
+                '" text-anchor="middle" style="fill:#fff;font-weight:700">' + (i + 1) + "</text>";
         });
-        svg += '<circle cx="150" cy="150" r="7" fill="#1a1d21"/><circle cx="150" cy="150" r="13" fill="none" stroke="#1a1d21" stroke-opacity="0.3"/>';
+        svg +=
+            '<circle cx="150" cy="150" r="7" fill="#1a1d21"/><circle cx="150" cy="150" r="13" fill="none" stroke="#1a1d21" stroke-opacity="0.3"/>';
         svg += "</svg>";
         return svg;
     }
 
     function walkCard(nearby, origin, input, tier, flags) {
         const places = nearby.places.slice(0, 6);
+        if (nearby.sample) {
+            return '<div class="card wide"><h3>Sample care-search results</h3><p>Fictional examples, not real clinics or phone numbers. Do not use these to seek care.</p><ul>' + places.map(function (place) {
+                return '<li>' + esc(place.name) + ' — sample location</li>';
+            }).join('') + '</ul></div>';
+        }
         if (!places.length) {
             return '<div class="card wide"><h3>Places near you</h3><p>No places found. Call 1-800-4-CANCER (National Cancer Institute) for help.</p></div>';
         }
-        const list = places.map(function (p, i) {
-            const dir = "https://www.google.com/maps/dir/?api=1&origin=" + origin.lat + "," + origin.lon +
-                "&destination=" + p.lat + "," + p.lon + "&travelmode=walking";
-            const kind = p.kind === "ct" ? "Can do the scan" : "Can order the scan";
-            let links = '<a href="' + dir + '" target="_blank" rel="noopener">Walking directions</a>';
+        const list = places.map(function(p, i) {
+            const dir = "https://www.google.com/maps/dir/?api=1&origin=" + Number(origin.lat) + "," +
+                Number(origin.lon) +
+                "&destination=" + Number(p.lat) + "," + Number(p.lon) + "&travelmode=walking";
+            const kind = p.kind === "ct" ? "Healthcare listing; services unconfirmed" : "Healthcare listing; services unconfirmed";
+            let links = '<a href="' + dir +
+                '" target="_blank" rel="noopener">Walking directions</a>';
             if (p.phone) {
                 links += ' · <a href="tel:' + esc(p.phone) + '">' + esc(p.phone) + "</a>";
             }
             if (p.website) {
-                links += ' · <a href="' + esc(p.website) + '" target="_blank" rel="noopener">Website</a>';
+                links += ' · <a href="' + esc(safeUrl(p.website)) +
+                    '" target="_blank" rel="noopener">Website</a>';
             }
             const walkable = p.walk_min <= nearby.walk_limit_min;
             return '<div class="place">' +
-                '<span class="num ' + p.kind + '">' + (i + 1) + "</span>" +
-                "<div><b>" + esc(p.name) + "</b>" + (p.verified ? '<span class="tag">verified</span>' : "") +
-                '<br><span class="note">' + kind + (p.address ? " · " + esc(p.address) : "") + "</span><br>" + links + "</div>" +
-                '<div class="mins">' + p.walk_min + "<small>" + (walkable ? "min walk" : "min · bus or car") + "</small></div>" +
+                '<span class="num ' + (p.kind === 'ct' ? 'ct' : 'primary') + '">' + (i + 1) + "</span>" +
+                "<div><b>" + esc(p.name) + "</b>" + (p.verified ?
+                    '<span class="tag">verified</span>' : "") +
+                '<br><span class="note">' + kind + (p.address ? " · " + esc(p.address) : "") +
+                "</span><br>" + links + "</div>" +
+                '<div class="mins">' + esc(p.walk_min) + "<small>" + (walkable ? "min walk" :
+                    "min · bus or car") + "</small></div>" +
                 "</div>";
         }).join("");
 
-        const status = input.smoking_status === "current" ? "I still smoke" : "I quit " + input.years_quit + " years ago";
+        const status = input.smoking_status === "current" ? "I still smoke" : "I quit " + input
+            .years_quit + " years ago";
         const py = ((input.cigs_per_day / 20) * input.years_smoked).toFixed(0);
-        let script = "Hi, I'd like to ask about low-dose CT lung cancer screening. I'm " + input.age +
+        let script = "Hi, I'd like to ask about low-dose CT lung cancer screening. I'm " + esc(input.age) +
             ", I have about " + py + " pack-years of smoking history, and " + status +
             ". Do I need a referral, and can you book the screening visit?";
         if (tier === "see_doctor_now") {
-            script = "Hi, I'd like an appointment this week, please. I'm " + input.age +
+            script = "Hi, I'd like an appointment this week, please. I'm " + esc(input.age) +
                 " and I have " + flags.join(", ") + ". Can a doctor see me soon?";
         }
 
         return '<div class="card wide"><h3>Places you can walk to' +
             (nearby.sample ? '<span class="tag sample">includes sample data</span>' : "") + "</h3>" +
-            '<div class="walk-wrap">' + radar(places, nearby.walk_limit_min) + "<div>" + list + "</div></div>" +
-            (input.smoking_status !== "never" || tier === "see_doctor_now" ? "<h3>What to say when you call</h3><p class=\"script\">" + esc(script) + "</p>" : "") +
-            '<p class="note">Walk times: ' + (places[0].walk_source === "route" ? "street routes (OpenRouteService)." : "estimated from distance.") +
-            " Places: " + ({ google: "Google Places", osm: "OpenStreetMap", sample: "sample data" }[nearby.source] || "OpenStreetMap") + ".</p>" +
+            '<div class="walk-wrap">' + radar(places, nearby.walk_limit_min) + "<div>" + list +
+            "</div></div>" +
+            (input.smoking_status !== "never" || tier === "see_doctor_now" ?
+                "<h3>What to say when you call</h3><p class=\"script\">" + esc(script) + "</p>" : "") +
+            '<p class="note">Walk times: ' + (places[0].walk_source === "route" ?
+                "street routes (OpenRouteService)." : "estimated from distance.") +
+            " Places: " + ({
+                google: "Google Places",
+                osm: "OpenStreetMap",
+                sample: "sample data"
+            } [nearby.source] || "OpenStreetMap") + ".</p>" +
             "</div>";
     }
 
@@ -295,34 +358,41 @@
         const r = d.risk;
         const i = d.input;
         const today = new Date().toLocaleDateString();
-        const smokingCode = i.smoking_status === "current" ? "F17.210 (nicotine dependence, cigarettes)" : "Z87.891 (history of nicotine dependence)";
+        const smokingCode = i.smoking_status === "current" ? "F17.210 (nicotine dependence, cigarettes)" :
+            "Z87.891 (history of nicotine dependence)";
+
         function row(k, v) {
-            return "<tr><td>" + k + "</td><td>" + v + "</td></tr>";
+            return "<tr><td>" + esc(k) + "</td><td>" + esc(v) + "</td></tr>";
         }
         return "<h1>Lung cancer screening: patient summary</h1>" +
             "<p>Prepared by the patient with Lungitude on " + today + ". This is not a diagnosis.</p>" +
             "<table>" +
             row("Age / BMI", i.age + " / " + r.bmi) +
-            row("Smoking", i.smoking_status + ", " + r.pack_years + " pack-years" + (i.smoking_status === "former" ? ", quit " + i.years_quit + " years ago" : "")) +
+            row("Smoking", i.smoking_status + ", " + esc(r.pack_years) + " pack-years" + (i.smoking_status ===
+                "former" ? ", quit " + i.years_quit + " years ago" : "")) +
             row("USPSTF 2021 eligible", r.uspstf.eligible ? "Yes" : "No") +
-            row("PLCOm2012 6-year risk", r.risk === null ? "Not applicable" : pct(r.risk) + " (screening cutoff 1.51%)") +
+            row("PLCOm2012 6-year risk", r.risk === null ? "Not applicable" : pct(r.risk) +
+                " (research reference 1.51%)") +
             row("Symptoms reported", r.red_flags.length ? r.red_flags.join(", ") : "None") +
-            row("Forced expiratory time (phone mic)", r.breath.fet === null ? "Not done" : r.breath.fet + " s") +
-            row("Phalangeal depth ratio (phone photo)", r.hands.pdr === null || r.hands.pdr_status !== "ok"
-                ? "Not done or not repeatable"
-                : r.hands.pdr + " (median of " + r.hands.pdr_trials.join(", ") + ")") +
-            row("Heart rate (phone camera PPG)", r.vitals.hr === null ? "Not done" : Math.round(r.vitals.hr) + " bpm, signal " + r.vitals.hr_quality) +
-            row("SpO2 (patient's clip-on oximeter)", r.vitals.spo2 === null ? "Not given" : r.vitals.spo2 + "%") +
-            row("Schamroth window", r.hands.schamroth_closed ? "Absent (patient report)" : "Present or not done") +
+            row("Forced expiratory time (phone mic)", r.breath.fet === null ? "Not done" : r.breath.fet +
+                " s") +
+            row("Phalangeal depth ratio (phone photo)", r.hands.pdr === null || r.hands.pdr_status !==
+                "ok" ?
+                "Not done or not repeatable" :
+                r.hands.pdr + " (median of " + r.hands.pdr_trials.join(", ") + ")") +
+            row("Heart rate (phone camera PPG)", r.vitals.hr === null ? "Not done" : Math.round(r.vitals
+                .hr) + " bpm, signal " + r.vitals.hr_quality) +
+            row("SpO2 (patient's clip-on oximeter)", r.vitals.spo2 === null ? "Not given" : r.vitals
+                .spo2 + "%") +
+            row("Schamroth window", r.hands.schamroth_closed ? "Absent (patient report)" :
+                "Present or not done") +
             "</table>" +
-            "<h2>Codes that may help</h2>" +
-            "<p>CPT 71271: low-dose CT for lung cancer screening. HCPCS G0296: counseling visit for lung cancer screening (Medicare). ICD-10 " + smokingCode + ".</p>" +
             "<p>Phone measurements are not validated clinical tests. Please confirm with standard exams.</p>";
     }
 
-    BW.renderResults = function (d) {
+    BW.renderResults = function(d) {
         const v = verdict(d);
-        const html =
+        let html =
             '<div class="verdict ' + v.cls + '">' +
             '<p class="eyebrow">' + esc(v.eyebrow) + "</p>" +
             "<h2>" + esc(v.title) + "</h2>" +
@@ -350,21 +420,31 @@
             "</div>" +
             '<p class="fineprint">Lungitude is a student project and a screening guide. It does not diagnose cancer. ' +
             "Risk model: Tammemägi et al., NEJM 2013. Guideline: USPSTF 2021.</p>";
+        html +=
+            '<p><b>This is a warning-sign match, not a diagnosis.</b> See a clinician to discuss symptoms and screening. Red-flag symptoms require evaluation rather than routine screening.</p>';
+        html += '<section class="card"><h2>What data goes where</h2>' + window.LungitudePrivacy.map(
+            function(text) {
+                return '<p>' + esc(text) + '</p>';
+            }).join('') + '</section>';
         document.getElementById("results").innerHTML = html;
         document.getElementById("doctor-note").innerHTML = doctorNote(d);
         const consent = document.getElementById("study-consent");
         const send = document.getElementById("study-send");
-        consent.addEventListener("change", function () {
+        consent.addEventListener("change", function() {
             send.disabled = !consent.checked;
         });
-        send.addEventListener("click", async function () {
+        send.addEventListener("click", async function() {
             send.disabled = true;
             const status = document.getElementById("study-status");
             try {
                 const res = await fetch("api/log.php", {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(Object.assign({ consent: true }, d.input))
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(Object.assign({
+                        consent: true
+                    }, d.input))
                 });
                 const out = await res.json();
                 if (!res.ok) {
@@ -377,7 +457,7 @@
                 send.disabled = false;
             }
         });
-        document.getElementById("print-note").addEventListener("click", function () {
+        document.getElementById("print-note").addEventListener("click", function() {
             window.print();
         });
     };

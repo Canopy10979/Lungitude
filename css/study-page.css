@@ -1,0 +1,60 @@
+.tiles {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+    margin: 20px 0;
+}
+.tile {
+    padding: 16px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+}
+.tile b {
+    display: block;
+    font: 600 34px/1.1 var(--serif);
+}
+.tile span {
+    color: var(--muted);
+    font-size: 13px;
+}
+.hist {
+    position: relative;
+}
+.hist svg {
+    width: 100%;
+    height: auto;
+    overflow: visible;
+}
+.hist .axis {
+    font: 11px var(--sans);
+    fill: var(--muted);
+}
+.hist rect.bar:hover {
+    fill: #0a4440;
+}
+.tip {
+    position: absolute;
+    pointer-events: none;
+    padding: 6px 10px;
+    border-radius: 8px;
+    background: var(--ink);
+    color: #fff;
+    font-size: 13px;
+    white-space: nowrap;
+    transform: translate(-50%, -110%);
+}
+table.data {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+table.data td,
+        table.data th {
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--line);
+    text-align: left;
+}
+.study-static-0 {
+    margin-top:16px
+}

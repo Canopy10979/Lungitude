@@ -7,10 +7,14 @@ window.BW = {
         nailPallor: false
     },
     location: null,
-    demoLocation: { lat: 47.7080, lon: -122.1830, label: "Kirkland, WA (WA-01)" }
+    demoLocation: {
+        lat: 47.7080,
+        lon: -122.1830,
+        label: "Kirkland, WA (WA-01)"
+    }
 };
 
-(function () {
+(function() {
     const STEPS = ["about", "smoking", "history", "breath", "hands", "place"];
 
     function $(sel) {
@@ -42,17 +46,20 @@ window.BW = {
         return el.value;
     }
 
-    BW.go = function (step) {
-        document.querySelectorAll(".step").forEach(function (s) {
+    BW.go = function(step) {
+        document.querySelectorAll(".step").forEach(function(s) {
             s.removeAttribute("data-active");
         });
         $("#step-" + step).setAttribute("data-active", "");
         const idx = STEPS.indexOf(step);
-        document.querySelectorAll(".progress li").forEach(function (li, i) {
+        document.querySelectorAll(".progress li").forEach(function(li, i) {
             li.classList.toggle("done", idx > i || step === "results");
             li.classList.toggle("now", idx === i);
         });
-        window.scrollTo({ top: 0, behavior: "smooth" });
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
     };
 
     function heightIn() {
@@ -166,7 +173,9 @@ window.BW = {
             const results = await Promise.all([
                 getJson("api/risk.php", {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
                     body: JSON.stringify(input)
                 }),
                 getJson("api/region.php?" + q),
@@ -197,23 +206,28 @@ window.BW = {
             years_smoked: 38,
             years_quit: 4
         };
-        Object.keys(values).forEach(function (k) {
+        Object.keys(values).forEach(function(k) {
             field(k).value = values[k];
         });
         document.querySelector('[name="smoking_status"][value="former"]').checked = true;
         field("family_lung_cancer").checked = true;
         BW.measures.fet = 7.4;
         BW.measures.pdrTrials = [0.93, 0.95, 0.92];
-        BW.measures.pulse = { hr: 76, quality: "good", perfusion: 1.4 };
+        BW.measures.pulse = {
+            hr: 76,
+            quality: "good",
+            perfusion: 1.4
+        };
         field("spo2").value = 96;
-        document.getElementById("pulse-result").textContent = "Demo value: heart rate 76 beats per minute (signal good).";
+        document.getElementById("pulse-result").textContent =
+            "Demo value: heart rate 76 beats per minute (signal good).";
         $("#breath-result").textContent = "Demo value: 7.4 seconds";
         BW.showPdrTrials();
         updateReadouts();
         BW.go("about");
     }
 
-    document.addEventListener("click", function (e) {
+    document.addEventListener("click", function(e) {
         const go = e.target.closest("[data-goto]");
         if (go) {
             e.preventDefault();
@@ -237,19 +251,20 @@ window.BW = {
 
     $("#load-demo").addEventListener("click", loadDemoPerson);
 
-    $("#use-demo-location").addEventListener("click", function () {
+    $("#use-demo-location").addEventListener("click", function() {
         BW.location = BW.demoLocation;
         finish(BW.demoLocation, true);
     });
 
-    $("#use-location").addEventListener("click", function () {
+    $("#use-location").addEventListener("click", function() {
         if (!navigator.geolocation) {
-            $("#place-status").textContent = "This browser cannot share location. Use the demo location.";
+            $("#place-status").textContent =
+                "This browser cannot share location. Use the demo location.";
             return;
         }
         $("#place-status").textContent = "Waiting for your location…";
         navigator.geolocation.getCurrentPosition(
-            function (pos) {
+            function(pos) {
                 const loc = {
                     lat: Number(pos.coords.latitude.toFixed(5)),
                     lon: Number(pos.coords.longitude.toFixed(5)),
@@ -258,10 +273,12 @@ window.BW = {
                 BW.location = loc;
                 finish(loc, false);
             },
-            function () {
-                $("#place-status").textContent = "Location was blocked. Use the demo location.";
-            },
-            { timeout: 10000 }
+            function() {
+                $("#place-status").textContent =
+                    "Location was blocked. Use the demo location.";
+            }, {
+                timeout: 10000
+            }
         );
     });
 

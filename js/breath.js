@@ -9,7 +9,7 @@
  * 3. Exhale ends at the last moment loudness is above 2.5x the floor
  *    and above 8% of the peak. We stop after 1.5 s of quiet, or at 15 s.
  */
-(function () {
+(function() {
     const MAX_SECONDS = 15;
     const QUIET_STOP = 1.5;
 
@@ -32,7 +32,7 @@
         if (arr.length === 0) {
             return 0;
         }
-        const s = arr.slice().sort(function (a, b) {
+        const s = arr.slice().sort(function(a, b) {
             return a - b;
         });
         return s[Math.floor((s.length - 1) * p)];
@@ -43,7 +43,7 @@
         const h = canvas.height;
         g.clearRect(0, 0, w, h);
         let peak = 0.05;
-        env.forEach(function (p) {
+        env.forEach(function(p) {
             peak = Math.max(peak, p.v);
         });
         const span = Math.max(6, (env.length ? env[env.length - 1].t - startT : 0));
@@ -56,7 +56,7 @@
         }
 
         g.beginPath();
-        env.forEach(function (p, i) {
+        env.forEach(function(p, i) {
             const x = (p.t - startT) / span * w;
             const y = h - (p.v / peak) * (h - 10) - 4;
             if (i === 0) {
@@ -75,9 +75,11 @@
             return fet.toFixed(1) + " seconds. That is in the typical range.";
         }
         if (fet < 9) {
-            return fet.toFixed(1) + " seconds. That is longer than typical. Ask a doctor about a breathing test (spirometry).";
+            return fet.toFixed(1) +
+                " seconds. That is longer than typical. Ask a doctor about a breathing test (spirometry).";
         }
-        return fet.toFixed(1) + " seconds. That is long. A long forced exhale can be a sign of blocked airways. Ask a doctor about spirometry.";
+        return fet.toFixed(1) +
+            " seconds. That is long. A long forced exhale can be a sign of blocked airways. Ask a doctor about spirometry.";
     }
 
     async function run() {
@@ -114,7 +116,7 @@
         let lastLoud = null;
 
         function stop(message) {
-            stream.getTracks().forEach(function (t) {
+            stream.getTracks().forEach(function(t) {
                 t.stop();
             });
             ctx.close();
@@ -130,7 +132,10 @@
             const now = performance.now() / 1000;
             an.getFloatTimeDomainData(buf);
             const v = rms(buf);
-            env.push({ t: now, v: v });
+            env.push({
+                t: now,
+                v: v
+            });
 
             if (now < goAt) {
                 ring.className = "breath-ring wait";
@@ -141,9 +146,9 @@
             }
 
             if (floor === null) {
-                const quiet = env.filter(function (p) {
+                const quiet = env.filter(function(p) {
                     return p.t < goAt;
-                }).map(function (p) {
+                }).map(function(p) {
                     return p.v;
                 });
                 floor = Math.max(percentile(quiet, 0.3), 0.002);

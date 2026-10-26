@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Google Places healthcare listings: nearest five within 10 miles.
  * Straight-line distance is independent of routing and treatment quality.
@@ -169,7 +170,9 @@ function bw_google_places(float $lat, float $lon, string $query): ?array
         return null;
     }
     $data = json_decode($body, true);
-    if (!is_array($data) || isset($data['error'])) return null;
+    if (!is_array($data) || isset($data['error'])) {
+        return null;
+    }
     $data['places'] = $data['places'] ?? [];
 
     $places = [];
@@ -212,30 +215,28 @@ function bw_place_query(string $type): string
 
 function bw_demo_places(float $lat, float $lon, string $type): array
 {
-    $rows = json_decode(file_get_contents(__DIR__ . '/../data/demo_places.json'), true);
-    if ($type !== 'lung') {
-        $names = [
-            'primary' => 'Primary Care',
-            'breast' => 'Breast Imaging Center',
-            'colorectal' => 'Digestive Health Clinic',
-            'urinary' => 'Urology Clinic',
-            'skin' => 'Dermatology Clinic',
-            'blood' => 'Hematology and Oncology',
-            'liver_pancreas' => 'Liver and Digestive Clinic',
+    $names = [
+        'primary' => 'Primary Care',
+        'lung' => 'Lung Care',
+        'breast' => 'Breast Imaging Center',
+        'colorectal' => 'Digestive Health Clinic',
+        'urinary' => 'Urology Clinic',
+        'skin' => 'Dermatology Clinic',
+        'blood' => 'Hematology and Oncology',
+        'liver_pancreas' => 'Liver and Digestive Clinic',
+    ];
+    $label = $names[$type] ?? 'Clinic';
+    $offsets = [[450, 300], [-700, 520], [980, -640], [-1500, -1100], [2300, 1700]];
+    $rows = [];
+    foreach ($offsets as $i => $o) {
+        $rows[] = [
+            'name' => 'Sample ' . $label . ' ' . chr(65 + $i),
+            'kind' => 'ct',
+            'address' => 'Sample data',
+            'phone' => '(555) 010-01' . str_pad((string)($i + 10), 2, '0', STR_PAD_LEFT),
+            'dn' => $o[0],
+            'de' => $o[1],
         ];
-        $label = $names[$type] ?? 'Clinic';
-        $offsets = [[450, 300], [-700, 520], [980, -640], [-1500, -1100], [2300, 1700]];
-        $rows = [];
-        foreach ($offsets as $i => $o) {
-            $rows[] = [
-                'name' => 'Sample ' . $label . ' ' . chr(65 + $i),
-                'kind' => 'ct',
-                'address' => 'Sample data',
-                'phone' => '(555) 010-01' . str_pad((string)($i + 10), 2, '0', STR_PAD_LEFT),
-                'dn' => $o[0],
-                'de' => $o[1],
-            ];
-        }
     }
     $places = [];
     foreach ($rows as $r) {
@@ -270,29 +271,39 @@ $rawLat = filter_var($_GET['lat'] ?? null, FILTER_VALIDATE_FLOAT);
 $rawLon = filter_var($_GET['lon'] ?? null, FILTER_VALIDATE_FLOAT);
 if ($rawLat === false || $rawLat === null || $rawLon === false || $rawLon === null ||
     !is_finite($rawLat) || !is_finite($rawLon) || abs($rawLat) > 90 || abs($rawLon) > 180) {
-    bw_json(['error' => 'Provide a valid location or ZIP code.', 'places' => []], 400); exit;
+    bw_json(['error' => 'Provide a valid location or ZIP code.', 'places' => []], 400);
+    exit;
 }
-$lat = (float)$rawLat; $lon = (float)$rawLon;
-if (GOOGLE_KEY === '') { bw_json(['error' => 'Google Places is not configured on the server.', 'places' => []], 503); exit; }
-if (!bw_rate_ok('google', GOOGLE_MAX_PER_HOUR)) { bw_json(['error' => 'Search limit reached. Please try again later.', 'places' => []], 429); exit; }
-$places = bw_google_places($lat, $lon, 'healthcare');
-if ($places === null) { bw_json(['error' => 'Google Places could not complete this search. Check Places API (New), billing and server-key restrictions.', 'places' => []], 502); exit; }
+$lat = (float)$rawLat;
+$lon = (float)$rawLon;
+$sample = FORCE_DEMO || isset($_GET['demo']) || GOOGLE_KEY === '' || !extension_loaded('curl');
+$type = (string)($_GET['type'] ?? 'primary');
+$places = null;
+if (!$sample && bw_rate_ok('google', GOOGLE_MAX_PER_HOUR)) {
+    $places = bw_google_places($lat, $lon, bw_place_query($type));
+}
+if ($places === null) {
+    $sample = true;
+    $places = bw_demo_places($lat, $lon, $type);
+}
 // Independently enforce the radius, deduplicate listings and sort by straight-line distance.
 $seen = [];
 $places = array_values(array_filter($places, function ($p) use (&$seen, $lat, $lon) {
     $meters = bw_haversine_m($lat, $lon, $p['lat'], $p['lon']);
     $key = strtolower($p['name'] . '|' . $p['address']);
-    if ($meters > SEARCH_RADIUS_METERS || isset($seen[$key])) return false;
+    if ($meters > SEARCH_RADIUS_METERS || isset($seen[$key])) {
+        return false;
+    }
     $seen[$key] = true;
     return true;
 }));
-usort($places, fn($a, $b) => bw_haversine_m($lat,$lon,$a['lat'],$a['lon']) <=> bw_haversine_m($lat,$lon,$b['lat'],$b['lon']));
+usort($places, fn ($a, $b) => bw_haversine_m($lat, $lon, $a['lat'], $a['lon']) <=> bw_haversine_m($lat, $lon, $b['lat'], $b['lon']));
 $places = array_slice($places, 0, 5);
 foreach ($places as &$pl) {
-    $pl['miles'] = round(bw_haversine_m($lat,$lon,$pl['lat'],$pl['lon']) / 1609.344, 2);
+    $pl['miles'] = round(bw_haversine_m($lat, $lon, $pl['lat'], $pl['lon']) / 1609.344, 2);
     $pl['drive_min'] = max(2, (int)round($pl['meters'] * 1.4 / 500));
 }
 unset($pl);
-bw_json(['sample' => false, 'source' => 'google', 'origin' => ['lat' => $lat, 'lon' => $lon],
+bw_json(['sample' => $sample, 'source' => $sample ? 'sample' : 'google', 'origin' => ['lat' => $lat, 'lon' => $lon],
     'radius_miles' => 10, 'radius_meters' => SEARCH_RADIUS_METERS, 'distance_basis' => 'straight_line',
-    'type' => 'healthcare', 'places' => $places]);
+    'walk_limit_min' => WALK_MIN_LIMIT, 'type' => 'healthcare', 'places' => $places]);

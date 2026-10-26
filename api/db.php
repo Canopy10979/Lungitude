@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Study database: SQLite file, no server, no packages.
  * Stores numbers only. No name, no photo, no audio, no location,

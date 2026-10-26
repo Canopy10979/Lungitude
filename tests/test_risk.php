@@ -1,4 +1,5 @@
 <?php
+
 /* Run: php tests/test_risk.php */
 require __DIR__ . '/../api/lib.php';
 

@@ -1,324 +1,132 @@
-# Start the updated website locally
-
-Extract the ZIP to a permanent folder such as `C:\Users\rishi\Projects\Lungitude`. Do not run it inside the ZIP preview or a temporary extraction directory.
-
-1. Install PHP 8.2+ with cURL, PDO SQLite and fileinfo enabled, and ensure `php` is on PATH.
-2. Double-click `start-web.bat`. Leave its terminal open.
-3. Open **http://localhost:8000** in your browser. Opening `index.html` with `file://` cannot run the PHP backend.
-4. For the optional imaging features, install Python 3.11+, then open a terminal in this folder and run:
-
-```bat
-py -3.11 -m venv .venv
-.venv\Scripts\python -m pip install -r ml/skin/requirements.txt
-start-imaging.bat
-```
-
-Leave both server windows open. Camera permissions work on localhost. Use a supported browser such as Chrome or Edge.
-
-The private download has the Google key configured on the PHP server. The GitHub version excludes secrets; copy `api/secrets.example.php` to `api/secrets.php` and configure your key locally. Places and Geocoding require their respective APIs and billing to be enabled in the key's Google Cloud project. Missing access is shown as an error; manual Washington county selection remains available. Keep `api/secrets.php` private.
-
-## Current capabilities
-
-The questionnaire accepts whole-number ages 0–120, including zero. Adult BMI categories are not applied below age 20. Existing screening age criteria remain in effect. The recording page includes three movable, resizable regions with live zoom panels, a REC indicator, elapsed timer and manual recording stop. These manually selected regions do not track people or detect cancer.
-
-The camera supports front/rear selection, still photo capture, 10-second recording, preview/playback and local downloads. Consent withdrawal stops capture and removes local previews. The questionnaire leads to optional recording/imaging checks, then educational next steps and a Google Places search for up to five healthcare listings within a strict 10-mile radius. Listings are ordered by straight-line distance, not clinical quality. The supplied Washington map is presented specifically as a breast/cervical screening network with an unknown publication date.
-
-The imaging lab computes descriptive asymmetry/border, color and texture measurements from a manually outlined lesion. Follow-up comparison accepts dated photos with ruler calibration and attempts image registration. Vessel analysis needs suitable dermoscopic imaging and is unavailable. These measurements do not determine malignancy.
-
-## Capacitor
-
-Install Node.js 22 or newer, then install the JavaScript dependencies and build the static web bundle before syncing a native project:
-
-```bat
-npm ci
-npm run build:capacitor
-npx cap add ios
-npx cap sync ios
-```
-
-`www/` is generated from the current website pages and public static assets; the old project's prebuilt `www/` bundle is intentionally not reused. Building the web bundle does not include or run the PHP backend. API-backed survey, location, and imaging features still require a separately hosted PHP service and native-app API configuration before they can work in a Capacitor app. Building iOS apps requires macOS and Xcode.
-
-MobileNet and EfficientNet research training scripts and a local inference endpoint are included. No trained cancer checkpoints or real-data accuracy results are supplied. CNN inference stays disabled until a compatible PAD-UFES-20 checkpoint is trained. Video analysis is a frame-ensemble research experiment, not a trained temporal cancer detector. Breathing and ordinary camera recordings cannot diagnose lung, pancreatic or colon cancer.
-
-See `ml/skin/README.md` for training commands. PHP risk/survey tests and JavaScript syntax checks passed during development. Dataset rates in the original prototype still require source verification before clinical use.
-
----
-
-## Original project documentation
-
 # Lungitude
 
-**Your lungs, mapped. A 3-minute lung check on your phone that sends you to a lung cancer screening you can walk to.**
+A short warning-sign survey for Washington residents, followed by screening information and nearby healthcare listings. Student project by Rishi Jasuja for the 2026 Congressional App Challenge, WA-01. Educational prototype; not a medical device or diagnosis.
 
-Lungitude uses 4 inputs:
+## The problem in Washington State
 
-- Your answers: they go into **PLCOm2012**, a published risk model that doctors use.
-- The microphone: it times 1 forced exhale (forced expiratory time). An optional AI also listens for crackles and wheezes.
-- The camera: it measures finger clubbing (phalangeal depth ratio). It also has an optional nail-bed color check.
-- Your location: it finds your county data and the places you can walk to, and gives you a call script and a printable note for your doctor.
+The American Cancer Society estimates **48,590 new cancer cases** and **14,160 cancer deaths** in Washington in **2026** ([ACS state table](https://www.cancer.org/content/dam/cancer-org/research/cancer-facts-and-statistics/annual-cancer-facts-and-figures/2026/sd3-21-cancers-by-state-2026.pdf)). These are projections, not observed counts. The American Lung Association’s **2025** report lists Washington lung-screening uptake at **15.8%**, ranking **37 of 51**, compared with **18.2%** nationally ([ALA Washington report](https://www.lung.org/media/press-releases/fy26-solc-washington)). Screening access and understanding when symptoms need a clinician are distinct problems; this app explains that distinction.
 
-Lungitude does not diagnose cancer. It tells a person **"go get the scan"** and shows **where** to go.
+## What Lungitude does
 
----
+- Asks age, optional BMI and seven warning-sign questions; accepts ages 0–120 without applying adult BMI categories to children.
+- Matches reported signs to topics to discuss with a clinician. A match is not a cancer probability or diagnosis.
+- Shows age-based screening information with eligibility caveats and a separate lung guideline check.
+- Accepts any of Washington’s 39 counties without GPS; optionally searches nearby healthcare using shared coordinates or a ZIP code.
+- Labels fictional demo clinic listings and unavailable data explicitly.
 
-## 0. The survey (index.html)
+Screenshots are in `docs/screenshots/`. Until captured:
 
-The home page is a short survey with 1 question on each screen:
+- TODO: `docs/screenshots/survey-mobile.png` — survey question at 375px width.
+- TODO: `docs/screenshots/results-desktop.png` — results with a warning-sign match, clinician advice, screening context and sample-care label.
+- TODO: `docs/screenshots/lung-check.png` — lung demo result with guideline criteria and warning-sign disclaimer.
 
-1. "Hello, how are you doing today?"
-2. Welcome text and the motto "Breathing shouldn't be a tax, make it a right."
-3. Name (it stays in the browser and goes to no server), age, BMI (or height and weight).
-4. 7 yes/no warning-sign questions: lung, breast, colorectal, urinary (prostate, bladder, kidney), skin, blood (leukemia and lymphoma), pancreas and liver.
-5. A thank-you screen and a location request.
-6. The result: "Based on your answers, your result is: Warning signs of ...". Then 5 healthcare centers near you with phone numbers (Google Places), Washington data for each matched cancer, the screenings for your age, the BMI link, and Washington's free screening program.
+## How to run it
 
-**The result is a warning-sign match, not a diagnosis.** If the app said "your result is: pancreatic cancer" after a survey, it would be false and could frighten people. Judges would also mark it down. The result names the cancers whose warning signs the person reported, and it always sends them to a doctor.
+Install **PHP 8.2 or later**. Core JSON and PDO are used; enable **cURL** for external lookups, **PDO SQLite** for cache and the optional study, and **fileinfo** for research-image uploads. No npm, Composer, CDN, Python or build step is needed for the main survey and lung check.
 
-- With 3 or more "yes" answers, the app suggests a primary care doctor first, and it searches for primary care clinics.
-- With 2 matched areas, buttons switch the clinic search between the 2 specialties.
-- The lung check from earlier versions is now `lung.html` (microphone, camera, pulse, PLCOm2012). The result links to it when the lung question is "yes".
-
-Backend: `api/survey.php` (rules in `bw_survey()`) and `data/wa_cancers.json` (all numbers and sources). Tests: `php tests/test_survey.php` (13 checks).
-
-## Washington data: what is in the app, and what to download
-
-**Already in the app (no download):** `data/wa_cancers.json`
-
-| Data | Source |
-|---|---|
-| New cases and deaths in Washington in 2026, by cancer type | American Cancer Society, Cancer Facts & Figures 2026 |
-| Washington vs US incidence rate per 100,000 (2019–2023), by cancer type | NCI State Cancer Profiles |
-| Cancers linked to BMI (13 types) and to smoking | CDC |
-| Screening ages and intervals | USPSTF final recommendations |
-| Free screening program (age 21–64, income up to about 250–300% of the federal poverty level) | WA DOH, Breast, Cervical, and Colon Health Program |
-
-**Download these for Washington:**
-
-| # | Dataset | How | Adds to the app |
-|---|---|---|---|
-| 1 | **CDC PLACES, county data** | `php tools/fetch_places.php` (keeps Washington's 39 counties; add `--all` for every US county) | County smoking, COPD, obesity, colorectal screening and mammogram rates |
-| 2 | **WA State Cancer Registry (WSCR) Data Online** | doh.wa.gov → Cancer Data → WSCR Data Online. Export rates by cancer site, county and **age group** as CSV | Age-specific Washington rates, for example "people aged 50–64 in King County" |
-| 3 | **NCI State Cancer Profiles, Washington by county** | Export 1 CSV for each cancer into `data/scp/` (file names in `data/scp/README.txt`), then run `php tools/import_scp.php` | County rates for each cancer type on the survey result |
-| 4 | **ICBHI 2017** (not Washington data) | See section 4 | The lung-sound AI on `lung.html` |
-| — | Google Places API | API key in `api/secrets.php` | Real clinics and phone numbers |
-
-Items 2 and 3 are manual exports, because those sites have no simple download API. Save the files in `data/`, and keep the source and the year in the file name, for example `data/wscr_king_by_age_2018-2022.csv`.
-
-## Backend map
-
-All endpoints are plain PHP 8. Open `http://localhost:8000/api/health.php` first. It lists what is set up and what is missing.
-
-| Endpoint | Method | Does |
-|---|---|---|
-| `api/survey.php` | POST | Survey → warning-sign match, Washington data, county data, screenings for the age, BMI link |
-| `api/nearby.php?type=…&limit=5` | GET | 5 places for the matched cancer type (Google Places → OpenStreetMap → sample data) |
-| `api/risk.php` | POST | Lung risk (PLCOm2012, USPSTF, finger, breath, pulse) for `lung.html` |
-| `api/region.php` | GET | County and lung data for `lung.html` |
-| `api/log.php` / `api/stats.php` | POST / GET | Accuracy study (only with consent; numbers only) |
-| `api/health.php` | GET | Setup check |
-
-| Shared file | Holds |
-|---|---|
-| `api/lib.php` | Risk engine, input checks, HTTP helper |
-| `api/geo.php` | Location → county (Census, then FCC), county health data, county cancer rates. County lookups are cached for 30 days. |
-| `api/store.php` | SQLite cache and rate limit (`data/cache.sqlite`) |
-| `api/db.php` | Study database (`data/study.sqlite`) |
-
-**Google key protection:** each visitor can make at most 30 Google searches per hour (`GOOGLE_MAX_PER_HOUR` in `nearby.php`). The rate limit stores a hash of the IP address, never the IP address itself. Google results are **not** cached, because the Google Maps Platform terms do not allow storing Places content such as names and phone numbers. Also set a budget alert in the Google Cloud console.
-
-**On Windows:** in `php.ini`, remove the `;` before `extension=curl`, `extension=pdo_sqlite` and `extension=openssl`. Then run `php -S localhost:8000` in the Lungitude folder.
-
-**Tests:** `php tests/test_risk.php` (14 checks) and `php tests/test_survey.php` (20 checks, including the CSV importer on a fake file).
-
-## 1. Run it (1 minute)
-
-```
-cd lungitude
-php -S localhost:8000
+```sh
+git clone https://github.com/Canopy10979/Lungitude.git
+cd Lungitude
+php -S localhost:8000 router.php
 ```
 
-Open `http://localhost:8000` and click **Load demo person**, then **Use demo location**.
+Open http://localhost:8000. Do not open HTML as a local file. Use the router so private code, datasets and databases are not served as static downloads. PHP’s development server is for local demos.
 
-- You need PHP 8 with curl. There is no npm, no Composer and no framework.
-- The microphone and camera work only on `localhost` or on HTTPS.
-- When there is no network, the app uses sample data for places and county data. Each sample item has a "sample" label.
+**Demo:** set `define('FORCE_DEMO', true);` in place of the environment-based definition in `api/config.php` or start with `FORCE_DEMO=1` in the server environment. Choose **Load demo person** in the survey or lung check. The survey demo displays a sample person and location. With no Google key or failed provider access, care search returns clearly labeled fictional examples. No network or Python is needed for the core demo. External lookups remain unavailable offline; use a manual county or demo location.
 
-### Optional upgrades
+**Optional Google key:** copy `api/secrets.example.php` to `api/secrets.php` and set `GOOGLE_KEY`, or set the `GOOGLE_PLACES_KEY` environment variable without creating that file. Never commit the key. Enable Places API (New), and Geocoding API if using ZIP lookup, with billing and appropriate server-key restrictions. Listings are general healthcare places; they are not confirmed screening providers. Call to confirm services, insurance and availability. No key is needed for sample mode.
 
-| Upgrade | Command or step | Result |
-|---|---|---|
-| County smoking and COPD rates | `php tools/fetch_places.php` | Downloads CDC PLACES once. After that, the county lookup works offline. |
-| Google Places (real screening sites) | Put your key in `api/secrets.php` (this file is in .gitignore) | Text Search for "lung cancer screening" near the user, with phone and website. If it fails, the app uses OpenStreetMap. |
-| Real street walk times | Put a free key in `api/config.php` (`ORS_KEY`) | OpenRouteService gives walk times on real streets. |
-| AI lung-sound check | See section 4 | Shows the AI panel on the Breath step. |
-| Use sample data only | `FORCE_DEMO = true` in `api/config.php` | Use this if the Wi-Fi fails during a demo. |
+**Phone installation:** serve through HTTPS, open the site on the phone, and choose Add to Home Screen / Open as Web App in Safari, or the browser installation option on Android. Localhost is supported for development. Installation caches only the public interface; it does not bundle PHP or provide offline medical results. The server must remain reachable.
 
-## 2. Files
+## Trained research artifacts
 
-```
-index.html            survey (home page)
-js/survey.js          survey screens and result page
-css/survey.css        survey styles
-api/survey.php        survey rules (warning-sign match, screenings, BMI)
-data/wa_cancers.json  Washington cancer data + questions + sources
-lung.html             lung check: 6 steps + results
-css/app.css           all styles, no framework, works offline
-js/app.js             flow, form, API calls, demo person
-js/breath.js          forced exhale timer (mic loudness only, no recording)
-js/hands.js           finger clubbing ratio (4 taps) + nail-bed color
-js/lungsound.js       AI lung-sound model, runs in the browser
-js/results.js         results page, walk radar, call script, doctor note
-api/lib.php           risk engine: PLCOm2012, USPSTF, Medicare, red flags
-api/risk.php          POST answers -> risk JSON
-api/region.php        location -> county (Census/FCC) -> CDC PLACES
-api/nearby.php        location -> OpenStreetMap places -> walk minutes
-tools/fetch_places.php  cache CDC county data
-ml/train_icbhi.py     trains the lung-sound model (Python, training only)
-tests/test_risk.php   php tests/test_risk.php  (9 checks)
-data/                 demo data + caches + lung_model.json after training
-```
+See [MODELS.md](MODELS.md) for the three published trained baselines, actual held-out scores, hashes, reproduction commands and important failures. These models do not change survey recommendations and are not validated for clinical use.
 
-## 3. What each signal is, and what it is not
+## How it works
 
-| Signal | What we measure | Evidence | What we do with it |
-|---|---|---|---|
-| Risk model | PLCOm2012: age, BMI, education, smoking, COPD, family history | Tammemägi, NEJM 2013. Screening is suggested at 1.51% or more over 6 years. | This is the main number. |
-| Guideline | USPSTF 2021: age 50–80, 20+ pack-years, quit 15 years ago or less | Insurance coverage depends on it | Shows a check or a cross for each rule. |
-| Exhale time | Seconds of a forced exhale | A long forced exhale is a known sign of blocked airways at the bedside | "Ask for spirometry." It does not change the risk. It shows "if COPD is confirmed, your risk becomes X%". |
-| Finger clubbing | Depth at the nail fold ÷ depth at the last joint | Above 1.0 is a clubbing sign. About 5–15% of people with lung cancer have clubbing. | A red flag: "see a doctor this week". |
-| Nail-bed color | Red share after white balance | Mannino et al., Nature Communications 2018 (hemoglobin from fingernail photos) | Experimental only. It suggests a blood test (CBC). |
-| AI lung sounds | Crackles and wheezes in 2.5 s windows | Trained on ICBHI 2017 | Experimental. It is a talking point for a doctor. |
+The vanilla HTML/JavaScript interface calls same-origin PHP endpoints. `index.html` is the survey and results flow; `lung.html` is a separate lung guideline check. Research pages are linked only in a labeled section after survey results. Local JSON files supply questions, sources and county identifiers.
 
-**The rule for symptoms:** if a person has a red flag, Lungitude tells them to see a doctor. It does not tell them to get a screening scan. Screening is only for people with no symptoms. EvergreenHealth's program has the same rule.
+| Endpoint | Purpose |
+| --- | --- |
+| `POST api/survey.php` | Warning-sign matches, age-based screening context, selected county |
+| `POST api/risk.php` | Lung guideline rules and an educational PLCOm2012 calculation |
+| `GET api/nearby.php` | Up to five nearby general healthcare listings, or labeled fictional examples |
+| `GET api/zipcode.php` | Optional Google ZIP-to-coordinate lookup |
+| `GET api/region.php` | County lookup and optional local context |
+| `GET api/health.php` | Configuration checks without exposing keys |
+| `POST api/log.php`, `GET api/stats.php` | Optional consented research-measurement logging and aggregate summary |
+| `api/imaging.php` | Research-only proxy to a separate local Python service; not used by the main survey |
 
----
+The lung risk calculation implements **PLCOm2012**, from Tammemägi et al., *NEJM* **2013**, 368:728–736, [doi:10.1056/NEJMoa1211776](https://doi.org/10.1056/NEJMoa1211776). It estimates six-year lung-cancer risk in people with smoking history. The original development population was aged 55–74; calculations outside the studied population are extrapolations, not validated advice. The 1.51% comparison threshold comes from [Tammemägi et al., PLOS Medicine 2014](https://doi.org/10.1371/journal.pmed.1001761); it is not the USPSTF eligibility rule. This implementation has calculation tests, not clinical validation. Red flags take priority over routine screening.
 
-## 4. Your idea: "AI that detects the type of cancer from breathing patterns"
+Screening information is explicitly based on USPSTF final recommendations: lung and colorectal **2021**, breast **2024**, cervical and prostate **2018**. It is a discussion guide, not an order or complete eligibility assessment. Cervical guidance differs across organizations; HRSA updated its guidance in 2026. Sources, years, corrected estimates and removed/unverified values are recorded in `data/wa_cancers.json` and `docs/evidence-audit.md`. Missing county datasets are not filled with invented rates.
 
-### The direct answer
+## Data and privacy
 
-No public dataset links breathing sounds or breathing patterns to lung cancer. No dataset links them to the **type** of lung cancer either (for example, adenocarcinoma, squamous cell or small cell). A doctor can find the type only from a biopsy. If you claim that your app does this, a judge with medical knowledge will ask "what did you train on?", and you will have no answer.
+### What data goes where
 
-### What does exist
+The survey sends age, optional BMI, symptom answers and your selected county or shared coordinates to this PHP server. Your name stays in page memory. The lung check sends health history and numeric observations to the risk endpoint. These endpoints calculate results without writing survey or risk answers to a database.
 
-| Data | What it has | Use it? |
-|---|---|---|
-| **ICBHI 2017 Respiratory Sound Database** | 920 recordings, 126 patients, 6,898 breathing cycles. Each cycle has a crackle and wheeze label. Diagnoses include COPD and respiratory infections. | **Yes. This is your AI.** It is free for research. |
-| Clinical Breathomics Dataset (Scientific Data, 2024) | Chemical breath data (GC-MS) for asthma, bronchiectasis and COPD, 121 samples. It has no cancer data. | It is not audio. Mention it only as future work. |
-| Electronic-nose lung cancer studies | Chemical breath sensors. Some studies even predict the cancer type. | The data is **not public**. Use it as "where this goes next" in the pitch. |
+If you share coordinates, the server may send them to the US Census Geocoder and FCC for county lookup, and to Google Places for nearby healthcare. A ZIP lookup sends the ZIP code to Google Geocoding. County identifiers may be sent to CDC PLACES when live county statistics are explicitly enabled. Opening external maps or websites shares your request with that provider. Server and hosting logs may record IP addresses and request URLs.
 
-### How to keep your idea and stay honest
+data/cache.sqlite stores rounded coordinate-to-county lookups for up to 30 days, county statistics for up to 7 days, and IP-derived rate-limit buckets with expiry timestamps. Expired records can remain on disk until cleanup; no Google Places responses are cached by the app. The service worker caches only public interface files, never API responses or Google data.
 
-The AI classifies **the type of breath sound**: normal, crackle, wheeze, or both. Crackles and wheezes are signs of COPD and other lung disease. COPD is a risk factor in the cancer model. Thus the AI result goes to the doctor as a talking point, and the validated model makes the risk decision.
+The optional research study sends numeric measurements, age band and smoking status after consent and stores them with a date in data/study.sqlite. It does not save the name, photo or audio in that database. There is no automatic study-record deletion; the server operator must manage retention.
 
-> Pitch line: "Lungitude's AI hears what a stethoscope hears. It does not guess cancer. It finds the people who need the one test that does find cancer."
+The separate imaging prototypes can upload photos and masks to the PHP server, which forwards them to a Python service on the same server. PHP uses temporary upload files; Python processing and any configured server logging are outside browser storage. Main survey results do not require images, Python or an AI model. Three trained research baselines are supplied; none is clinically validated. See MODELS.md for actual held-out results and limitations.
 
-### Data to fetch
+LungBot sends only chat text you explicitly submit and up to four recent chat exchanges through this PHP server to Anthropic (Claude), after consent. Survey answers, images and location are not attached automatically. Conversation text is held in page memory and is not written to an app database or browser storage. Anthropic handles requests under its own API data policies; hosting infrastructure may log requests. Clearing chat does not delete data already received by the provider. IP-derived request-limit counts and expiry timestamps are stored in data/cache.sqlite.
 
-1. **ICBHI 2017** from `bhichallenge.med.auth.gr/ICBHI_2017_Challenge`. Unzip it into `ml/icbhi/`. Also download `ICBHI_challenge_train_test.txt` (the official split).
-2. **CDC PLACES county data**: run `php tools/fetch_places.php`.
-3. (Optional) The **ACR Lung Cancer Screening Locator** list for King County and Snohomish County. Add the real screening sites to `data/demo_places.json` with `"verified": true`.
+## LungBot (Claude chat)
 
-### Train
+LungBot provides optional AI education on the survey and lung-check pages. It does not diagnose, interpret images or replace professional care. No survey answers, photos or location are automatically added to chat. It is unavailable without server configuration; there are no pretend AI replies.
 
-```
-pip install numpy scipy scikit-learn --break-system-packages
-python3 ml/train_icbhi.py ml/icbhi
+Set `ANTHROPIC_API_KEY` privately in the PHP server environment, or define it in ignored `api/secrets.php`. The server also accepts `CLAUDE_API_KEY` for compatibility. Set `ANTHROPIC_MODEL` to override the default `claude-haiku-4-5-20251001`. Never put keys into frontend code or Git. Restart PHP after setting environment variables. Replace keys previously shared in chat before use.
+
+The endpoint is `POST api/chat.php`; `GET api/chat.php` reports whether credentials/extensions are configured, not whether billing or credentials work. Requires cURL and PDO SQLite. Chat fails closed if rate-limit storage is unavailable. Limits: five requests/minute and twenty/hour per IP-derived bucket, plus one hundred/hour for this server. These reduce abuse, but are not a hard account spending limit; configure billing controls with your provider. Use the router to protect helper/config files.
+
+Chat is bounded to nine alternating messages and 12,000 bytes of conversation text, with a 500-token reply budget and a thirty-second provider timeout. Error responses never include the key or provider response body. Chat requests/responses use no-store and are outside the service-worker cache.
+
+API reference: [Anthropic Messages API](https://platform.claude.com/docs/en/api/messages/create). AI assistance is disclosed; this integration was prepared while the execution workspace was offline. Its new PHP/JS tests have not been run here, and no live Claude request or paid-key test was performed. Prior test counts describe the earlier revision, not this addition.
+
+## Limits
+
+Lungitude does not diagnose cancer, analyze a photo for cancer, validate a symptom, or replace a clinician. “No signs reported” does not rule out disease. Age-based screening lists cannot establish suitability without anatomy, history, prior screening and shared decision-making. Concerning symptoms require clinical evaluation rather than waiting for screening. Severe breathing difficulty or another emergency needs emergency care.
+
+Three trained research baselines are included; none establishes cancer detection or clinical accuracy. See MODELS.md. The lung-sound panel remains hidden unless `data/lung_model.json` contains patient-level evaluation metadata; if enabled, it displays that file’s ICBHI score and patient count without claiming clinical accuracy. A metadata label is not independent validation of a supplied model.
+
+`lab.html`, `record.html`, `followup.html`, `study.html` and `ml/` are preserved research prototypes. Manually positioned camera regions, finger ratios, audio timing, pulse estimates and lesion descriptors are unvalidated. They cannot detect cancer. Python dependencies belong only to the existing research sidecar; see `ml/skin/README.md`. No research checkpoint is required for the PHP demo. The undated screening-network map is preserved as an unverified asset and is not shown in the main results.
+
+## Tests
+
+Run from the repository root:
+
+```sh
+php tests/test_risk.php
+php tests/test_survey.php
+find . -type f -name '*.php' -not -path './.git/*' -exec php -l {} \;
+find . -type f -name '*.js' -not -path './.git/*' -exec node --check {} \;
 ```
 
-The script splits the data **by patient**. If you split by cycle, the same person can be in both the training data and the test data, and the score will be falsely high. The script prints the official ICBHI score: (specificity + sensitivity) ÷ 2. Expect a realistic score (published simple models often score about 0.5–0.6). Do not expect 0.95. Report the true number. Honesty gets more points than a high number.
+Last validated before LungBot: `test_risk.php` **14 checks passed**, `test_survey.php` **70 checks passed**, and syntax checks passed for the then-existing 20 PHP and 14 JavaScript files. This addition has **23 PHP files** and **16 JavaScript files** in total; their syntax checks have not been rerun. The new `tests/test_chat.php` defines 21 checks with PDO SQLite (17 without); no PHP pass result is claimed for it. Eleven mocked LungBot UI checks passed, without a live provider. See `docs/lungbot-validation.md` for current verification steps and limits. Tests check application behavior and calculations, not medical accuracy.
 
-The script writes `data/lung_model.json`. The browser loads it, and the AI panel appears. The JavaScript features are the same as the Python features (tested: maximum difference 5e-15).
+## Credits and licenses
 
-**Known limit:** ICBHI was recorded with stethoscopes. A phone pressed on the chest is a different input. Say this in the video.
+- **ACS Cancer Facts & Figures 2026:** state estimates, © American Cancer Society; cited values are not a relicensed dataset. See the linked table and ACS reuse terms.
+- **American Lung Association, State of Lung Cancer 2025:** cited Washington screening figures; attribution retained, no ownership claimed.
+- **USPSTF:** dated final screening recommendations, linked in `data/wa_cancers.json`; clinical exceptions remain important.
+- **Washington Department of Health:** county identifiers and the BCCHP program link; program eligibility must be confirmed directly.
+- **NCI State Cancer Profiles / CDC PLACES:** optional county imports and lookups, with source-specific years. Unverified statewide incidence values are suppressed. Respect their data documentation and suppression rules.
+- **Google Maps Platform:** optional Places and Geocoding services, governed by Google’s terms and billing. Google Places responses are not cached by the app.
+- **US Census Geocoder / FCC:** optional coordinate-to-county services. **OpenStreetMap / openrouteservice:** legacy helper code is retained, but the current care-search path does not call it; OSM data is subject to ODbL if those helpers are enabled.
+- **PLCOm2012:** cited research above; no endorsement by the authors or institutions is implied.
+- **ICBHI 2017 / PAD-UFES-20:** no raw recordings or clinical images are supplied. Derived research weights and their evaluation reports are published in MODELS.md. Research scripts require separately obtained data under the providers’ own licenses and consent conditions. Existing research dependency licenses remain applicable.
+- AI-assisted maintenance in this revision is documented in `docs/validation.md`; student authorship, understanding and submission disclosures must be documented accurately by the student.
 
----
+## Why I built this
 
-## Accuracy study (backend)
+TODO: Rishi will write this section in his own words.
 
-Each finger measurement is done **3 times**. The backend (`bw_pdr_from_trials()` in `api/lib.php`) applies these rules:
+## Uploaded logo
 
-- It drops ratios outside 0.6–1.6. These come from wrong taps.
-- It uses the **median** of the valid trials.
-- If the trials differ by more than **0.05**, the result is "unsteady". The app then does not use the value, and asks the person to measure again.
-
-On the results page, a person can tick a consent box and share their **numbers only**: age range, smoking status, finger trials, exhale time, window test answer and pulse. The data goes to `data/study.sqlite` through `api/log.php`. The app saves no name, no photo, no audio, no location, no exact age and no time of day.
-
-`study.html` (it reads `api/stats.php`) shows: the number of people, how often the 3 trials agreed, the median spread, and a histogram of the ratios. Use it in the video: "We tested N people. The same finger gave the same answer within 0.05 in X% of cases."
-
-To reset the study, delete `data/study.sqlite`. The file is in `.gitignore`.
-
-## Pulse check (camera and flash)
-
-`js/pulse.js` measures the heart rate when the fingertip covers the back camera and the flash (photoplethysmography). The method is autocorrelation. A sharp peak also means good signal quality, and a weak peak makes the app ask for a retake. Test results: the error was below 0.6 bpm on simulated signals from 42 to 170 bpm, and the fake-camera browser test read 72 bpm correctly.
-
-- **A fingertip, not the wrist or arm.** The camera must see light pass through thin skin. On the wrist, the camera sees only the skin surface, and the signal is too weak.
-- **Blood oxygen (SpO2):** the user types it in from a clip-on pulse oximeter. A phone camera has no second light color and no calibration, so the app does not guess SpO2. A reading of **92% or lower at rest** is a red flag ("see a doctor soon"). A reading of 93–94% is "measure again".
-- **These are lung and heart signals, not cancer signs.** Low oxygen means "get checked now". It does not mean "you have cancer". The app does not add pulse or oxygen to the cancer risk number.
-- **The torch** (flash) turns on automatically in Chrome on Android. iPhone Safari cannot turn on the flash from a web page, so the app asks the user to hold the phone near a bright light.
-
----
-
-## 5. Timeline
-
-### Today, 10:50 – 1:30
-
-| Time | Do this | Done when |
-|---|---|---|
-| 10:50 | **Start the ICBHI download first.** It is large. Then run the app and click through the demo. | You see the results page. |
-| 11:00 | Check that **WA-01 is a participating district** on congressionalappchallenge.us. Read the 2026 rules for the video length and the written questions. | You know the video limit and the questions. |
-| 11:10 | Read `api/lib.php` and `js/results.js`. Each team member explains one card to the others. | Everyone can explain the risk number. |
-| 11:30 | Run `php tools/fetch_places.php`. Run `php tests/test_risk.php`. | The county card shows real numbers. 9 PASS. |
-| 11:45 | Train the AI (section 4). Write down the true ICBHI score. | `data/lung_model.json` exists. |
-| 12:15 | Test on real people: an exhale, a finger photo, the window test, and a chest recording. Use 3 people. Write down every confusing moment. | You have a list of problems. |
-| 12:45 | Fix the top 3 problems from that list. | — |
-| 1:10 | Put the code on GitHub (public repository, with this README). | You have a link. |
-| 1:20 | Write the one-sentence pitch and the "why we built this" story in your own words. | — |
-
-### Until the deadline: Oct 26, 2026, 12:00 p.m. ET (9:00 a.m. Pacific)
-
-| Dates | Goal |
-|---|---|
-| Oct 4 – 11 | Test with 5 adults aged 50 or more (for example, family friends). Adjust the wording until no person needs help. Add 3 real WA-01 screening sites from the ACR locator. |
-| Oct 12 – 18 | Polish: large text, a Spanish version of the results (about 10% of WA-01 is Hispanic), and phone layout checks. |
-| Oct 19 – 22 | Record the demo video (script below). Write the answers to the written questions. |
-| Oct 23 | **Submit.** Use the 3 extra days only for problems. |
-
----
-
-## 6. Ideas from past winners, and how Lungitude uses them
-
-| Past winner | Idea | Lungitude |
-|---|---|---|
-| AnemoDx, **WA-01 2025** (Redmond High) | A phone camera screens for anemia with no needle | We use the same no-needle camera idea, but for a lung sign (clubbing). We keep nail color as a small extra and give AnemoDx credit for it. Do not make a second anemia app for the same judges. |
-| BreatheAI, WA-08 2019 | AI finds pneumonia on chest X-rays | Our AI is on lung sounds. We report the true test score. |
-| MediConnect, WA-08 2025 | Gets the right health data to the right person at the right time | The doctor note and the call script remove the hardest step: the first phone call. |
-
-Patterns that these winners share: a real personal reason, a check with no needles, a real gap in local access, and an app that works in the demo.
-
-## 7. Demo video script (about 2 minutes)
-
-1. **Hook (10 s):** "In Washington, only 15.8% of the people who qualify for a lung cancer scan get one. That ranks 37th of 51."
-2. **Why (15 s):** Your personal reason. Keep it true and short.
-3. **Live demo (75 s):** Do the exhale on camera, take the finger photo with 4 taps, then show the results: the verdict, the walk radar, the call script, and the printed doctor note.
-4. **How it works (15 s):** a published model (PLCOm2012), the USPSTF rules, CDC county data, OpenStreetMap, and an AI trained on 126 patients.
-5. **Honesty and next step (10 s):** "It does not diagnose. It gets people to the test that does. Next: we want to validate it with a local clinic."
-
-## 8. Questions the judges may ask
-
-- **"Can it detect cancer?"** No. It finds people who should get the scan that detects cancer. That is the gap: only 15.8% get screened.
-- **"How accurate is the AI?"** Give the exact ICBHI score from your patient-level split, and explain why the split matters.
-- **"Why not train on cancer data?"** No public data links breath sounds to cancer. The chemical breath-sensor studies keep their data private.
-- **"Privacy?"** Audio and photos never leave the phone. Only numbers go to the server. Nothing is stored.
-- **"Why PHP and no frameworks?"** It is fast and simple to host, it works on bad Wi-Fi, and it has no npm supply-chain risk.
-
-## Sources
-
-- PLCOm2012 coefficients: Tammemägi et al., NEJM 2013. Checked against the Merck Manual calculator.
-- American Lung Association, State of Lung Cancer 2025: 18.2% screened in the US. Washington is 15.8% (rank 37/51). Survival is 65% when the cancer is found early and 10% when it is found late.
-- USPSTF 2021 lung cancer screening recommendation. CMS NCD 210.14 (Medicare, age 50–77).
-- Finger clubbing criteria and the 5–15% figure: Medical News Today review.
-- Mannino et al., Nature Communications 2018: hemoglobin from fingernail photos.
-- ICBHI 2017: Rocha et al., Physiological Measurement 2019.
-- EvergreenHealth lung cancer screening: (425) 899-6972. A referral is needed.
-- Congressional App Challenge past winners: congressionalappchallenge.us (25-WA01, 19-WA08, 25-WA08).
+The header supports `assets/lungitude-logo.png` and retains the existing L mark until that file is present. The uploaded image could not be read because the execution workspace was disconnected; **the actual PNG has not been added**. Copy the original logo to that path, commit it and refresh. The logo is not in the service-worker precache until the asset is available; this avoids breaking installation on a missing file.

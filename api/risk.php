@@ -1,4 +1,6 @@
 <?php
+
+/* Lungitude risk: PHP endpoint or shared server helper. */
 require __DIR__ . '/lib.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {

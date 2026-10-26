@@ -789,3 +789,38 @@ button:focus-visible {
     align-self: center;
     font-weight: 600;
 }
+
+/* Shared phone layout safeguards for the survey and lung check. */
+html, body {
+    max-width: 100%;
+}
+main, section, article, .card, .q-card, .survey-panel {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+input, select, textarea, video, canvas, img, svg {
+    max-width: 100%;
+}
+button, .btn, summary, .topbar nav a {
+    min-height: 44px;
+}
+:focus-visible {
+    outline: 3px solid #145cda;
+    outline-offset: 3px;
+}
+@media (max-width: 600px) {
+    .topbar {
+        flex-wrap: wrap;
+    }
+    .progress {
+        width: 100%;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    .grid, .cards, .walk-wrap {
+        grid-template-columns: minmax(0, 1fr);
+    }
+    .actions, .q-nav {
+        flex-wrap: wrap;
+    }
+}

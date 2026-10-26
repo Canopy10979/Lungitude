@@ -1,0 +1,105 @@
+{
+    "dataset": "ICBHI 2017",
+    "task": "normal/crackle/wheeze/both respiratory-cycle classification",
+    "research_only": true,
+    "clinical_validation": false,
+    "classes": [
+        "normal",
+        "crackle",
+        "wheeze",
+        "both"
+    ],
+    "trained_at_utc": "2026-10-26T02:38:20.154457+00:00",
+    "split": "GroupShuffleSplit patient-disjoint, seed 7, test_size 0.3",
+    "train": {
+        "cycles": 5433,
+        "patients": 88
+    },
+    "test": {
+        "cycles": 1459,
+        "patients": 38
+    },
+    "confusion_matrix": [
+        [
+            329,
+            205,
+            150,
+            109
+        ],
+        [
+            69,
+            98,
+            29,
+            37
+        ],
+        [
+            113,
+            61,
+            69,
+            51
+        ],
+        [
+            60,
+            27,
+            35,
+            17
+        ]
+    ],
+    "classification_report": {
+        "normal": {
+            "precision": 0.5761821366024519,
+            "recall": 0.41488020176544765,
+            "f1-score": 0.48240469208211145,
+            "support": 793.0
+        },
+        "crackle": {
+            "precision": 0.2506393861892583,
+            "recall": 0.4206008583690987,
+            "f1-score": 0.3141025641025641,
+            "support": 233.0
+        },
+        "wheeze": {
+            "precision": 0.24381625441696114,
+            "recall": 0.23469387755102042,
+            "f1-score": 0.2391681109185442,
+            "support": 294.0
+        },
+        "both": {
+            "precision": 0.0794392523364486,
+            "recall": 0.1223021582733813,
+            "f1-score": 0.09631728045325778,
+            "support": 139.0
+        },
+        "accuracy": 0.35161069225496916,
+        "macro avg": {
+            "precision": 0.28751925738628,
+            "recall": 0.298119273989737,
+            "f1-score": 0.28299816188911936,
+            "support": 1459.0
+        },
+        "weighted avg": {
+            "precision": 0.40989406866428685,
+            "recall": 0.35161069225496916,
+            "f1-score": 0.3697301883824994,
+            "support": 1459.0
+        }
+    },
+    "icbhi_score": 0.34557823902086193,
+    "specificity": 0.41488020176544765,
+    "sensitivity": 0.27627627627627627,
+    "export_prediction_agreement": 1.0,
+    "majority_class_accuracy": 0.5435229609321454,
+    "model_sha256": "967ac7204ac59b9a07faccb26500a03db92510c5253726e3eab4a630f0f7aa37",
+    "train_recording_manifest_sha256": "95a8f3f23ee817512316374614221006cc72443a53b4cfc9268b2b014e996c52",
+    "test_recording_manifest_sha256": "b47821bec1199a7bb8e63a4912475d6437c46e4e5e5649c9bbdfb91eca50e26c",
+    "versions": {
+        "python": "3.12.14",
+        "numpy": "2.3.5"
+    },
+    "limitations": [
+        "Electronic-stethoscope research data, not phone recordings.",
+        "No cancer labels or cancer detection.",
+        "No external or clinical validation.",
+        "One fixed patient split; no claim of state-of-the-art performance."
+    ]
+}

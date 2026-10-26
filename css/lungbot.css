@@ -1,0 +1,114 @@
+/* Standalone chat panel; no external fonts or UI dependencies. */
+.lungbot-launcher {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 1000;
+    min-height: 48px;
+    padding: 12px 20px;
+    border: 2px solid #145cda;
+    border-radius: 24px;
+    background: #145cda;
+    color: #ffffff;
+    font: 700 16px system-ui, sans-serif;
+    cursor: pointer;
+    box-shadow: 0 4px 20px #13233c33;
+}
+.lungbot-dialog {
+    width: min(540px, calc(100vw - 24px));
+    max-height: calc(100dvh - 32px);
+    box-sizing: border-box;
+    padding: 20px;
+    border: 1px solid #596578;
+    border-radius: 18px;
+    background: #ffffff;
+    color: #13233c;
+    overflow-y: auto;
+    font: 16px/1.5 system-ui, sans-serif;
+}
+.lungbot-dialog::backdrop {
+    background: #13233c99;
+}
+.lungbot-header,
+.lungbot-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+.lungbot-header h2 {
+    margin: 0;
+    font: 700 24px system-ui, sans-serif;
+}
+.lungbot-notice,
+.lungbot-status {
+    font-size: 14px;
+    color: #34445b;
+}
+.lungbot-consent {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin: 16px 0;
+}
+.lungbot-consent input {
+    flex: 0 0 auto;
+    width: 20px;
+    height: 20px;
+}
+.lungbot-transcript {
+    max-height: 32dvh;
+    overflow-y: auto;
+    overflow-wrap: anywhere;
+}
+.lungbot-message {
+    margin: 10px 0;
+    padding: 12px;
+    border-radius: 10px;
+    background: #eef3fb;
+    white-space: pre-wrap;
+}
+.lungbot-user {
+    background: #e4eeff;
+}
+.lungbot-form label {
+    display: block;
+    font-weight: 700;
+}
+.lungbot-form textarea {
+    width: 100%;
+    box-sizing: border-box;
+    margin: 8px 0;
+    padding: 10px;
+    border: 1px solid #596578;
+    border-radius: 8px;
+    font: inherit;
+    resize: vertical;
+}
+.lungbot-dialog button {
+    min-height: 44px;
+}
+.lungbot-dialog :focus-visible,
+.lungbot-launcher:focus-visible {
+    outline: 3px solid #103f95;
+    outline-offset: 3px;
+}
+@media (max-width: 420px) {
+    .lungbot-launcher {
+        right: 12px;
+        bottom: max(12px, env(safe-area-inset-bottom));
+    }
+    .lungbot-dialog {
+        padding: 14px;
+    }
+}
+
+/* Preserve the complete uploaded mark without cropping or stretching it. */
+.lungitude-logo {
+    display: block;
+    width: auto;
+    height: 44px;
+    max-width: 160px;
+    object-fit: contain;
+}

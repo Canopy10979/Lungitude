@@ -8,7 +8,7 @@
  * C. Nail-bed color, white-balanced against paper in the same photo.
  *    Experimental and not calibrated. It is one weak signal only.
  */
-(function () {
+(function() {
     const TAPS = [
         "1/4 · Tap the TOP of the finger where the nail starts.",
         "2/4 · Tap the BOTTOM of the finger, straight below that point.",
@@ -18,7 +18,7 @@
 
     function loadToCanvas(file, canvas, done) {
         const img = new Image();
-        img.onload = function () {
+        img.onload = function() {
             const scale = Math.min(1, 900 / img.width);
             canvas.width = Math.round(img.width * scale);
             canvas.height = Math.round(img.height * scale);
@@ -54,13 +54,16 @@
         const g = fCanvas.getContext("2d");
         g.drawImage(photo, 0, 0, fCanvas.width, fCanvas.height);
         g.lineWidth = Math.max(2, fCanvas.width / 300);
-        pts.forEach(function (p, i) {
+        pts.forEach(function(p, i) {
             g.fillStyle = i < 2 ? "#b42318" : "#0e5c57";
             g.beginPath();
             g.arc(p.x, p.y, g.lineWidth * 3, 0, Math.PI * 2);
             g.fill();
         });
-        [[0, 1, "#b42318"], [2, 3, "#0e5c57"]].forEach(function (seg) {
+        [
+            [0, 1, "#b42318"],
+            [2, 3, "#0e5c57"]
+        ].forEach(function(seg) {
             if (pts[seg[1]]) {
                 g.strokeStyle = seg[2];
                 g.beginPath();
@@ -80,7 +83,7 @@
     BW.measures.pdrTrials = [];
 
     function median(v) {
-        const s = v.slice().sort(function (a, b) {
+        const s = v.slice().sort(function(a, b) {
             return a - b;
         });
         const n = s.length;
@@ -96,7 +99,7 @@
             pdrOut.textContent = "";
             return;
         }
-        const list = t.map(function (v) {
+        const list = t.map(function(v) {
             return v.toFixed(2);
         }).join(", ");
         if (t.length < TRIALS) {
@@ -112,10 +115,12 @@
             return;
         }
         if (m > 1.0) {
-            pdrOut.textContent = "Depth ratio " + m.toFixed(2) + " (3 trials agree within " + spread.toFixed(2) +
+            pdrOut.textContent = "Depth ratio " + m.toFixed(2) + " (3 trials agree within " + spread
+                .toFixed(2) +
                 "). This is above 1.0, which is a sign of finger clubbing. Show this to a doctor.";
         } else {
-            pdrOut.textContent = "Depth ratio " + m.toFixed(2) + " (3 trials agree within " + spread.toFixed(2) +
+            pdrOut.textContent = "Depth ratio " + m.toFixed(2) + " (3 trials agree within " + spread
+                .toFixed(2) +
                 "). This is below 1.0, which is typical (no clubbing sign).";
         }
     }
@@ -140,11 +145,11 @@
 
     BW.showPdrTrials = showTrials;
 
-    fFile.addEventListener("change", function () {
+    fFile.addEventListener("change", function() {
         if (!fFile.files[0]) {
             return;
         }
-        loadToCanvas(fFile.files[0], fCanvas, function (img) {
+        loadToCanvas(fFile.files[0], fCanvas, function(img) {
             photo = img;
             pts = [];
             fBox.hidden = false;
@@ -153,7 +158,7 @@
         });
     });
 
-    fCanvas.addEventListener("pointerdown", function (e) {
+    fCanvas.addEventListener("pointerdown", function(e) {
         if (!photo || pts.length >= 4) {
             return;
         }
@@ -164,7 +169,7 @@
         }
     });
 
-    document.getElementById("tap-reset").addEventListener("click", function () {
+    document.getElementById("tap-reset").addEventListener("click", function() {
         pts = [];
         BW.measures.pdrTrials = [];
         showTrials();
@@ -197,18 +202,18 @@
         return [r / n, gr / n, b / n];
     }
 
-    nFile.addEventListener("change", function () {
+    nFile.addEventListener("change", function() {
         if (!nFile.files[0]) {
             return;
         }
-        loadToCanvas(nFile.files[0], nCanvas, function () {
+        loadToCanvas(nFile.files[0], nCanvas, function() {
             nCanvas.hidden = false;
             nailRgb = null;
             nOut.textContent = "Tap the middle of one nail bed (the pink part).";
         });
     });
 
-    nCanvas.addEventListener("pointerdown", function (e) {
+    nCanvas.addEventListener("pointerdown", function(e) {
         const p = canvasPoint(nCanvas, e);
         if (nailRgb === null) {
             nailRgb = patch(nCanvas, p);
@@ -216,7 +221,7 @@
             return;
         }
         const paper = patch(nCanvas, p);
-        const wb = nailRgb.map(function (c, i) {
+        const wb = nailRgb.map(function(c, i) {
             return Math.min(255, c / Math.max(paper[i], 1) * 255);
         });
         const redShare = wb[0] / (wb[0] + wb[1] + wb[2]);
