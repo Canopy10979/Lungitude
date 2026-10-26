@@ -1,12 +1,12 @@
 {
     "id": "./",
-    "name": "Lungitude",
+    "name": "Lungitude Research",
     "short_name": "Lungitude",
-    "start_url": "./index.html",
+    "start_url": "./#capture",
     "scope": "./",
     "display": "standalone",
-    "background_color": "#ffffff",
-    "theme_color": "#145cda",
+    "background_color": "#07131f",
+    "theme_color": "#081a27",
     "icons": [
         {
             "src": "icons/icon-192.png",
@@ -18,5 +18,6 @@
             "sizes": "512x512",
             "type": "image/png"
         }
-    ]
+    ],
+    "description": "Skin-photo and pulse research with educational care navigation"
 }

@@ -3,8 +3,15 @@
 /* Lungitude router: PHP endpoint or shared server helper. */
 $path = rawurldecode(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH));
 
+/* Old packaged entry points use the same canonical dark homepage. */
+if (in_array($path, ['/www', '/www/', '/www/index.html'], true)) {
+    header('Location: /#capture', true, 302);
+    return true;
+}
+
+
 $blocked = [
-    '#^/(ml|tests|tools|\.git)(/|$)#',
+    '#^/(ml|backend|tests|tools|\.git)(/|$)#',
     '#^/data/scp(/|$)#',
     '#^/api/(secrets|config|lib|geo|store|db|chat_lib)(\.example)?\.php$#',
     '#/\.#',
@@ -26,7 +33,7 @@ header('X-Frame-Options: DENY');
 header('Permissions-Policy: camera=(self), microphone=(self), geolocation=(self)');
 header(
     "Content-Security-Policy: default-src 'self'; img-src 'self' data: blob:; media-src 'self' blob:; "
-    . "style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; "
+    . "style-src 'self' 'unsafe-inline'; script-src 'self' https://accounts.google.com https://appleid.cdn-apple.com; connect-src 'self' https://accounts.google.com https://appleid.apple.com; frame-src https://accounts.google.com https://appleid.apple.com https://www.openstreetmap.org; "
     . "frame-ancestors 'none'; base-uri 'self'"
 );
 
@@ -51,7 +58,7 @@ if ($filename !== false && str_starts_with($filename, __DIR__ . DIRECTORY_SEPARA
     ];
     if (isset($types[$extension])) {
         header('Content-Type: ' . $types[$extension]);
-        if ($extension === 'html') {
+        if ($extension === 'html' || $relativePath === '/sw.js') {
             header('Cache-Control: no-cache');
         }
         readfile($filename);

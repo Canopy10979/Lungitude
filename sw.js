@@ -1,43 +1,37 @@
 /* Cache only an explicit list of public interface files; never API or Places data. */
-const CACHE_NAME = "lungitude-static-v2";
+const CACHE_NAME = "lungitude-static-dark-v3";
 const STATIC_FILES = [
-    "./css/lungbot.css",
-    "./js/lungbot.js",
-    "./js/branding.js",
     "./index.html",
-    "./lung.html",
+    "./pulse-check.html",
+    "./breast.html",
+    "./evidence.html",
+    "./css/skin.css",
+    "./js/skin.js",
+    "./js/account.js",
+    "./js/care.js",
+    "./js/engagement.js",
+    "./js/capture-quality.js",
+    "./js/breast.js",
+    "./js/pulse-measure.js",
+    "./js/pulse-manual.js",
+    "./js/neck-ppg.js",
+    "./js/neck-ppg-core.js",
+    "./js/pwa.js",
+    "./js/evidence-page-1.js",
     "./offline.html",
     "./manifest.webmanifest",
-    "./icons/icon-192.png",
-    "./icons/icon-512.png",
     "./assets/favicon.svg",
-    "./css/app.css",
-    "./css/survey.css",
-    "./css/lab-page.css",
-    "./css/website.css",
-    "./css/study-page.css",
-    "./css/record-page.css",
-    "./css/followup-page.css",
-    "./js/lungsound.js",
-    "./js/pulse.js",
-    "./js/app.js",
-    "./js/results.js",
-    "./js/record.js",
-    "./js/lab.js",
-    "./js/breath.js",
-    "./js/privacy.js",
-    "./js/followup.js",
-    "./js/survey.js",
-    "./js/pwa.js",
-    "./js/study-page.js",
-    "./js/hands.js"
+    "./icons/icon-192.png",
+    "./icons/icon-512.png"
 ];
 const STATIC_URLS = new Set(STATIC_FILES.map(function(path) {
     return new URL(path, self.location.href).href;
 }));
 self.addEventListener("install", function(event) {
     event.waitUntil(caches.open(CACHE_NAME).then(function(cache) {
-        return cache.addAll(STATIC_FILES);
+        return cache.addAll(STATIC_FILES).then(function() {
+            return self.skipWaiting();
+        });
     }));
 });
 self.addEventListener("activate", function(event) {
@@ -47,14 +41,15 @@ self.addEventListener("activate", function(event) {
             CACHE_NAME;
         }).map(function(name) {
             return caches.delete(name);
-        }));
+        })).then(function() {
+            return self.clients.claim();
+        });
     }));
 });
 self.addEventListener("fetch", function(event) {
     const request = event.request;
     const url = new URL(request.url);
-    if (request.method !== "GET" || url.origin !== self.location.origin || !STATIC_URLS.has(url
-        .href)) {
+    if (request.method !== "GET" || url.origin !== self.location.origin || !STATIC_URLS.has(url.origin + url.pathname)) {
         return;
     }
     event.respondWith(fetch(request).then(function(response) {

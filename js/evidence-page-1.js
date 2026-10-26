@@ -1,0 +1,2 @@
+/* Page availability checks for the dark research interface. */
+fetch('api/imaging.php?action=status').then(async r=>{if(!r.ok)throw Error();const d=await r.json();document.getElementById('state').textContent=Object.values(d.models||{}).some(x=>x.checkpoint_present)?'Experimental image analysis is available. It is not a clinical diagnosis.':'Image analysis is currently unavailable. You can still capture and save a photo.';}).catch(()=>document.getElementById('state').textContent='Image analysis is temporarily unavailable. Please try again later.');
