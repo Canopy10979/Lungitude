@@ -1,0 +1,29 @@
+{
+    "pad_ufes20": {
+        "dataset": "PAD-UFES-20 v1",
+        "doi": "10.17632/zr7vgbcyr2.1",
+        "license": "CC BY 4.0",
+        "metadata_mirror": "SalmaneExploring/pad-ufes-20",
+        "metadata_revision": "086dd94836d7b2094132a21406a75dcb6bf7ec2c",
+        "archive_mirror": "https://www.kaggle.com/api/v1/datasets/download/mahdavi1202/skin-cancer",
+        "archive_sha256": "77972a627cae21dcf20ab249d6a474f754acc968d485df8da63550e07480ec80",
+        "metadata_sha256": "14d145235cedb022548257acb0d84dcd949e2c916f65d2baa7c38ed5339e9527",
+        "images_expected": 2298,
+        "images_downloaded": 2298,
+        "images_matched_across_mirrors": 1692,
+        "image_manifest_sha256": "793eaa2db2447f756d00369020d947faf72f5d1d11b503d99023badd6091237b"
+    },
+    "icbhi2017": {
+        "dataset": "ICBHI 2017 Respiratory Sound Database",
+        "mirror": "https://www.kaggle.com/api/v1/datasets/download/vbookshelf/respiratory-sound-database",
+        "archive_bytes": 3958459400,
+        "raw_files_not_redistributed": true,
+        "archive_sha256": "631ff3c4a6afb3fbe2e00f7f94bfe7ec549f519a32006c83509424b99d150005"
+    },
+    "pad_image_integrity": {
+        "images": 2298,
+        "unique_sha256": 2283,
+        "cross_partition_exact_duplicates": 0
+    },
+    "raw_data_published": false
+}

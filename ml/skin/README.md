@@ -1,8 +1,8 @@
 # Skin-lesion research prototype
 
 This is a dataset experiment, not a webcam cancer detector. It does not change
-survey results or infer internal cancers. No trained weights or accuracy claims
-are included. Model class scores are not calibrated clinical probabilities.
+survey results or infer internal cancers. Two trained PAD-UFES-20 research checkpoints and measured dataset evaluations
+are now included; see the root MODELS.md. No clinical accuracy is claimed. Model class scores are not calibrated clinical probabilities.
 
 1. From the Lungitude folder, create a Python 3.11 virtual environment:
    Windows: `py -3.11 -m venv .venv`, then `.venv\Scripts\activate`.

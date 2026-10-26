@@ -21,16 +21,20 @@ import glob
 import json
 import os
 import sys
+import hashlib
+import platform
+from pathlib import Path
+from datetime import datetime, timezone
 
 import numpy as np
 from scipy.io import wavfile
 from scipy.signal import resample_poly
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import confusion_matrix, classification_report
 from sklearn.model_selection import GroupShuffleSplit
 
-SR = 4000          # lung sounds are mostly below 2 kHz
-N_FFT = 256        # 64 ms frames at 4 kHz
+SR = 4000  # lung sounds are mostly below 2 kHz
+N_FFT = 256  # 64 ms frames at 4 kHz
 HOP = 128
 N_MELS = 32
 FMIN = 50
@@ -73,12 +77,14 @@ def features(x):
         x = np.pad(x, (0, N_FFT - len(x)))
     frames = []
     for start in range(0, len(x) - N_FFT + 1, HOP):
-        frame = x[start:start + N_FFT] * WINDOW
+        frame = x[start : start + N_FFT] * WINDOW
         power = np.abs(np.fft.rfft(frame)) ** 2
         frames.append(np.log(FB @ power + 1e-6))
     m = np.array(frames)
     zcr = np.mean(np.abs(np.diff(np.sign(x)))) / 2
-    delta = np.mean(np.abs(np.diff(m, axis=0)), axis=0) if len(m) > 1 else np.zeros(N_MELS)
+    delta = (
+        np.mean(np.abs(np.diff(m, axis=0)), axis=0) if len(m) > 1 else np.zeros(N_MELS)
+    )
     return np.concatenate([m.mean(axis=0), m.std(axis=0), delta, [zcr]])
 
 
@@ -106,12 +112,17 @@ def load_dataset(root):
             parts = line.split()
             if len(parts) < 4:
                 continue
-            start, end, crackle, wheeze = float(parts[0]), float(parts[1]), int(parts[2]), int(parts[3])
-            seg = x[int(start * SR):int(end * SR)]
+            start, end, crackle, wheeze = (
+                float(parts[0]),
+                float(parts[1]),
+                int(parts[2]),
+                int(parts[3]),
+            )
+            seg = x[int(start * SR) : int(end * SR)]
             if len(seg) < SR * 0.3:
                 continue
             X.append(features(seg))
-            y.append(crackle + 2 * wheeze)   # 0 normal, 1 crackle, 2 wheeze, 3 both
+            y.append(crackle + 2 * wheeze)  # 0 normal, 1 crackle, 2 wheeze, 3 both
             groups.append(patient)
             names.append(base)
     return np.array(X), np.array(y), np.array(groups), names
@@ -126,7 +137,12 @@ def official_split(root, names):
         parts = line.split()
         if len(parts) == 2:
             split[parts[0]] = parts[1]
-    test = np.array([split.get(n) == "test" for n in names])
+    missing = set(names) - set(split)
+    if missing:
+        raise ValueError(f"Official split is missing {len(missing)} recordings")
+    if not set(split.values()).issubset({"train", "test"}):
+        raise ValueError("Official split contains unsupported partition labels")
+    test = np.array([split[n] == "test" for n in names])
     return np.where(~test)[0], np.where(test)[0]
 
 
@@ -158,8 +174,12 @@ def main():
         print("Using the official ICBHI split")
     tr, te = split
     if set(groups[tr]) & set(groups[te]):
-        raise ValueError("Patient overlap between training and test sets; refusing export")
+        raise ValueError(
+            "Patient overlap between training and test sets; refusing export"
+        )
 
+    if set(y[tr]) != set(range(4)) or set(y[te]) != set(range(4)):
+        raise ValueError("Training and test must each include all four sound classes")
     mean = X[tr].mean(axis=0)
     std = X[tr].std(axis=0) + 1e-6
     clf = LogisticRegression(max_iter=3000, class_weight="balanced", C=0.5)
@@ -173,17 +193,85 @@ def main():
 
     model = {
         "classes": [CLASSES[c] for c in clf.classes_],
-        "sr": SR, "n_fft": N_FFT, "hop": HOP, "n_mels": N_MELS, "fmin": FMIN, "fmax": FMAX,
+        "sr": SR,
+        "n_fft": N_FFT,
+        "hop": HOP,
+        "n_mels": N_MELS,
+        "fmin": FMIN,
+        "fmax": FMAX,
         "mean": mean.round(6).tolist(),
         "std": std.round(6).tolist(),
         "coef": clf.coef_.round(6).tolist(),
         "intercept": clf.intercept_.round(6).tolist(),
-        "test": {"split": "patient-level", "specificity": round(sp, 3), "sensitivity": round(se, 3), "icbhi_score": round(score, 3),
-                 "cycles": int(len(te)), "patients": int(len(set(groups[te])))},
+        "test": {
+            "split": "patient-level",
+            "specificity": round(sp, 3),
+            "sensitivity": round(se, 3),
+            "icbhi_score": round(score, 3),
+            "cycles": int(len(te)),
+            "patients": int(len(set(groups[te]))),
+        },
     }
-    out = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "data", "lung_model.json")
+    out = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)), "..", "data", "lung_model.json"
+    )
     with open(out, "w") as f:
         json.dump(model, f)
+    matrix = confusion_matrix(y[te], pred, labels=[0, 1, 2, 3]).tolist()
+    test_report = classification_report(
+        y[te],
+        pred,
+        labels=[0, 1, 2, 3],
+        target_names=CLASSES,
+        output_dict=True,
+        zero_division=0,
+    )
+    exported_features = (X[te] - np.array(model["mean"])) / np.array(model["std"])
+    exported_prediction = np.argmax(
+        exported_features @ np.array(model["coef"]).T + np.array(model["intercept"]),
+        axis=1,
+    )
+    if not np.array_equal(exported_prediction, pred):
+        raise ValueError("Rounded exported weights change held-out predictions")
+    evaluation = {
+        "dataset": "ICBHI 2017",
+        "task": "normal/crackle/wheeze/both respiratory-cycle classification",
+        "research_only": True,
+        "clinical_validation": False,
+        "classes": CLASSES,
+        "trained_at_utc": datetime.now(timezone.utc).isoformat(),
+        "split": (
+            "official patient-disjoint"
+            if official_split(root, names) is not None
+            else "GroupShuffleSplit patient-disjoint, seed 7, test_size 0.3"
+        ),
+        "train": {"cycles": len(tr), "patients": len(set(groups[tr]))},
+        "test": {"cycles": len(te), "patients": len(set(groups[te]))},
+        "confusion_matrix": matrix,
+        "classification_report": test_report,
+        "icbhi_score": score,
+        "specificity": sp,
+        "sensitivity": se,
+        "export_prediction_agreement": 1.0,
+        "majority_class_accuracy": float(np.mean(y[te] == np.bincount(y[tr]).argmax())),
+        "model_sha256": hashlib.sha256(Path(out).read_bytes()).hexdigest(),
+        "train_recording_manifest_sha256": hashlib.sha256(
+            ("\n".join(sorted(set(names[i] for i in tr)))).encode()
+        ).hexdigest(),
+        "test_recording_manifest_sha256": hashlib.sha256(
+            ("\n".join(sorted(set(names[i] for i in te)))).encode()
+        ).hexdigest(),
+        "versions": {"python": platform.python_version(), "numpy": np.__version__},
+        "limitations": [
+            "Electronic-stethoscope research data, not phone recordings.",
+            "No cancer labels or cancer detection.",
+            "No external or clinical validation.",
+            "One fixed patient split; no claim of state-of-the-art performance.",
+        ],
+    }
+    evaluation_path = os.path.join(os.path.dirname(out), "lung_model_evaluation.json")
+    with open(evaluation_path, "w") as stream:
+        json.dump(evaluation, stream, indent=4)
     print("Saved", os.path.normpath(out))
 
 

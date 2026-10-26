@@ -1,0 +1,269 @@
+{
+    "classes": [
+        "ACK",
+        "BCC",
+        "MEL",
+        "NEV",
+        "SCC",
+        "SEK"
+    ],
+    "test_report": {
+        "ACK": {
+            "precision": 0.6029411764705882,
+            "recall": 0.6456692913385826,
+            "f1-score": 0.623574144486692,
+            "support": 127.0
+        },
+        "BCC": {
+            "precision": 0.6866666666666666,
+            "recall": 0.5919540229885057,
+            "f1-score": 0.6358024691358025,
+            "support": 174.0
+        },
+        "MEL": {
+            "precision": 0.3,
+            "recall": 0.42857142857142855,
+            "f1-score": 0.35294117647058826,
+            "support": 7.0
+        },
+        "NEV": {
+            "precision": 0.6727272727272727,
+            "recall": 0.7551020408163265,
+            "f1-score": 0.7115384615384616,
+            "support": 49.0
+        },
+        "SCC": {
+            "precision": 0.16666666666666666,
+            "recall": 0.10204081632653061,
+            "f1-score": 0.12658227848101267,
+            "support": 49.0
+        },
+        "SEK": {
+            "precision": 0.5125,
+            "recall": 0.7454545454545455,
+            "f1-score": 0.6074074074074074,
+            "support": 55.0
+        },
+        "accuracy": 0.5878524945770065,
+        "macro avg": {
+            "precision": 0.49025029708853235,
+            "recall": 0.5447986909159866,
+            "f1-score": 0.5096409895866608,
+            "support": 461.0
+        },
+        "weighted avg": {
+            "precision": 0.5801981180955915,
+            "recall": 0.5878524945770065,
+            "f1-score": 0.578675613629274,
+            "support": 461.0
+        }
+    },
+    "confusion_matrix": [
+        [
+            82,
+            14,
+            2,
+            5,
+            7,
+            17
+        ],
+        [
+            40,
+            103,
+            3,
+            3,
+            15,
+            10
+        ],
+        [
+            3,
+            0,
+            3,
+            0,
+            0,
+            1
+        ],
+        [
+            1,
+            1,
+            0,
+            37,
+            2,
+            8
+        ],
+        [
+            9,
+            29,
+            0,
+            3,
+            5,
+            3
+        ],
+        [
+            1,
+            3,
+            2,
+            7,
+            1,
+            41
+        ]
+    ],
+    "best_validation_macro_f1": 0.5700940493394344,
+    "split_counts": {
+        "train": {
+            "images": 1497,
+            "lesions": 1124,
+            "split_groups": 892
+        },
+        "validation": {
+            "images": 340,
+            "lesions": 273,
+            "split_groups": 206
+        },
+        "test": {
+            "images": 461,
+            "lesions": 372,
+            "split_groups": 275
+        }
+    },
+    "limitations": [
+        "Patient-disjoint PAD split.",
+        "No external validation, calibration, or webcam validation.",
+        "Not intended to diagnose users.",
+        "Melanoma test support is only 7 images; class metrics are unstable.",
+        "SCC recall is low; this model must not reassure users that a lesion is benign."
+    ],
+    "research_only": true,
+    "dataset": "pad_ufes20",
+    "architecture": "efficientnet_b0",
+    "training": {
+        "epochs_requested": 20,
+        "best_epoch": 12,
+        "seed": 42,
+        "batch_size": 16,
+        "frozen_backbone": true,
+        "cached_features": true,
+        "history": [
+            {
+                "epoch": 1,
+                "train_loss": 1.4914507885813792,
+                "validation_macro_f1": 0.4461514957339719
+            },
+            {
+                "epoch": 2,
+                "train_loss": 1.1038336151428196,
+                "validation_macro_f1": 0.554342563907011
+            },
+            {
+                "epoch": 3,
+                "train_loss": 0.9575797329366247,
+                "validation_macro_f1": 0.5316388633851176
+            },
+            {
+                "epoch": 4,
+                "train_loss": 0.8652326967529878,
+                "validation_macro_f1": 0.542894266885663
+            },
+            {
+                "epoch": 5,
+                "train_loss": 0.7986190657497806,
+                "validation_macro_f1": 0.5448401650269936
+            },
+            {
+                "epoch": 6,
+                "train_loss": 0.7456522147975608,
+                "validation_macro_f1": 0.5520757024432897
+            },
+            {
+                "epoch": 7,
+                "train_loss": 0.6884540770956892,
+                "validation_macro_f1": 0.5650279929076901
+            },
+            {
+                "epoch": 8,
+                "train_loss": 0.6574919715115605,
+                "validation_macro_f1": 0.5648788978465001
+            },
+            {
+                "epoch": 9,
+                "train_loss": 0.6098292653530378,
+                "validation_macro_f1": 0.5406078159162808
+            },
+            {
+                "epoch": 10,
+                "train_loss": 0.5844634104428008,
+                "validation_macro_f1": 0.5466834015699181
+            },
+            {
+                "epoch": 11,
+                "train_loss": 0.5745349507691785,
+                "validation_macro_f1": 0.5445251336953794
+            },
+            {
+                "epoch": 12,
+                "train_loss": 0.5563280431923264,
+                "validation_macro_f1": 0.5700940493394344
+            },
+            {
+                "epoch": 13,
+                "train_loss": 0.5245915487677396,
+                "validation_macro_f1": 0.5421097270647167
+            },
+            {
+                "epoch": 14,
+                "train_loss": 0.4934964952822439,
+                "validation_macro_f1": 0.5536347282724094
+            },
+            {
+                "epoch": 15,
+                "train_loss": 0.49105171257046437,
+                "validation_macro_f1": 0.5400637823001877
+            },
+            {
+                "epoch": 16,
+                "train_loss": 0.47193130974221725,
+                "validation_macro_f1": 0.5501257051173124
+            },
+            {
+                "epoch": 17,
+                "train_loss": 0.4751687866692234,
+                "validation_macro_f1": 0.5662491638994016
+            },
+            {
+                "epoch": 18,
+                "train_loss": 0.44962578040405204,
+                "validation_macro_f1": 0.5680985073776738
+            },
+            {
+                "epoch": 19,
+                "train_loss": 0.43199117576271673,
+                "validation_macro_f1": 0.5519244071026753
+            },
+            {
+                "epoch": 20,
+                "train_loss": 0.43203110072162043,
+                "validation_macro_f1": 0.5640274687855705
+            }
+        ],
+        "seconds": 124.3,
+        "device": "cpu"
+    },
+    "versions": {
+        "python": "3.12.14",
+        "torch": "2.14.1+cpu",
+        "numpy": "2.5.2"
+    },
+    "checkpoint_sha256": "8fbe1f5977cccc6535847dd4df65cd4f6002805403d74872f382b20e558db9dd",
+    "metadata_sha256": "14d145235cedb022548257acb0d84dcd949e2c916f65d2baa7c38ed5339e9527",
+    "split_manifest_sha256": {
+        "train": "6700566a04ac7b583589b786e8d90e44540bd8cdde16a9b32511fb0932fe0682",
+        "validation": "f554834ac164daa58171659364c0c8b0433587a1c6101b4b583fe6e2fabdd082",
+        "test": "0f562b66d810d4753c9eaec71c0316350aa4c6ce73216bcada9937087bd7ac2a"
+    },
+    "data_integrity": {
+        "images": 2298,
+        "unique_sha256": 2283,
+        "cross_partition_exact_duplicates": 0
+    },
+    "majority_class_accuracy": 0.3774403470715835
+}

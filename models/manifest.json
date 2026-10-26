@@ -1,0 +1,73 @@
+{
+    "format_version": 1,
+    "created_at_utc": "2026-10-26T02:50:15.463242+00:00",
+    "research_only": true,
+    "trained_model_count": 3,
+    "models": [
+        {
+            "id": "mobilenet_v3_small",
+            "name": "MobileNetV3-Small",
+            "artifact": "ml/skin/output_mobile/model.pt",
+            "evaluation": "ml/skin/output_mobile/evaluation.json",
+            "sha256": "c3949656ca905ff4be57394b58b4190c6c1244445404b617d32df4eed29c1289",
+            "bytes": 6216163,
+            "dataset": "PAD-UFES-20 v1",
+            "split_unit": "patient",
+            "classes": [
+                "ACK",
+                "BCC",
+                "MEL",
+                "NEV",
+                "SCC",
+                "SEK"
+            ],
+            "test_accuracy": 0.6008676789587852,
+            "test_macro_f1": 0.5295057626864501,
+            "trained": true,
+            "clinical_validation": false
+        },
+        {
+            "id": "efficientnet_b0",
+            "name": "EfficientNet-B0",
+            "artifact": "ml/skin/output_efficient/model.pt",
+            "evaluation": "ml/skin/output_efficient/evaluation.json",
+            "sha256": "8fbe1f5977cccc6535847dd4df65cd4f6002805403d74872f382b20e558db9dd",
+            "bytes": 16335827,
+            "dataset": "PAD-UFES-20 v1",
+            "split_unit": "patient",
+            "classes": [
+                "ACK",
+                "BCC",
+                "MEL",
+                "NEV",
+                "SCC",
+                "SEK"
+            ],
+            "test_accuracy": 0.5878524945770065,
+            "test_macro_f1": 0.5096409895866608,
+            "trained": true,
+            "clinical_validation": false
+        },
+        {
+            "id": "icbhi_logistic_regression",
+            "name": "Lung-sound logistic regression",
+            "artifact": "data/lung_model.json",
+            "evaluation": "data/lung_model_evaluation.json",
+            "sha256": "967ac7204ac59b9a07faccb26500a03db92510c5253726e3eab4a630f0f7aa37",
+            "bytes": 6322,
+            "dataset": "ICBHI 2017",
+            "split_unit": "patient",
+            "classes": [
+                "normal",
+                "crackle",
+                "wheeze",
+                "both"
+            ],
+            "test_accuracy": 0.35161069225496916,
+            "test_macro_f1": 0.28299816188911936,
+            "icbhi_score": 0.34557823902086193,
+            "trained": true,
+            "clinical_validation": false
+        }
+    ]
+}

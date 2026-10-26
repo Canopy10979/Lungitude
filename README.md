@@ -38,6 +38,10 @@ Open http://localhost:8000. Do not open HTML as a local file. Use the router so 
 
 **Phone installation:** serve through HTTPS, open the site on the phone, and choose Add to Home Screen / Open as Web App in Safari, or the browser installation option on Android. Localhost is supported for development. Installation caches only the public interface; it does not bundle PHP or provide offline medical results. The server must remain reachable.
 
+## Trained research artifacts
+
+See [MODELS.md](MODELS.md) for the three published trained baselines, actual held-out scores, hashes, reproduction commands and important failures. These models do not change survey recommendations and are not validated for clinical use.
+
 ## How it works
 
 The vanilla HTML/JavaScript interface calls same-origin PHP endpoints. `index.html` is the survey and results flow; `lung.html` is a separate lung guideline check. Research pages are linked only in a labeled section after survey results. Local JSON files supply questions, sources and county identifiers.
@@ -69,7 +73,7 @@ data/cache.sqlite stores rounded coordinate-to-county lookups for up to 30 days,
 
 The optional research study sends numeric measurements, age band and smoking status after consent and stores them with a date in data/study.sqlite. It does not save the name, photo or audio in that database. There is no automatic study-record deletion; the server operator must manage retention.
 
-The separate imaging prototypes can upload photos and masks to the PHP server, which forwards them to a Python service on the same server. PHP uses temporary upload files; Python processing and any configured server logging are outside browser storage. Main survey results do not require images, Python or an AI model. No trained lung-sound or skin model is supplied.
+The separate imaging prototypes can upload photos and masks to the PHP server, which forwards them to a Python service on the same server. PHP uses temporary upload files; Python processing and any configured server logging are outside browser storage. Main survey results do not require images, Python or an AI model. Three trained research baselines are supplied; none is clinically validated. See MODELS.md for actual held-out results and limitations.
 
 LungBot sends only chat text you explicitly submit and up to four recent chat exchanges through this PHP server to Anthropic (Claude), after consent. Survey answers, images and location are not attached automatically. Conversation text is held in page memory and is not written to an app database or browser storage. Anthropic handles requests under its own API data policies; hosting infrastructure may log requests. Clearing chat does not delete data already received by the provider. IP-derived request-limit counts and expiry timestamps are stored in data/cache.sqlite.
 
@@ -89,7 +93,7 @@ API reference: [Anthropic Messages API](https://platform.claude.com/docs/en/api/
 
 Lungitude does not diagnose cancer, analyze a photo for cancer, validate a symptom, or replace a clinician. “No signs reported” does not rule out disease. Age-based screening lists cannot establish suitability without anatomy, history, prior screening and shared decision-making. Concerning symptoms require clinical evaluation rather than waiting for screening. Severe breathing difficulty or another emergency needs emergency care.
 
-No trained lung-sound or skin model is included. The lung-sound panel remains hidden unless `data/lung_model.json` contains patient-level evaluation metadata; if enabled, it displays that file’s ICBHI score and patient count without claiming clinical accuracy. A metadata label is not independent validation of a supplied model.
+Three trained research baselines are included; none establishes cancer detection or clinical accuracy. See MODELS.md. The lung-sound panel remains hidden unless `data/lung_model.json` contains patient-level evaluation metadata; if enabled, it displays that file’s ICBHI score and patient count without claiming clinical accuracy. A metadata label is not independent validation of a supplied model.
 
 `lab.html`, `record.html`, `followup.html`, `study.html` and `ml/` are preserved research prototypes. Manually positioned camera regions, finger ratios, audio timing, pulse estimates and lesion descriptors are unvalidated. They cannot detect cancer. Python dependencies belong only to the existing research sidecar; see `ml/skin/README.md`. No research checkpoint is required for the PHP demo. The undated screening-network map is preserved as an unverified asset and is not shown in the main results.
 
@@ -116,7 +120,7 @@ Last validated before LungBot: `test_risk.php` **14 checks passed**, `test_surve
 - **Google Maps Platform:** optional Places and Geocoding services, governed by Google’s terms and billing. Google Places responses are not cached by the app.
 - **US Census Geocoder / FCC:** optional coordinate-to-county services. **OpenStreetMap / openrouteservice:** legacy helper code is retained, but the current care-search path does not call it; OSM data is subject to ODbL if those helpers are enabled.
 - **PLCOm2012:** cited research above; no endorsement by the authors or institutions is implied.
-- **ICBHI 2017 / PAD-UFES-20:** no raw recordings, clinical images or trained weights are supplied. Research scripts require separately obtained data under the providers’ own licenses and consent conditions. Existing research dependency licenses remain applicable.
+- **ICBHI 2017 / PAD-UFES-20:** no raw recordings or clinical images are supplied. Derived research weights and their evaluation reports are published in MODELS.md. Research scripts require separately obtained data under the providers’ own licenses and consent conditions. Existing research dependency licenses remain applicable.
 - AI-assisted maintenance in this revision is documented in `docs/validation.md`; student authorship, understanding and submission disclosures must be documented accurately by the student.
 
 ## Why I built this

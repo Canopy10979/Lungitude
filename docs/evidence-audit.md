@@ -1,3 +1,5 @@
+> Historical audit: the no-trained-model statements below describe the earlier revision. Three research artifacts were subsequently trained and published; see [MODELS.md](../MODELS.md) for actual results and limitations.
+
 # Evidence audit — 2026-10-24
 
 Original numerical values are preserved in `data/wa_cancers.json` under `unverified_or_corrected_values`.
