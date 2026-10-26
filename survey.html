@@ -13,9 +13,9 @@
         <link href="css/website.css" rel="stylesheet"/>
         <link href="manifest.webmanifest" rel="manifest"/>
         <link href="icons/icon-192.png" rel="apple-touch-icon"/>
-        <meta content="#145cda" name="theme-color"/>
-        <link href="css/lungbot.css" rel="stylesheet"/>
-    </head>
+        <meta content="#050505" name="theme-color"/>
+        <link href="css/lungbot.css?v=20261026-compact" rel="stylesheet"/>
+    <link rel="stylesheet" href="css/steps.css"><link rel="stylesheet" href="css/signin.css?v=1"><link rel="stylesheet" href="css/survey-dark.css?v=20261026"><link rel="stylesheet" href="css/tool-flow.css?v=1"></head>
     <body class="survey">
         <header class="topbar">
             <a class="brand" href="index.html">
@@ -24,8 +24,8 @@
                 </span>
                 Lungitude
             </a>
-            <nav>
-                <a aria-current="page" href="index.html">
+            <nav><a href="index.html#capture" aria-label="Home: skin spot check">⌂ Home</a>
+                <a aria-current="page" href="survey.html">
                     Health check
                 </a>
                 <a href="lung.html">
@@ -108,15 +108,16 @@
             </div>
         </div>
         <footer class="app-footer">
-            Ages 0–120 · Educational and research tools · No cancer diagnosis
+            Lungitude · Your health check-in
         </footer>
         <script src="js/privacy.js">
         </script>
-        <script src="js/survey.js">
+        <script src="js/survey.js?v=20261026-live-places">
         </script>
         <script src="js/pwa.js">
         </script>
         <script src="js/branding.js"></script>
-        <script src="js/lungbot.js"></script>
-    </body>
+        <script src="js/lungbot.js?v=20261026-chatflow"></script>
+        <script src="js/activity.js"></script>
+    <script src="js/lungbot-context.js?v=4"></script><script src="js/signin.js?v=1"></script><script src="js/tool-flow.js?v=1"></script></body>
 </html>

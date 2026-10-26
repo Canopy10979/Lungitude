@@ -293,11 +293,7 @@
 
     function walkCard(nearby, origin, input, tier, flags) {
         const places = nearby.places.slice(0, 6);
-        if (nearby.sample) {
-            return '<div class="card wide"><h3>Sample care-search results</h3><p>Fictional examples, not real clinics or phone numbers. Do not use these to seek care.</p><ul>' + places.map(function (place) {
-                return '<li>' + esc(place.name) + ' — sample location</li>';
-            }).join('') + '</ul></div>';
-        }
+        if (nearby.error) return '<div class="card wide"><h3>Nearby care · Google Maps</h3><p>'+esc(nearby.error)+'</p></div>';
         if (!places.length) {
             return '<div class="card wide"><h3>Places near you</h3><p>No places found. Call 1-800-4-CANCER (National Cancer Institute) for help.</p></div>';
         }

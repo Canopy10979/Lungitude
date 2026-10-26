@@ -33,7 +33,7 @@ header('X-Frame-Options: DENY');
 header('Permissions-Policy: camera=(self), microphone=(self), geolocation=(self)');
 header(
     "Content-Security-Policy: default-src 'self'; img-src 'self' data: blob:; media-src 'self' blob:; "
-    . "style-src 'self' 'unsafe-inline'; script-src 'self' https://accounts.google.com https://appleid.cdn-apple.com; connect-src 'self' https://accounts.google.com https://appleid.apple.com; frame-src https://accounts.google.com https://appleid.apple.com https://www.openstreetmap.org; "
+    . "style-src 'self' 'unsafe-inline'; script-src 'self' 'wasm-unsafe-eval' https://accounts.google.com https://appleid.cdn-apple.com; connect-src 'self' https://accounts.google.com https://appleid.apple.com; frame-src https://accounts.google.com https://appleid.apple.com https://www.openstreetmap.org; "
     . "frame-ancestors 'none'; base-uri 'self'"
 );
 
@@ -48,6 +48,9 @@ if ($filename !== false && str_starts_with($filename, __DIR__ . DIRECTORY_SEPARA
     $types = [
         'html' => 'text/html; charset=utf-8',
         'js' => 'text/javascript; charset=utf-8',
+        'mjs' => 'text/javascript; charset=utf-8',
+        'wasm' => 'application/wasm',
+        'task' => 'application/octet-stream',
         'css' => 'text/css; charset=utf-8',
         'json' => 'application/json',
         'webmanifest' => 'application/manifest+json',

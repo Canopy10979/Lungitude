@@ -96,14 +96,14 @@
             render: function() {
                 return card(
                     '<p class="q-eyebrow">Lungitude</p>' +
-                    '<h1 class="q-title">Hello, how are you doing today?</h1>' +
+                    '<h1 class="q-title">👋 How are you doing today?</h1>' +
                     '<button class="btn ghost" id="load-demo-person">Load demo person</button>' +
                     '<div class="choices">' + ["Good", "Okay", "Not great"].map(function(m) {
-                        return '<button class="choice" data-mood="' + m + '">' + m +
+                        return '<button class="choice" data-mood="' + m + '">' + ({Good:'😊 Good',Okay:'😐 Okay','Not great':'💙 Not great'}[m]) +
                             "</button>";
                     }).join("") +
                     "</div>", {
-                        noBack: true
+                        noBack: true, next: "Next"
                     }
                 );
             },
@@ -116,10 +116,11 @@
                 root.querySelectorAll("[data-mood]").forEach(function(b) {
                     b.addEventListener("click", function() {
                         state.mood = b.dataset.mood;
-                        go(1);
+                        root.querySelectorAll("[data-mood]").forEach(x=>{x.classList.toggle("on",x===b);x.setAttribute("aria-pressed",String(x===b));});
                     });
                 });
-            }
+            },
+            next: function(){if(!state.mood)return false;return true;}
         };
     }
 
@@ -136,10 +137,9 @@
                 }
                 return card(
                     reply +
-                    '<h1 class="q-title">Understand your symptoms. Find your next step.</h1>' +
+                    '<h1 class="q-title">✨ Understand your symptoms. Find your next step.</h1>' +
                     '<p class="q-motto">Breathing shouldn’t be a tax, make it a right.</p>' +
-                    '<p class="q-fine">Lungitude checks your answers against the warning signs that doctors list for each cancer. ' +
-                    "It does not diagnose cancer. It covers lung, breast, colorectal, urinary, skin, blood, liver and pancreatic symptom categories, with Washington context and places to get checked.</p>", {
+                    '<p class="q-fine">A two-minute check-in to explore your symptoms and find nearby care.</p>' , {
                         next: "Start"
                     }
                 );
@@ -271,14 +271,15 @@
                     '" data-yn="yes">Yes</button>' +
                     '<button class="choice' + (chosen === false ? " on" : "") +
                     '" data-yn="no">No</button>' +
-                    "</div>"
+                    '<p class="q-error" role="status"></p></div>', {next:"Next"}
                 );
             },
+            next: function(){if(typeof state.answers[key]!=="boolean"){setError("Choose Yes or No, then click Next.");return false;}return true;},
             bind: function() {
                 root.querySelectorAll("[data-yn]").forEach(function(b) {
                     b.addEventListener("click", function() {
                         state.answers[key] = b.dataset.yn === "yes";
-                        go(index + 1);
+                        root.querySelectorAll("[data-yn]").forEach(x=>{x.classList.toggle("on",x===b);x.setAttribute("aria-pressed",String(x===b));});
                     });
                 });
             }
@@ -289,7 +290,7 @@
         return {
             render: function() {
                 return card(
-                    '<h1 class="q-title">We thank you for the time spent in this short survey' +
+                    '<h1 class="q-title">📍 Thanks for checking in' +
                     (firstName() ? ", " + esc(firstName()) : "") + ".</h1>" +
                     "<p>Choose your Washington county for local cancer information, or share your location to also find nearby care.</p>" +
                     '<label for="q-county">Your county</label><select id="q-county" class="q-input"><option value="">Choose a county</option>' +
@@ -388,7 +389,7 @@
 
     function placesUrl(type) {
         return "api/nearby.php?type=" + encodeURIComponent(type) + "&limit=5&lat=" + Number(state.loc.lat) +
-            "&lon=" + Number(state.loc.lon) + (state.demo ? "&demo=1" : "");
+            "&lon=" + Number(state.loc.lon);
     }
 
     async function finish() {
@@ -427,7 +428,6 @@
                     root.querySelector("#places").innerHTML = placesBlock(places);
                 } catch (error) {
                     root.querySelector("#places").textContent =
-                        "Care search unavailable. Choose demo location or contact a clinician. " +
                         error.message;
                 }
             }
@@ -542,7 +542,7 @@
             }).join("") + '</ul><p class="note">' + esc(st.source || "CDC PLACES") + " · " + esc(st.year) + "</p>";
         } else {
             html +=
-                '<p class="note">Local prevention statistics are unavailable. This does not mean the county has no cancer cases.</p>';
+                '<p class="note">Local prevention statistics are unavailable.</p>';
         }
         return html + "</div>";
     }
@@ -553,16 +553,12 @@
         if (places.source === "pending")
             return '<p role="status">Finding nearby care…</p>';
         const list = places.places.slice(0, 5);
-        if (places.source === "sample")
-            return '<div class="data-empty"><b>Demo only — no live clinic results.</b><p>Live search is unavailable or demo mode is selected. Fictional clinic examples below must not be used to seek care.</p></div>' +
-            "<ol>" + list.map(function(p) {
-                return "<li>" + esc(p.name) + " — sample location</li>";
-            }).join("") + "</ol>";
+        if (places.source !== "google") return '<p>Search Google Maps using your location to find nearby clinics.</p>';
         if (list.length === 0) {
             return "<p>Google returned no healthcare places within 10 miles of this location. Call 1-800-4-CANCER (National Cancer Institute) for help.</p>";
         }
         let html =
-            '<p class="note">Up to five Google Places healthcare listings within 10 miles, nearest first by straight-line distance. This is not a ranking of treatment quality. Call to confirm the service, insurance and availability.</p>';
+            '<p class="note">📍 Within 10 miles · nearest first · call to confirm services.</p>';
         html += '<ol class="centers">';
         list.forEach(function(p) {
             const dir = "https://www.google.com/maps/dir/?api=1&origin=" + Number(state.loc.lat) + "," +
@@ -589,12 +585,11 @@
         });
         html += "</ol>";
         const src = {
-            google: "Google Places",
+            google: "Google Maps",
             osm: "OpenStreetMap",
             sample: "sample data"
         } [places.source] || "";
-        html += '<p class="note">Places: ' + src +
-            ". Call before you go to check that they see new patients and take your insurance.</p>";
+        html += '<p class="note">Places: ' + src + ".</p>";
         return html;
     }
 
@@ -617,8 +612,7 @@
 
         if (r.matched.length > 0) {
             html +=
-                '<p class="r-note"><b>This is a warning-sign match, not a diagnosis.</b> These signs often have other, common causes. ' +
-                "Only a doctor and tests can find out. Please book a visit.</p>";
+                '<p class="r-note">🗓️ Book a visit to discuss the symptoms you reported.</p>' ;
             if (urgent.length > 0) {
                 html += '<p class="r-urgent">If you have ' + urgent.map(function(m) {
                     return esc(m.urgent_sign);
@@ -630,21 +624,22 @@
             }
         } else {
             html +=
-                '<p class="r-note">This is a warning-sign match, not a diagnosis. You reported no symptoms in these categories. This survey cannot rule out cancer. Review the screening information below with your clinician.</p>';
+                '<p class="r-note">You reported no symptoms in these categories. Explore your screening options below.</p>' ;
         }
 
-        html += '<h2>Your nearest healthcare places · within 10 miles</h2>';
-        html += '<div id="places">' + placesBlock(places) + "</div>";
+        html += '<nav class="result-flow" aria-label="Your results"><a href="#care-next">📍 Nearby care</a><a href="#screening-next">🗓️ Screenings</a><a href="#context-next">📖 Local context</a></nav>';
+        html += '<section class="result-section" id="care-next"><h2>📍 Find your next appointment</h2>';
+        html += '<div id="places">' + placesBlock(places) + "</div></section>";
 
         if (r.matched.length > 0) {
-            html += "<h2>Cancer information relevant to your answers</h2>";
+            html += "<h2>💬 Information related to your answers</h2>";
             html += '<div class="g-grid">' + r.matched.map(function(m) {
                 return groupCard(m, r);
             }).join("") + "</div>";
         }
 
-        html += countyCard(r);
-        html += "<h2>Screenings to discuss at age " + esc(r.age) + "</h2>";
+
+        html += '<section class="result-section" id="screening-next"><h2>🗓️ Screening options at age ' + esc(r.age) + "</h2>";
         if (r.screenings_due.length === 0) {
             html +=
                 "<p>No age-based screening options are listed here for your age. Ask your doctor about your own risk.</p>";
@@ -657,15 +652,16 @@
             }).join("") + "</ul>";
         }
 
+        html += '</section><section class="result-section" id="context-next"><h2>📖 Your local context</h2>' + countyCard(r);
         if (r.bmi) {
             html += '<div class="g-card"><h3>Your BMI: ' + esc(r.bmi.bmi) + " (" + esc(r.bmi.category) +
                 ")</h3>";
             if (r.bmi.cancer_link) {
                 html +=
-                    "<p>Body weight is one health factor to discuss with a clinician. BMI does not diagnose cancer.</p>";
+                    "<p>Body weight is one factor in your overall health.</p>";
             } else {
                 html +=
-                    "<p>BMI alone cannot establish your cancer risk. Discuss your personal and family history with your clinician.</p>";
+                    "<p>Your BMI: one part of your health overview.</p>";
             }
             html += "</div>";
         }
@@ -678,18 +674,8 @@
                 esc(f.url) + '" target="_blank" rel="noopener">More information</a></p></div>';
         }
 
-        html += '<section class="g-card"><h2>What data goes where</h2>' + window.LungitudePrivacy.map(
-            function(text) {
-                return '<p>' + esc(text) + '</p>';
-            }).join('') + '</section>';
-        html +=
-            '<p class="q-fine">Population statistics describe groups, not your probability of cancer. Screening eligibility also depends on medical history and other criteria. Source labels supplied with this prototype: ' +
-            Object.keys(r.sources).map(function(k) {
-                return esc(r.sources[k]);
-            }).join(" · ") + ".</p>";
-        html += '<p><a href="lung.html">Lung screening guideline check</a></p>';
-        html +=
-            '<details class="g-card"><summary>Research prototypes (not validated)</summary><p>These experiments are outside the survey and do not diagnose disease. Some require a separate Python service.</p><a href="lab.html">Imaging lab</a> · <a href="record.html">Recording</a> · <a href="followup.html">Follow-up</a> · <a href="study.html">Measurement study</a></details>';
+        html += '</section><details class="g-card source-details"><summary>📚 Sources</summary><p>' + Object.values(r.sources).map(esc).join(' · ') + '</p></details>';
+        html += '<p><a href="lung.html">🫁 Explore the lung screening check →</a></p>';
         html +=
             '<div class="q-nav"><button class="btn ghost" data-act="restart">Start again</button></div>';
         html += "</section>";
@@ -740,6 +726,7 @@
         index = Math.max(0, Math.min(screens.length - 1, i));
         const s = screens[index];
         root.innerHTML = s.render();
+        root.classList.remove("step-enter");void root.offsetWidth;root.classList.add("step-enter");
         barFill.style.width = Math.round(index / screens.length * 100) + "%";
         const nextBtn = root.querySelector('[data-act="next"]');
         if (nextBtn) {
@@ -770,6 +757,13 @@
     }
 
     window.LungitudeSurvey = state;
+    window.addEventListener('lungitude-auth-change',event=>{
+        if(event.detail?.user?.name && !state.name){
+            state.name=event.detail.user.name;
+            const input=root.querySelector('#q-name');if(input&&!input.value)input.value=state.name;
+        }
+    });
+
 
     Promise.all([getJson("data/wa_cancers.json"), getJson("data/wa_counties.json")])
         .then(function(values) {

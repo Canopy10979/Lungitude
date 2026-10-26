@@ -1,5 +1,5 @@
 /* Cache only an explicit list of public interface files; never API or Places data. */
-const CACHE_NAME = "lungitude-static-dark-v3";
+const CACHE_NAME = "lungitude-static-dark-v4-no-auth";
 const STATIC_FILES = [
     "./index.html",
     "./pulse-check.html",
@@ -7,9 +7,7 @@ const STATIC_FILES = [
     "./evidence.html",
     "./css/skin.css",
     "./js/skin.js",
-    "./js/account.js",
     "./js/care.js",
-    "./js/engagement.js",
     "./js/capture-quality.js",
     "./js/breast.js",
     "./js/pulse-measure.js",

@@ -6,6 +6,7 @@
     let controller = null;
     let generation = 0;
     let previousFocus = null;
+    let failedBubble = null;
 
     function element(tag, className, text) {
         const node = document.createElement(tag);
@@ -19,6 +20,11 @@
     }
 
     const launcher = element("button", "lungbot-launcher", "Ask LungBot");
+    const avatar = element("img", "lungbot-avatar");
+    avatar.src = "assets/lungbot-avatar.svg?v=smile2";
+    avatar.alt = "";
+    avatar.width = avatar.height = 40;
+    launcher.prepend(avatar);
     launcher.type = "button";
     launcher.setAttribute("aria-haspopup", "dialog");
     launcher.setAttribute("aria-controls", "lungbot-dialog");
@@ -27,13 +33,12 @@
     dialog.setAttribute("aria-labelledby", "lungbot-title");
     const header = element("div", "lungbot-header");
     const title = element("h2", "", "LungBot");
+    const headerAvatar = avatar.cloneNode(true);
+    title.prepend(headerAvatar);
     title.id = "lungbot-title";
     const close = element("button", "btn ghost", "Close");
     close.type = "button";
     header.append(title, close);
-    const notice = element("p", "lungbot-notice",
-        "AI education, not medical advice. Chat text and recent chat history are sent through this server to Anthropic (Claude). Survey answers, photos and location are not attached. Avoid identifying details. Replies can be wrong. For severe breathing trouble, severe chest pain or another emergency, call 911 in the US.");
-    notice.id = "lungbot-notice";
     const consentLabel = element("label", "lungbot-consent");
     const consent = element("input");
     consent.type = "checkbox";
@@ -51,22 +56,32 @@
     input.rows = 3;
     input.maxLength = 1000;
     input.required = true;
-    input.setAttribute("aria-describedby", "lungbot-notice lungbot-status");
+    input.setAttribute("aria-describedby", "lungbot-status");
     const status = element("p", "lungbot-status",
         "Choose Send to contact Claude. Your conversation stays in page memory, not browser storage.");
     status.id = "lungbot-status";
     status.setAttribute("role", "status");
+    const preview = element("div", "lungbot-draft");
+    preview.hidden = true;
+    preview.setAttribute("aria-label", "Message preview");
+    const previewLabel = element("small", "", "Your message preview");
+    const previewText = element("p", "");
+    preview.append(previewLabel, previewText);
+    input.placeholder = "Type your question…";
     const actions = element("div", "lungbot-actions");
     const send = element("button", "btn primary", "Send");
     send.type = "submit";
     const clear = element("button", "btn ghost", "Clear chat");
     clear.type = "button";
     actions.append(send, clear);
-    form.append(label, input, actions);
-    dialog.append(header, notice, consentLabel, transcript, form, status);
+    form.append(label, input, preview, actions);
+    dialog.append(header, consentLabel, transcript, form, status);
     document.body.append(launcher, dialog);
 
     function updateControls() {
+        previewText.textContent = input.value;
+        preview.hidden = pending || !input.value.trim();
+        send.textContent = pending ? "Sending…" : "Send ↑";
         send.disabled = pending || !consent.checked || input.value.trim() === "";
         input.disabled = pending;
         transcript.setAttribute("aria-busy", String(pending));
@@ -78,6 +93,7 @@
         message.append(document.createTextNode(content));
         transcript.append(message);
         transcript.scrollTop = transcript.scrollHeight;
+        return message;
     }
 
     launcher.addEventListener("click", function () {
@@ -146,6 +162,14 @@
             status.textContent = "Please shorten your question to fewer than 2000 bytes.";
             return;
         }
+        if (failedBubble) { failedBubble.remove(); failedBubble = null; }
+        const bubble = addMessage("user", question);
+        bubble.classList.add("lungbot-sending");
+        const delivery = element("small", "lungbot-delivery", "Sending…");
+        bubble.append(delivery);
+        const thinking = addMessage("assistant", "Thinking…");
+        thinking.classList.add("lungbot-thinking");
+        input.value = "";
         const recent = messages.slice(-8);
         const requestMessages = recent.concat([{role: "user", content: question}]);
         pending = true;
@@ -155,7 +179,7 @@
         const timer = setTimeout(function () {
             requestController.abort();
         }, 35000);
-        status.textContent = "Waiting for Claude…";
+        status.textContent = "LungBot is thinking…";
         updateControls();
         try {
             const response = await fetch("api/chat.php", {
@@ -181,17 +205,24 @@
             if (messages.length > 8) {
                 messages.splice(0, messages.length - 8);
             }
-            addMessage("user", question);
+            delivery.textContent = "Sent";
+            bubble.classList.remove("lungbot-sending");
+            thinking.remove();
             addMessage("assistant", result.reply);
             input.value = "";
-            status.textContent = "AI reply. Verify health information with a clinician.";
+            status.textContent = "";
         } catch (error) {
             if (requestGeneration === generation) {
+                delivery.textContent = "Reply unavailable · retry below";
+                bubble.classList.remove("lungbot-sending");
+                failedBubble = bubble;
+                input.value = question;
                 status.textContent = error.name === "AbortError"
                     ? "The chat request timed out or was stopped. The survey remains available."
                     : error.message;
             }
         } finally {
+            thinking.remove();
             clearTimeout(timer);
             if (requestGeneration === generation) {
                 pending = false;

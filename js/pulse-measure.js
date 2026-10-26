@@ -16,6 +16,7 @@
  */
 (function () {
     let activeCancel = null;
+    let activeSubmit = null;
     let generation = 0;
     const SECONDS = 25;
     const SETTLE = 3;
@@ -256,11 +257,13 @@
         if (attempt !== generation) {stream.getTracks().forEach(t => t.stop());return;}
 
         const samples = [];
+        let ended=false;
         const t0 = performance.now() / 1000;
         let offFor = 0;
         let lastT = t0;
 
         function stop(message, completed = false) {
+            ended=true;activeSubmit=null;document.getElementById('pulse-submit').disabled=true;
             if(!completed)clearMonitor('Unable to measure · try again');
             else {$('finger-contact-glow').setAttribute('opacity','0');setText('pulse-contact-state','Measurement ended · illustration inactive');setText('pulse-stage','Complete · waveform is frozen');}
             stream.getTracks().forEach(function (t) {
@@ -274,8 +277,38 @@
             }
         }
 
+        activeSubmit=()=>{
+            if(ended)return;
+            const duration=samples.length?samples.at(-1).t-samples[0].t:0;
+            if(duration<SETTLE+8){out.textContent='Not enough usable signal yet. Keep your fingertip steady for at least 11 seconds, then submit again.';return;}
+
+                const usable = samples.filter(function (s) {
+                    return s.t - samples[0].t >= SETTLE;
+                });
+                const res = BW.pulseAnalyse(resample(usable), RATE);
+                if (res === null || res.quality < 0.3) {
+                    stop("The pulse signal was not clear. Press more lightly, keep still, and try again.");
+                    return;
+                }
+                const quality = res.quality >= 0.5 ? "good" : "fair";
+                BW.measures.pulse = {
+                    hr: Math.round(res.bpm),
+                    quality: quality,
+                    perfusion: Math.round(res.perfusion * 100) / 100
+                };
+                drawWave(res.wave);
+                $('pulse-summary').hidden=false;
+                $('pulse-live-bpm').textContent=String(Math.round(res.bpm));
+                $('pulse-final-bpm').textContent=Math.round(res.bpm)+' beats per minute · experimental';
+                $('pulse-final-quality').textContent=(res.quality>=.5?'More consistent':'Less consistent')+' periodicity · heuristic only';
+                stop("Experimental pulse estimate: " + Math.round(res.bpm) + " beats per minute (signal " + quality +
+                    "). Not clinically validated; this does not assess cancer, oxygen saturation or heart rhythm disorders.", true);
+                return;
+
+        };
+        $('pulse-submit').disabled=false;
         function tick() {
-            if(attempt !== generation)return;
+            if(attempt !== generation||ended)return;
             if(document.hidden){cancel();return;}
             const now = performance.now() / 1000;
             let rgb;try{rgb=meanRgb();}catch(error){stop('Could not read camera frames. Use the manual wrist count or try again.');return;}
@@ -321,28 +354,10 @@
                 }
             }
 
-            if (have >= SECONDS) {
-                const usable = samples.filter(function (s) {
-                    return s.t - samples[0].t >= SETTLE;
-                });
-                const res = BW.pulseAnalyse(resample(usable), RATE);
-                if (res === null || res.quality < 0.3) {
-                    stop("The pulse signal was not clear. Press more lightly, keep still, and try again.");
-                    return;
-                }
-                const quality = res.quality >= 0.5 ? "good" : "fair";
-                BW.measures.pulse = {
-                    hr: Math.round(res.bpm),
-                    quality: quality,
-                    perfusion: Math.round(res.perfusion * 100) / 100
-                };
-                drawWave(res.wave);
-                $('pulse-summary').hidden=false;
-                $('pulse-live-bpm').textContent=String(Math.round(res.bpm));
-                $('pulse-final-bpm').textContent=Math.round(res.bpm)+' beats per minute · experimental';
-                $('pulse-final-quality').textContent=(res.quality>=.5?'More consistent':'Less consistent')+' periodicity · heuristic only';
-                stop("Experimental pulse estimate: " + Math.round(res.bpm) + " beats per minute (signal " + quality +
-                    "). Not clinically validated; this does not assess cancer, oxygen saturation or heart rhythm disorders.", true);
+            if(have>=SECONDS){
+                stream.getTracks().forEach(t=>t.stop());video.pause();
+                setText('pulse-stage','Recording ready · click Submit to show your result');
+                out.textContent='Recording finished. Click Submit measurement to calculate your result.';
                 return;
             }
             requestAnimationFrame(tick);
@@ -350,10 +365,11 @@
         requestAnimationFrame(tick);
     }
 
-    function cancel(){clearMonitor('Stopped · no result');BW.measures.pulse=null;generation++;if(activeCancel){activeCancel();activeCancel=null;}btn.disabled=false;out.textContent='Measurement stopped. No result produced.';}
+    function cancel(){activeSubmit=null;$('pulse-submit').disabled=true;clearMonitor('Stopped · no result');BW.measures.pulse=null;generation++;if(activeCancel){activeCancel();activeCancel=null;}btn.disabled=false;out.textContent='Measurement stopped. No result produced.';}
     window.addEventListener('lungitude-pulse-start',e=>{if(e.detail?.mode!=='finger'&&(activeCancel||btn.disabled))cancel();});
     document.getElementById('pulse-stop').addEventListener('click',cancel);
     document.addEventListener('visibilitychange',()=>{if(document.hidden&&activeCancel)cancel();});
     window.addEventListener('pagehide',cancel);
+    $('pulse-submit').onclick=()=>activeSubmit?.();
     btn.addEventListener("click", run);
 })();

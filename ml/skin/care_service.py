@@ -10,7 +10,8 @@ from fastapi import APIRouter,Form,HTTPException,Request
 from starlette.concurrency import run_in_threadpool
 
 router=APIRouter(prefix='/care')
-RADIUS_METERS=1609.344
+METERS_PER_MILE=1609.344
+RADIUS_METERS=10*METERS_PER_MILE
 QUERY='skin cancer centers'
 LIMITS=defaultdict(deque)
 LIMIT_LOCK=Lock()
@@ -33,7 +34,7 @@ def normalize(places,lat,lon):
   seen.add(unique)
   query={'api':'1','query':name+' '+address}
   if identity:query['query_place_id']=identity
-  results.append({'name':name,'address':address,'meters':distance,'miles':round(distance/RADIUS_METERS,2),'maps_url':'https://www.google.com/maps/search/?'+urlencode(query),'attributions':place.get('attributions',[])})
+  results.append({'name':name,'address':address,'meters':distance,'miles':round(distance/METERS_PER_MILE,2),'maps_url':'https://www.google.com/maps/search/?'+urlencode(query),'attributions':place.get('attributions',[])})
  return sorted(results,key=lambda p:p['meters'])[:10]
 
 def search(lat,lon):
@@ -46,7 +47,7 @@ def search(lat,lon):
   response.raise_for_status();data=response.json()
   if not isinstance(data,dict) or 'error' in data:raise ValueError()
  except (requests.RequestException,ValueError):raise HTTPException(502,'Care search could not be completed')
- return {'source':'Google Maps','query':QUERY,'radius_miles':1,'distance_basis':'straight_line','places':normalize(data.get('places',[]),lat,lon),
+ return {'source':'Google Maps','query':QUERY,'radius_miles':10,'distance_basis':'straight_line','places':normalize(data.get('places',[]),lat,lon),
          'notice':'Search matches, not verified treatment providers. Call to confirm skin cancer services. Distances are straight-line, not travel distances.'}
 
 @router.post('/search')

@@ -1,4 +1,5 @@
 api/secrets.php
+**/api/secrets.php
 .env
 .env.*
 !.env.example
@@ -21,6 +22,7 @@ uploads/
 *.mp4
 *.zip
 .DS_Store
+node_modules/
 
 # Publish only reviewed trained artifacts; keep raw data and split CSVs private.
 !ml/skin/output_mobile/

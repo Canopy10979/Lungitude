@@ -112,3 +112,19 @@
     max-width: 160px;
     object-fit: contain;
 }
+
+/* Shared LungBot identity across all sections. */
+.lungbot-launcher{display:inline-flex;align-items:center;gap:10px;padding:7px 17px 7px 7px;background:#123b42;border-color:#72cdb8;color:#ecfff8;box-shadow:0 8px 30px #0005}
+.lungbot-avatar{width:40px;height:40px;flex:0 0 40px;border-radius:14px;object-fit:contain}
+.lungbot-header h2{display:flex;align-items:center;gap:10px}
+.lungbot-quick-help{padding:14px;border:1px solid #426371;border-radius:12px;background:#102d36;color:#e5f0ee;margin:12px 0}
+.lungbot-quick-help h3{margin:0 0 8px;font:600 16px system-ui}.lungbot-quick-help p{margin:0;font-size:14px;line-height:1.6;color:#d3e7e3}
+.lungbot-suggestions{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.lungbot-suggestions button{font-size:12px;cursor:pointer;border:1px solid #426371;border-radius:8px;padding:8px;background:#17323f;color:#e5f0ee}
+.lungbot-dialog{background:#102330;color:#e5f0ee;border-color:#426371}.lungbot-notice,.lungbot-status{color:#b8d0d9}.lungbot-dialog .lungbot-message{color:#173e38}.lungbot-form textarea{background:#091b25;color:#e5f0ee}
+.home-tools{display:flex;gap:14px;overflow-x:auto;margin:0 0 28px;padding:4px 0 14px}.home-tools a{flex:1 0 190px;padding:20px;border:1px solid #365362;border-radius:14px;background:#102330;text-decoration:none}.home-tools strong{display:block;color:#9ae6cc;margin-bottom:8px}.home-tools span{display:block;color:#b8d0d9;font-size:13px;line-height:1.5}.home-tools a:hover{border-color:#9ae6cc}
+
+/* Message drafts and delivery states. */
+.lungbot-draft{margin:10px 0 14px;padding:12px 16px;border:1px solid #477667;border-radius:16px 16px 4px 16px;background:#16392f;color:#edfff6;overflow-wrap:anywhere}.lungbot-draft small{color:#a5d8c5;font-size:11px}.lungbot-draft p{margin:5px 0 0;white-space:pre-wrap}.lungbot-draft[hidden]{display:none}.lungbot-transcript{display:flex;flex-direction:column;gap:12px;scroll-behavior:smooth}.lungbot-dialog .lungbot-message{max-width:88%;padding:12px 16px;margin:0;border-radius:16px;background:#1b3039;color:#e6f2f1;white-space:pre-wrap;overflow-wrap:anywhere;animation:chat-arrive .25s ease both}.lungbot-dialog .lungbot-user{align-self:flex-end;background:#255446;color:#f1fff8;border-bottom-right-radius:4px}.lungbot-dialog .lungbot-assistant{align-self:flex-start;border-bottom-left-radius:4px}.lungbot-message strong{display:block;font-size:11px;margin-bottom:5px;opacity:.75}.lungbot-delivery{display:block;margin-top:8px;font-size:10px;color:#bbddcf}.lungbot-sending{opacity:.8}.lungbot-thinking{animation:chat-think 1s ease-in-out infinite!important}.lungbot-form textarea{transition:border-color .2s,box-shadow .2s}.lungbot-form textarea:focus{border-color:#8cdec4;box-shadow:0 0 0 3px #8cdec41a}.lungbot-avatar{transition:transform .2s}.lungbot-launcher:hover .lungbot-avatar{transform:rotate(-8deg)}@keyframes chat-arrive{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}@keyframes chat-think{50%{opacity:.55}}@media(prefers-reduced-motion:reduce){.lungbot-dialog .lungbot-message,.lungbot-thinking{animation:none!important}.lungbot-transcript{scroll-behavior:auto}.lungbot-avatar,.lungbot-form textarea{transition:none}}
+
+/* Compact, centered chat launcher. */
+.lungbot-launcher{left:50%;right:auto!important;bottom:max(12px,env(safe-area-inset-bottom));transform:translateX(-50%);width:auto;max-width:calc(100vw - 24px);min-height:38px;padding:5px 12px 5px 6px;gap:6px;border-radius:24px;font-size:12px;line-height:1.2;white-space:nowrap;box-shadow:0 4px 16px #0004}.lungbot-launcher .lungbot-avatar{width:26px;height:26px;flex:0 0 26px;border-radius:9px}.lungbot-launcher:hover,.lungbot-launcher:active{transform:translateX(-50%)}

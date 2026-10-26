@@ -11,7 +11,7 @@ $endpoint=['oauth_config'=>'oauth/config'][$action]??$action;
 $url='http://127.0.0.1:8010/account/'.$endpoint;
 $method=in_array($action,['me','health','oauth_config','engagement'],true)?'GET':'POST';
 $fields=[];
-foreach(['email','password','profile','csrf','provider','credential','state','link','mission','answer','opt_in','message','assistant_consent'] as $name)if(isset($_POST[$name]))$fields[$name]=(string)$_POST[$name];
+foreach(['name','email','password','profile','csrf','provider','credential','state','link','mission','answer','opt_in','message','assistant_consent'] as $name)if(isset($_POST[$name]))$fields[$name]=(string)$_POST[$name];
 $payload=http_build_query($fields);
 $cookies=[];
 foreach(['lungitude_session','lungitude_oauth'] as $cookie)if(isset($_COOKIE[$cookie])&&preg_match('/^[A-Za-z0-9_-]{30,100}$/',$_COOKIE[$cookie]))$cookies[]=$cookie.'='.$_COOKIE[$cookie];

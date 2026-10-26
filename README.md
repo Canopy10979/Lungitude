@@ -1,5 +1,7 @@
 > The default homepage is the dark research interface (skin camera, pulse check, breast measurements and research evidence). Open `http://localhost:8000/#capture`. The earlier warning-sign survey remains at `survey.html`. Camera analysis and accounts require the local imaging service on port 8010; PHP alone serves the interface. Install `ml/skin/requirements.txt` and `ml/skin/auth-requirements.txt` in your Python environment, then run `start-imaging.bat` on Windows. Trained model artifacts and evaluation reports are unchanged.
 
+The optional survey and research-scan activity totals stay in this browser, are separate from learning points, and can be reset at any time.
+
 # Lungitude
 
 A short warning-sign survey for Washington residents, followed by screening information and nearby healthcare listings. Student project by Rishi Jasuja for the 2026 Congressional App Challenge, WA-01. Educational prototype; not a medical device or diagnosis.

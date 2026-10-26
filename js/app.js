@@ -179,7 +179,7 @@ window.BW = {
                     body: JSON.stringify(input)
                 }),
                 getJson("api/region.php?" + q),
-                getJson("api/nearby.php?" + q)
+                getJson("api/nearby.php?lat=" + Number(loc.lat) + "&lon=" + Number(loc.lon)).catch(error=>({source:"google",places:[],error:error.message}))
             ]);
             BW.renderResults({
                 input: input,

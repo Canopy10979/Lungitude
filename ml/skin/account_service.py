@@ -17,10 +17,19 @@ DB=ROOT/'data'/'accounts.sqlite'
 COOKIE='lungitude_session'
 LIMITS=defaultdict(deque)
 
+class AccountConnection(sqlite3.Connection):
+ def __exit__(self,*args):
+  try:return super().__exit__(*args)
+  finally:self.close()
+
 def connect():
  DB.parent.mkdir(exist_ok=True)
- db=sqlite3.connect(DB,timeout=5);db.row_factory=sqlite3.Row
+ db=sqlite3.connect(DB,timeout=5,factory=AccountConnection);db.row_factory=sqlite3.Row
  db.execute('CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY,email TEXT UNIQUE,password TEXT,profile TEXT)')
+ if 'display_name' not in {row[1] for row in db.execute('PRAGMA table_info(users)')}:
+  try:db.execute("ALTER TABLE users ADD COLUMN display_name TEXT NOT NULL DEFAULT ''")
+  except sqlite3.OperationalError as error:
+   if 'duplicate column' not in str(error):raise
  db.execute('CREATE TABLE IF NOT EXISTS identities (provider TEXT,subject TEXT,user_id INTEGER,PRIMARY KEY(provider,subject))')
  db.execute('CREATE TABLE IF NOT EXISTS oauth_attempts (token TEXT PRIMARY KEY,nonce TEXT,state TEXT,expires REAL)')
  db.execute('CREATE TABLE IF NOT EXISTS learning_awards (user_id INTEGER,mission TEXT,points INTEGER,PRIMARY KEY(user_id,mission))')
@@ -36,7 +45,7 @@ def password_hash(password,salt=None):
 
 def credentials(request,email,password):
  origin=request.headers.get('origin')
- if origin and origin not in {'http://localhost:8000','http://127.0.0.1:8000',os.getenv('LUNGITUDE_PUBLIC_ORIGIN','')}:
+ if origin and origin not in {'http://localhost:8000','http://127.0.0.1:8000','http://127.0.0.1:8002','http://localhost:8002',os.getenv('LUNGITUDE_PUBLIC_ORIGIN','')}:
   raise HTTPException(403,'Request not permitted')
  email=email.strip().lower()
  if not re.fullmatch(r'[^\s@]{1,100}@[^\s@.]+\.[^\s@]+',email) or len(email)>254 or not 10<=len(password)<=128:
@@ -56,20 +65,26 @@ def create_session(db,user_id,response):
 def session(request,csrf=None):
  token=request.cookies.get(COOKIE,'')
  with connect() as db:
-  row=db.execute('SELECT sessions.*,users.email,users.profile FROM sessions JOIN users ON users.id=sessions.user_id WHERE token=? AND expires>?',(hashlib.sha256(token.encode()).hexdigest(),time.time())).fetchone()
+  row=db.execute('SELECT sessions.*,users.email,users.profile,users.display_name FROM sessions JOIN users ON users.id=sessions.user_id WHERE token=? AND expires>?',(hashlib.sha256(token.encode()).hexdigest(),time.time())).fetchone()
  if row is None:raise HTTPException(401,'Sign in to continue')
  if csrf is not None and not hmac.compare_digest(csrf,row['csrf']):raise HTTPException(403,'Please sign in again')
  return row
 
+def public_identity(uid):
+ with connect() as db:
+  user=db.execute('SELECT email,display_name FROM users WHERE id=?',(uid,)).fetchone()
+ return {'name':user['display_name'] or user['email'].split('@')[0]}
+
 @router.post('/register')
-def register(request:Request,response:Response,email:str=Form(...),password:str=Form(...)):
+def register(request:Request,response:Response,email:str=Form(...),password:str=Form(...),name:str=Form("")):
  email=credentials(request,email,password)
  with connect() as db:
   if db.execute('SELECT id FROM users WHERE email=?',(email,)).fetchone():raise HTTPException(409,'Unable to create this account; try signing in')
-  try:uid=db.execute('INSERT INTO users(email,password) VALUES (?,?)',(email,password_hash(password))).lastrowid
+  if len(name.strip())>80:raise HTTPException(422,'Use a name up to 80 characters')
+  try:uid=db.execute('INSERT INTO users(email,password,display_name) VALUES (?,?,?)',(email,password_hash(password),name.strip())).lastrowid
   except sqlite3.IntegrityError:raise HTTPException(409,'Unable to create this account')
   csrf=create_session(db,uid,response)
- return {'signed_in':True,'csrf':csrf,'profile':None}
+ return {'signed_in':True,'csrf':csrf,'profile':None,'user':public_identity(uid)}
 
 @router.post('/login')
 def login(request:Request,response:Response,email:str=Form(...),password:str=Form(...)):
@@ -81,12 +96,12 @@ def login(request:Request,response:Response,email:str=Form(...),password:str=For
   candidate=password_hash(password,stored.split(':')[0]) if valid_format else password_hash(password)
   if not valid_format or not hmac.compare_digest(candidate,stored):raise HTTPException(401,'Email or password not recognized')
   csrf=create_session(db,row['id'],response)
- return {'signed_in':True,'csrf':csrf,'profile':json.loads(row['profile']) if row['profile'] else None}
+ return {'signed_in':True,'csrf':csrf,'profile':json.loads(row['profile']) if row['profile'] else None,'user':public_identity(row['id'])}
 
 @router.get('/me')
 def me(request:Request):
  row=session(request)
- return {'signed_in':True,'csrf':row['csrf'],'profile':json.loads(row['profile']) if row['profile'] else None}
+ return {'signed_in':True,'csrf':row['csrf'],'profile':json.loads(row['profile']) if row['profile'] else None,'user':public_identity(row['user_id'])}
 
 RACES={'All Races','Hispanic of any race','Non-Hispanic White','Non-Hispanic Black','Non-Hispanic American Indian/Alaska Native','Non-Hispanic Asian/Pacific Islander'}
 def validate_profile(value):
@@ -232,6 +247,8 @@ def oauth(request:Request,response:Response,provider:str=Form(...),credential:st
    db.execute('INSERT INTO identities VALUES (?,?,?)',(provider,claims['sub'],uid))
    saved_profile=None
   else:uid=row['id'];saved_profile=json.loads(row['profile']) if row['profile'] else None
+  provider_name=str(claims.get('name') or claims.get('given_name') or '').strip()[:80]
+  if provider_name:db.execute("UPDATE users SET display_name=? WHERE id=? AND display_name=''",(provider_name,uid))
   csrf=create_session(db,uid,response)
  response.delete_cookie(OAUTH_COOKIE,path='/')
- return {'signed_in':True,'csrf':csrf,'profile':saved_profile}
+ return {'signed_in':True,'csrf':csrf,'profile':saved_profile,'user':public_identity(uid)}
