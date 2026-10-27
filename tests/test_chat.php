@@ -39,9 +39,9 @@ $conversation = [$message, ['role' => 'assistant', 'content' => 'A survey and ca
 chat_check('Alternating conversation allowed', count(lungbot_messages(['consent' => true, 'messages' => $conversation])) === 3);
 chat_check('Repeated user roles rejected', chat_rejects(['consent' => true, 'messages' => [$message, $message, $message]]));
 chat_check('Invalid UTF-8 rejected', chat_rejects(['consent' => true, 'messages' => [['role' => 'user', 'content' => "\xFF"]]]));
-chat_check('Same-origin host allowed', lungbot_origin_allowed('http://localhost:8000', 'localhost:8000'));
-chat_check('Foreign host rejected', !lungbot_origin_allowed('https://attacker.example', 'localhost:8000'));
-chat_check('Non-HTTP origin rejected', !lungbot_origin_allowed('null', 'localhost:8000'));
+chat_check('Same-origin host allowed', lungbot_origin_allowed('http://localhost:8002', 'localhost:8002'));
+chat_check('Foreign host rejected', !lungbot_origin_allowed('https://attacker.example', 'localhost:8002'));
+chat_check('Non-HTTP origin rejected', !lungbot_origin_allowed('null', 'localhost:8002'));
 if (extension_loaded('pdo_sqlite')) {
     $database = new PDO('sqlite::memory:');
     $database->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);

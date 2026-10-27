@@ -45,7 +45,7 @@ def password_hash(password,salt=None):
 
 def credentials(request,email,password):
  origin=request.headers.get('origin')
- if origin and origin not in {'http://localhost:8000','http://127.0.0.1:8000','http://127.0.0.1:8002','http://localhost:8002',os.getenv('LUNGITUDE_PUBLIC_ORIGIN','')}:
+ if origin and origin not in {'http://localhost:8002','http://127.0.0.1:8002',os.getenv('LUNGITUDE_PUBLIC_ORIGIN','')}:
   raise HTTPException(403,'Request not permitted')
  email=email.strip().lower()
  if not re.fullmatch(r'[^\s@]{1,100}@[^\s@.]+\.[^\s@]+',email) or len(email)>254 or not 10<=len(password)<=128:

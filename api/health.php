@@ -2,7 +2,7 @@
 
 /*
  * GET: what is set up and what is missing. Open it in the browser:
- *     http://localhost:8000/api/health.php
+ *     http://localhost:8002/api/health.php
  * It never shows the API key itself.
  */
 require __DIR__ . '/lib.php';

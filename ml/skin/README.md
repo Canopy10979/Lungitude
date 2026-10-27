@@ -71,7 +71,7 @@ external evaluation set for the final choice; inspecting two internal test
 results during model selection is not an unbiased final performance estimate.
 Do not keep adjusting models to improve their reported test result.
 
-Open http://localhost:8000/record.html after running php -S localhost:8000.
+Open http://localhost:8002/record.html after running php -S localhost:8002.
 Camera requires HTTPS or localhost and permission. Confirm permission from the
 person recorded, enable the camera, center one lesion and record a short clip.
 Capture quality checks are heuristic brightness/frame-change checks, not CNN

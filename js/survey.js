@@ -780,6 +780,6 @@
         })
         .catch(function() {
             root.innerHTML =
-                '<p class="q-error">Could not load the survey. Run the app with php -S localhost:8000.</p>';
+                '<p class="q-error">Could not load the survey. Run the app with php -S localhost:8002.</p>';
         });
 })();

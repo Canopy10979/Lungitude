@@ -68,7 +68,7 @@ class OAuthTests(unittest.TestCase):
   with patch.object(accounts,'verify_identity',return_value={'sub':'provider-id','email':'person@example.org','email_verified':True}):self.assertEqual(self.complete(c).status_code,200)
   r=self.client.post('/account/login',data={'email':'person@example.org','password':'guess-password-123'});self.assertEqual(r.status_code,401)
  def test_apple_localhost_disabled(self):
-  with patch.dict(os.environ,{'APPLE_SERVICES_ID':'com.example.app','APPLE_REDIRECT_URI':'http://localhost:8000/'}):self.assertFalse(self.begin()['providers']['apple']['enabled'])
+  with patch.dict(os.environ,{'APPLE_SERVICES_ID':'com.example.app','APPLE_REDIRECT_URI':'http://localhost:8002/'}):self.assertFalse(self.begin()['providers']['apple']['enabled'])
  def test_server_nonce_checked(self):
   with patch('google.oauth2.id_token.verify_oauth2_token',return_value={'sub':'provider-id','nonce':'wrong'}):
    with self.assertRaises(ValueError):accounts.verify_identity('google','token','aud','expected')

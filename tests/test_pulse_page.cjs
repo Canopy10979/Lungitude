@@ -1,6 +1,6 @@
 const assert=require('node:assert/strict'),fs=require('node:fs');
 const {JSDOM}=require('jsdom');const tick=()=>new Promise(r=>setTimeout(r,0));
-function setup(reduced=false){const dom=new JSDOM(fs.readFileSync('pulse-check.html','utf8'),{url:'http://localhost:8000/pulse-check.html',runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window;let time=0,interval=null,frames=[];
+function setup(reduced=false){const dom=new JSDOM(fs.readFileSync('pulse-check.html','utf8'),{url:'http://localhost:8002/pulse-check.html',runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window;let time=0,interval=null,frames=[];
 Object.defineProperty(w.performance,'now',{value:()=>time});w.setInterval=f=>(interval=f,1);w.clearInterval=()=>{interval=null};w.requestAnimationFrame=f=>(frames.push(f),1);
 w.HTMLMediaElement.prototype.play=async()=>{};w.HTMLMediaElement.prototype.pause=()=>{};
 w.HTMLCanvasElement.prototype.getContext=()=>({drawImage(){},getImageData(){const a=new Uint8ClampedArray(20*14*4);const r=120+3*Math.sin(2*Math.PI*1.2*time/1000);for(let i=0;i<a.length;i+=4){a[i]=r;a[i+1]=40;a[i+2]=35;a[i+3]=255;}return {data:a}},fillRect(){},fillText(){},save(){},restore(){},translate(){},rotate(){},clearRect(){},beginPath(){},moveTo(){},lineTo(){},stroke(){}});

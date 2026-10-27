@@ -11,7 +11,7 @@ From Lungitude-Training, install current dependencies and start the service:
 .\start-imaging.bat
 ```
 
-In another terminal, keep `php -S localhost:8000 router.php` running. Check both layers:
+In another terminal, keep `php -S localhost:8002 router.php` running. Check both layers:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\Check-Services.ps1
@@ -24,7 +24,7 @@ Both checks should pass. A wrong password returns a sign-in error; an absent acc
 The pasted GetSignInIntentRequest example is for Android, not this browser application. This app uses Google Identity Services' official web button and ID-token callback, with no prompt()/One Tap or automatic account selection. The provider only prompts after the user clicks its button. Initialization may load the SDK/render the button; it never opens sign-in automatically.
 
 1. Create a **Web application** OAuth client in Google Cloud Console and configure its consent screen.
-2. Register the exact JavaScript origins used by the app: for local testing, http://localhost:8000 and/or http://127.0.0.1:8000. Register the real HTTPS origin for deployment.
+2. Register the exact JavaScript origins used by the app: for local testing, http://localhost:8002 and/or http://127.0.0.1:8002. Register the real HTTPS origin for deployment.
 3. Copy .env.example to .env without overwriting any existing .env. Set GOOGLE_WEB_CLIENT_ID to your public Web client ID ending in .apps.googleusercontent.com. A Maps API key or Android client ID cannot substitute for it.
 4. Restart start-imaging.bat, which loads .env when present. Refresh the sign-in page.
 
@@ -61,7 +61,7 @@ The service loads the repository .env even when launched manually with uvicorn. 
 With both website and Python service running, execute this from the project folder:
 
 ```powershell
-.\.venv\Scripts\python.exe tools/check_auth.py --base http://localhost:8000
+.\.venv\Scripts\python.exe tools/check_auth.py --base http://localhost:8002
 ```
 
 This creates a temporary diagnostic account, checks the PHP proxy, registration, session cookies, logout and password login, then deletes the temporary account. It never changes existing accounts or prints passwords/tokens. Keep localhost consistent across browser and commands; localhost and 127.0.0.1 have different cookies. Secure cookies require HTTPS; use LUNGITUDE_SECURE_COOKIES=0 for HTTP localhost. Share only the PASS/FAIL lines. A successful diagnostic does not verify an existing account's credentials or actual Google/Apple authorization.
@@ -74,7 +74,7 @@ The app owner supplied this public Web client ID, now used as the default OAuth 
 88220152196-ue6q7abumts1jhb9jkf43rqlkd4veegm.apps.googleusercontent.com
 ```
 
-A nonempty GOOGLE_WEB_CLIENT_ID environment value overrides it. A blank or absent value uses the project default, so an older blank .env does not hide the button. Set LUNGITUDE_GOOGLE_SIGNIN=0 to disable Google explicitly. Apple still requires its own configuration. The Google Cloud Console must authorize the browser origin (http://localhost:8000 or http://127.0.0.1:8000 locally). The current popup/callback flow requires no redirect URI or Google client secret. Push/pull and restarting the service activate this configuration; an actual Google account authorization has not been tested here.
+A nonempty GOOGLE_WEB_CLIENT_ID environment value overrides it. A blank or absent value uses the project default, so an older blank .env does not hide the button. Set LUNGITUDE_GOOGLE_SIGNIN=0 to disable Google explicitly. Apple still requires its own configuration. The Google Cloud Console must authorize the browser origin (http://localhost:8002 or http://127.0.0.1:8002 locally). The current popup/callback flow requires no redirect URI or Google client secret. Push/pull and restarting the service activate this configuration; an actual Google account authorization has not been tested here.
 
 ## Google button does not appear
 
@@ -82,7 +82,7 @@ From the running project, check the Python service and actual website proxy inde
 
 ```powershell
 Invoke-RestMethod http://127.0.0.1:8010/account/health | ConvertTo-Json -Depth 4
-(Invoke-RestMethod 'http://localhost:8000/api/account.php?action=oauth_config').providers.google | Format-List
+(Invoke-RestMethod 'http://localhost:8002/api/account.php?action=oauth_config').providers.google | Format-List
 ```
 
 The proxy must return enabled=True and the project client ID. Do not share the whole OAuth config response: it contains a short-lived state and nonce. If Python reports readiness but the proxy/config fails, check that PHP and Python both serve this updated worktree. Restart the existing service after updates rather than launching a second process on the same port.

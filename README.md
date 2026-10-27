@@ -1,10 +1,10 @@
-> The default homepage is the dark research interface (skin camera, pulse check, breast measurements and research evidence). Open `http://localhost:8000/#capture`. The earlier warning-sign survey remains at `survey.html`. Camera analysis and accounts require the local imaging service on port 8010; PHP alone serves the interface. Install `ml/skin/requirements.txt` and `ml/skin/auth-requirements.txt` in your Python environment, then run `start-imaging.bat` on Windows. Trained model artifacts and evaluation reports are unchanged.
+> The default homepage is the dark research interface (skin camera, pulse check, breast measurements and research evidence). Open `http://localhost:8002/#capture`. The earlier warning-sign survey remains at `survey.html`. Camera analysis and accounts require the local imaging service on port 8010; PHP alone serves the interface. Install `ml/skin/requirements.txt` and `ml/skin/auth-requirements.txt` in your Python environment, then run `start-imaging.bat` on Windows. Trained model artifacts and evaluation reports are unchanged.
 
 The optional survey and research-scan activity totals stay in this browser, are separate from learning points, and can be reset at any time.
 
 # Lungitude
 
-A short warning-sign survey for Washington residents, followed by screening information and nearby healthcare listings. Student project by Rishi Jasuja for the 2026 Congressional App Challenge, WA-01. Educational prototype; not a medical device or diagnosis.
+A cancer-awareness and research prototype for Washington residents, with a dark homepage, camera and measurement tools, a warning-sign survey, screening information and nearby healthcare listings. Student project by Rishi Jasuja for the 2026 Congressional App Challenge, WA-01. Educational prototype; not a medical device or diagnosis.
 
 ## The problem in Washington State
 
@@ -31,10 +31,10 @@ Install **PHP 8.2 or later**. Core JSON and PDO are used; enable **cURL** for ex
 ```sh
 git clone https://github.com/Canopy10979/Lungitude.git
 cd Lungitude
-php -S localhost:8000 router.php
+php -S localhost:8002 router.php
 ```
 
-Open http://localhost:8000. Do not open HTML as a local file. Use the router so private code, datasets and databases are not served as static downloads. PHP’s development server is for local demos.
+Open http://localhost:8002. On Windows, `start-web.bat` starts the web server on port 8002; `start-dark.bat` starts both the web server and the local imaging service on port 8010. See `AUTH_SETUP.md` for account configuration. Do not open HTML as a local file. Use the router so private code, datasets and databases are not served as static downloads. PHP’s development server is for local demos.
 
 **Demo:** set `define('FORCE_DEMO', true);` in place of the environment-based definition in `api/config.php` or start with `FORCE_DEMO=1` in the server environment. Choose **Load demo person** in the survey or lung check. The survey demo displays a sample person and location. With no Google key or failed provider access, care search returns clearly labeled fictional examples. No network or Python is needed for the core demo. External lookups remain unavailable offline; use a manual county or demo location.
 
@@ -48,7 +48,7 @@ See [MODELS.md](MODELS.md) for the three published trained baselines, actual hel
 
 ## How it works
 
-The vanilla HTML/JavaScript interface calls same-origin PHP endpoints. `index.html` is the survey and results flow; `lung.html` is a separate lung guideline check. Research pages are linked only in a labeled section after survey results. Local JSON files supply questions, sources and county identifiers.
+The vanilla HTML/JavaScript interface calls same-origin PHP endpoints. `index.html` is the dark research homepage; `survey.html` contains the warning-sign survey and results flow, and `lung.html` is a separate lung guideline check. The homepage links to the camera, pulse, breast-measurement and research-evidence tools. Local JSON files supply questions, sources and county identifiers.
 
 | Endpoint | Purpose |
 | --- | --- |
@@ -129,8 +129,8 @@ Last validated before LungBot: `test_risk.php` **14 checks passed**, `test_surve
 
 ## Why I built this
 
-TODO: Rishi will write this section in his own words.
+Lungitude was built to make cancer-awareness information easier to understand and act on. It brings warning-sign questions, screening information and nearby healthcare search into one place for Washington residents. The goal is to help people prepare for a conversation with a clinician and find a practical next step. The camera and measurement tools explore what a browser-based research prototype can do; they are not clinically validated diagnostic tools.
 
 ## Uploaded logo
 
-The header supports `assets/lungitude-logo.png` and retains the existing L mark until that file is present. The uploaded image could not be read because the execution workspace was disconnected; **the actual PNG has not been added**. Copy the original logo to that path, commit it and refresh. The logo is not in the service-worker precache until the asset is available; this avoids breaking installation on a missing file.
+The project includes the logo at `assets/lungitude-logo.png`. The header uses this asset for Lungitude branding.

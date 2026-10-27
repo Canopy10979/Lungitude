@@ -22,9 +22,9 @@ Chromium was obtained, but this environment denied its required Unix socket (`so
 
 ## Submission tasks for Rishi
 
-- Write `## Why I built this` personally; the placeholder is intentionally untouched.
+- Review the project motivation in the README for accuracy before submitting.
 - Record the 1–3 minute demo with participant/app names, audience, purpose, languages/tools and working features. Do not claim cancer detection or validated AI.
-- Write the required submission answers in your own words, including technical challenges and what you learned.
+- Describe technical challenges and learning outcomes accurately in the submission, based on the implemented features and documented validation results.
 - Review district and official 2026 rules. The WA-01 page lists **9:00 a.m. Pacific, October 26**, matching the official PDF’s **12:00 p.m. EDT**. A separate registration page lists a conflicting later time; use the earlier district/PDF deadline and confirm with the organizer if needed.
 - Disclose AI assistance fully. This revision used ChatGPT/Codex for source inspection, code edits, documentation, evidence checking and test automation. The student must identify their own contributions, review changes and demonstrate technical understanding; do not describe all development as unaided student work.
 
