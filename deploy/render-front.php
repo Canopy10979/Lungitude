@@ -10,6 +10,8 @@ $handled = require dirname(__DIR__) . '/router.php';
 if ($handled === false) {
     $target = realpath(dirname(__DIR__) . $requested);
     if ($target && str_starts_with($target, dirname(__DIR__) . '/api/')) {
+        $_SERVER['SCRIPT_FILENAME'] = $target;
+        $_SERVER['SCRIPT_NAME'] = $requested;
         require $target;
     } else { http_response_code(404); }
 }
